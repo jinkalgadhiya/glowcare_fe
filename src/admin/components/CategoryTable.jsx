@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Paper,
   Table,
@@ -19,16 +19,22 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
+import { getProducts } from "../../database/productService";
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "../context/ThemeContext";
 
 const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    const loadProducts = async () => {
+      const data = await getProducts();
+      setProducts(data);
+    };
 
-  const products = JSON.parse(localStorage.getItem("products")) || [];
-
+    loadProducts();
+  }, []);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
 

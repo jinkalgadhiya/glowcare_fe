@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,9 +11,16 @@ import {
   Typography,
   IconButton,
   Box,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useThemeContext } from "../context/ThemeContext";
 
@@ -21,8 +28,25 @@ const OrderTable = ({
   orders,
   searchTerm,
   setSelectedOrder,
+  setOpenView,
+  setOpenStatus,
+  setOpenDelete,
 }) => {
   const { darkMode } = useThemeContext();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const open = Boolean(anchorEl);
+
+  const handleMenu = (event, order) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRow(order);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const filteredOrders = orders.filter((order) => {
     const search = searchTerm.toLowerCase();
@@ -76,21 +100,27 @@ const OrderTable = ({
               backgroundColor: darkMode ? "#2E2E2E" : "#F8FAF9",
             }}
           >
-            <TableCell sx={{ fontWeight: 700 }}>Order ID</TableCell>
-
-            <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
-
-            <TableCell sx={{ fontWeight: 700 }}>Total</TableCell>
-
-            <TableCell sx={{ fontWeight: 700 }}>Payment</TableCell>
-
-            <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-
-            <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-
-            <TableCell align="center" sx={{ fontWeight: 700 }}>
-              Action
-            </TableCell>
+            {[
+              "Order ID",
+              "Customer",
+              "Total",
+              "Payment",
+              "Status",
+              "Date",
+              "Action",
+            ].map((title) => (
+              <TableCell
+                key={title}
+                align={title === "Action" ? "center" : "left"}
+                sx={{
+                  fontWeight: 700,
+                  color: darkMode ? "#fff" : "#222",
+                  borderColor: darkMode ? "#3A3A3A" : "#E5E7EB",
+                }}
+              >
+                {title}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
 
@@ -99,10 +129,7 @@ const OrderTable = ({
         <TableBody>
           {filteredOrders.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                align="center"
-              >
+              <TableCell colSpan={7} align="center">
                 <Typography
                   sx={{
                     py: 5,
@@ -120,54 +147,87 @@ const OrderTable = ({
                 key={order.id}
                 sx={{
                   "&:hover": {
-                    backgroundColor: darkMode
-                      ? "#2F2F2F"
-                      : "#FAFAFA",
+                    backgroundColor: darkMode ? "#2F2F2F" : "#FAFAFA",
                   },
                 }}
               >
-                <TableCell>{order.id}</TableCell>
+                <TableCell
+                  sx={{
+                    color: darkMode ? "#fff" : "#777",
+                  }}
+                >
+                  {order.id}
+                </TableCell>
 
                 <TableCell>
                   <Box>
-                    <Typography fontWeight={600}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: darkMode ? "#fff" : "#222",
+                      }}
+                    >
                       {order.customer.fullName}
                     </Typography>
 
                     <Typography
                       variant="body2"
-                      color="text.secondary"
+                      sx={{
+                        color: darkMode ? "#B5B5B5" : "#777",
+                      }}
                     >
                       {order.customer.email}
                     </Typography>
                   </Box>
                 </TableCell>
 
-                <TableCell>
+                <TableCell
+                  sx={{
+                    color: darkMode ? "#fff" : "#222",
+                  }}
+                >
                   ₹{order.pricing.total}
                 </TableCell>
 
-                <TableCell>
+                <TableCell
+                  sx={{
+                    color: darkMode ? "#fff" : "#222",
+                  }}
+                >
                   {order.paymentMethod}
                 </TableCell>
 
-                <TableCell>
+                <TableCell
+                  sx={{
+                    color: darkMode ? "#fff" : "#222",
+                  }}
+                >
                   <Chip
                     label={order.status}
                     color={getStatusColor(order.status)}
                     size="small"
                   />
                 </TableCell>
-
-                <TableCell>
+                <TableCell
+                  sx={{
+                    color: darkMode ? "#fff" : "#222",
+                  }}
+                >
                   {new Date(order.orderDate).toLocaleDateString()}
                 </TableCell>
 
                 <TableCell align="center">
                   <IconButton
-                    onClick={() => setSelectedOrder(order)}
+                    onClick={(e) => handleMenu(e, order)}
+                    sx={{
+                      color: darkMode ? "#F5F5F5" : "#444",
+
+                      "&:hover": {
+                        bgcolor: darkMode ? "#383838" : "#F2F2F2",
+                      },
+                    }}
                   >
-                    <VisibilityOutlinedIcon />
+                    <MoreHorizOutlinedIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -175,6 +235,101 @@ const OrderTable = ({
           )}
         </TableBody>
       </Table>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            minWidth: 190,
+            borderRadius: 2,
+            mt: 1,
+            bgcolor: darkMode ? "#252525" : "#fff",
+            color: darkMode ? "#fff" : "#000",
+
+            "& .MuiMenuItem-root": {
+              color: darkMode ? "#fff" : "#000",
+            },
+
+            "& .MuiListItemIcon-root": {
+              minWidth: 35,
+            },
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            setSelectedOrder(selectedRow);
+            setOpenView(true);
+            handleClose();
+          }}
+        >
+          <ListItemIcon>
+            <VisibilityOutlinedIcon
+              fontSize="small"
+              sx={{ color: darkMode ? "#fff" : "#555" }}
+            />
+          </ListItemIcon>
+
+          <ListItemText
+            primary="View"
+            primaryTypographyProps={{
+              sx: {
+                color: darkMode ? "#fff" : "#000",
+                fontWeight: 500,
+              },
+            }}
+          />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setSelectedOrder(selectedRow);
+            setOpenStatus(true);
+            handleClose();
+          }}
+        >
+          <ListItemIcon>
+            <EditOutlinedIcon fontSize="small" sx={{ color: "#1976d2" }} />
+          </ListItemIcon>
+
+          <ListItemText
+            primary="Update Status"
+            primaryTypographyProps={{
+              sx: {
+                color: darkMode ? "#fff" : "#000",
+                fontWeight: 500,
+              },
+            }}
+          />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setSelectedOrder(selectedRow);
+            setOpenDelete(true);
+            handleClose();
+          }}
+        >
+          <ListItemIcon>
+            <DeleteOutlineOutlinedIcon
+              fontSize="small"
+              sx={{ color: "#d32f2f" }}
+            />
+          </ListItemIcon>
+
+          <ListItemText
+            primary="Delete"
+            primaryTypographyProps={{
+              sx: {
+                color: "#d32f2f",
+                fontWeight: 500,
+              },
+            }}
+          />
+        </MenuItem>
+      </Menu>
     </TableContainer>
   );
 };

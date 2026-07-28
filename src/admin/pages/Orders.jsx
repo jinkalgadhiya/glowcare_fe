@@ -3,7 +3,8 @@ import { Box, Drawer } from "@mui/material";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-
+import DeleteOrder from "../components/DeleteOrder";
+import UpdateOrderStatus from "../components/UpdateOrderStatus";
 import OrderHeader from "../components/OrderHeader";
 import OrderTable from "../components/OrderTable";
 import OrderFilter from "../components/OrderFilter";
@@ -39,6 +40,15 @@ const Orders = () => {
   /* ---------------- View Drawer ---------------- */
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [openView, setOpenView] = useState(false);
+
+  /* ---------------- Update Status Dialog ---------------- */
+
+  const [openStatus, setOpenStatus] = useState(false);
+
+  /* ---------------- Delete Dialog ---------------- */
+
+  const [openDelete, setOpenDelete] = useState(false);
 
   return (
     <Box
@@ -79,23 +89,23 @@ const Orders = () => {
             orders={orders}
             searchTerm={searchTerm}
             setSelectedOrder={setSelectedOrder}
+            setOpenView={setOpenView}
+            setOpenStatus={setOpenStatus}
+            setOpenDelete={setOpenDelete}
           />
         </Box>
       </Box>
 
       {/* Filter Drawer */}
 
-      <OrderFilter
-        open={openFilter}
-        onClose={() => setOpenFilter(false)}
-      />
+      <OrderFilter open={openFilter} onClose={() => setOpenFilter(false)} />
 
       {/* View Order Drawer */}
 
       <Drawer
         anchor="right"
-        open={Boolean(selectedOrder)}
-        onClose={() => setSelectedOrder(null)}
+        open={openView}
+        onClose={() => setOpenView(false)}
         PaperProps={{
           sx: {
             width: 420,
@@ -104,11 +114,30 @@ const Orders = () => {
           },
         }}
       >
-        <ViewOrder
-          order={selectedOrder}
-          onClose={() => setSelectedOrder(null)}
-        />
+        <ViewOrder order={selectedOrder} onClose={() => setOpenView(false)} />
       </Drawer>
+
+      <UpdateOrderStatus
+        open={openStatus}
+        onClose={() => setOpenStatus(false)}
+        order={selectedOrder}
+        onStatusUpdated={(updatedOrder) => {
+          setOrders((prev) =>
+            prev.map((order) =>
+              order.id === updatedOrder.id ? updatedOrder : order,
+            ),
+          );
+        }}
+      />
+
+      <DeleteOrder
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        order={selectedOrder}
+        onDelete={(id) => {
+          setOrders((prev) => prev.filter((order) => order.id !== id));
+        }}
+      />
     </Box>
   );
 };

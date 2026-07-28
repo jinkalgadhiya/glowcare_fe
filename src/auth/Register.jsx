@@ -95,12 +95,35 @@ const Register = () => {
     }
 
     await addUser({
-      id: crypto.randomUUID(),
-      name,
-      email,
-      contact,
-      password,
-    });
+  id: crypto.randomUUID(),
+
+  fullName: name,
+
+  email,
+
+  phone: contact,
+
+  password,
+
+  role: "customer",
+
+  status: "Active",
+
+  joinedDate: new Date().toISOString(),
+
+  totalOrders: 0,
+
+  totalSpent: 0,
+
+  image: "",
+
+  address: {
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+  },
+});
 
     navigate("/login");
   };

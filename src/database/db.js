@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const dbPromise = openDB("GlowCareDB", 5, {
+const dbPromise = openDB("GlowCareDB", 6, {
   upgrade(db) {
     if (!db.objectStoreNames.contains("products")) {
       db.createObjectStore("products", {
@@ -26,7 +26,6 @@ const dbPromise = openDB("GlowCareDB", 5, {
       });
     }
 
-    // NEW
     if (!db.objectStoreNames.contains("orders")) {
       db.createObjectStore("orders", {
         keyPath: "id",
