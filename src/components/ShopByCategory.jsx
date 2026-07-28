@@ -140,7 +140,7 @@ const ShopByCategory = () => {
                   },
                 }}
               >
-                EXPLORE →
+                EXPLORE → 11
               </Typography>
             </Box>
           </Grid>
