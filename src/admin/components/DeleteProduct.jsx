@@ -16,22 +16,18 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import { deleteProduct } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
 
-const DeleteProduct = ({
-  open,
-  onClose,
-  product,
-}) => {
+const DeleteProduct = ({ open, onClose, product }) => {
   const { darkMode } = useThemeContext();
 
   if (!product) return null;
 
   const handleDelete = async () => {
-  await deleteProduct(product.id);
+    await deleteProduct(product.id);
 
-  onClose();
+    onClose();
 
-  window.location.reload();
-};
+    window.location.reload();
+  };
 
   return (
     <Dialog
@@ -42,9 +38,7 @@ const DeleteProduct = ({
       PaperProps={{
         sx: {
           borderRadius: 3,
-          backgroundColor: darkMode
-            ? "#252525"
-            : "#fff",
+          backgroundColor: darkMode ? "#252525" : "#fff",
         },
       }}
     >
@@ -57,11 +51,7 @@ const DeleteProduct = ({
           fontWeight: 700,
         }}
       >
-        <WarningAmberRoundedIcon
-          color="error"
-          fontSize="large"
-        />
-
+        <WarningAmberRoundedIcon color="error" fontSize="large" />
         Delete Product
       </DialogTitle>
 
@@ -74,8 +64,7 @@ const DeleteProduct = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Are you sure you want to delete this
-          product?
+          Are you sure you want to delete this product?
         </Typography>
 
         <Typography
@@ -92,16 +81,10 @@ const DeleteProduct = ({
             mt: 4,
             p: 2,
             borderRadius: 2,
-            backgroundColor: darkMode
-              ? "#303030"
-              : "#F7F5F2",
+            backgroundColor: darkMode ? "#303030" : "#F7F5F2",
           }}
         >
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-          >
+          <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               src={product.image}
               variant="rounded"
@@ -112,29 +95,19 @@ const DeleteProduct = ({
             />
 
             <Box>
-              <Typography
-                fontWeight={600}
-              >
-                {product.name}
-              </Typography>
+              <Typography fontWeight={600}>{product.name}</Typography>
 
-              <Typography
-                variant="body2"
-                color="text.secondary"
-              >
+              <Typography variant="body2" color="text.secondary">
                 {product.category}
               </Typography>
 
-              <Typography
-                variant="body2"
-                color="success.main"
-              >
+              <Typography variant="body2" color="success.main">
                 ₹ {product.price}
               </Typography>
             </Box>
           </Stack>
         </Box>
-              </DialogContent>
+      </DialogContent>
 
       <Divider />
 

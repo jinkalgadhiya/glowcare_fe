@@ -1,226 +1,451 @@
 import React from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
   Box,
-  Button,
+  Typography,
   Divider,
   Avatar,
+  Chip,
+  IconButton,
+  Stack,
+  Button,
 } from "@mui/material";
 
-const ViewOrder = ({ open, handleClose, order }) => {
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+
+import { useThemeContext } from "../context/ThemeContext";
+
+const ViewOrder = ({ order, onClose }) => {
+  const { darkMode } = useThemeContext();
+
   if (!order) return null;
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "warning";
+      case "Processing":
+        return "info";
+      case "Shipped":
+        return "secondary";
+      case "Delivered":
+        return "success";
+      case "Cancelled":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 4,
-        },
+    <Box
+      sx={{
+        width: 380,
+        height: "100vh",
+        backgroundColor: darkMode ? "#252525" : "#fff",
+        overflowY: "auto",
       }}
     >
-      <DialogTitle
+      {/* Header */}
+
+      <Box
         sx={{
-          fontWeight: 700,
-          fontSize: 24,
+          p: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid",
+          borderColor: darkMode ? "#444" : "#eee",
         }}
       >
-        Order Details
-      </DialogTitle>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Order Details
+        </Typography>
 
-      <DialogContent dividers>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          <CloseOutlinedIcon />
+        </IconButton>
+      </Box>
 
+      {/* Content */}
+
+      <Box
+        sx={{
+          p: 3,
+        }}
+      >
         {/* Order Information */}
 
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Order Information
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: darkMode ? "#AFAFAF" : "#777",
+            }}
+          >
+            Order ID
           </Typography>
 
-          <Typography>
-            <strong>Order ID:</strong> {order.id}
-          </Typography>
-
-          <Typography>
-            <strong>Order Date:</strong>{" "}
-            {new Date(order.orderDate).toLocaleString()}
-          </Typography>
-
-          <Typography>
-            <strong>Status:</strong> {order.status}
+          <Typography
+            sx={{
+              mt: 1,
+              fontWeight: 600,
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            {order.id}
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: darkMode ? "#AFAFAF" : "#777",
+            }}
+          >
+            Order Date
+          </Typography>
+
+          <Typography
+            sx={{
+              mt: 1,
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            {new Date(order.orderDate).toLocaleString()}
+          </Typography>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: darkMode ? "#AFAFAF" : "#777",
+              mb: 1,
+            }}
+          >
+            Status
+          </Typography>
+
+          <Chip label={order.status} color={getStatusColor(order.status)} />
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
 
         {/* Customer */}
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Customer Details
-          </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 3,
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Customer Details
+        </Typography>
 
-          <Typography>
-            <strong>Name:</strong> {order.customer.fullName}
-          </Typography>
+        <Stack spacing={3}>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Name
+            </Typography>
 
-          <Typography>
-            <strong>Email:</strong> {order.customer.email}
-          </Typography>
+            <Typography
+              sx={{
+                mt: 1,
+                fontWeight: 600,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.customer.fullName}
+            </Typography>
+          </Box>
 
-          <Typography>
-            <strong>Phone:</strong> {order.customer.phone}
-          </Typography>
-        </Box>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Email
+            </Typography>
 
-        <Divider sx={{ mb: 3 }} />
+            <Typography
+              sx={{
+                mt: 1,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.customer.email}
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Phone
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.customer.phone}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Divider sx={{ my: 3 }} />
 
         {/* Shipping */}
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Shipping Address
-          </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 3,
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Shipping Address
+        </Typography>
 
-          <Typography>{order.customer.address}</Typography>
+        <Typography
+          sx={{
+            color: darkMode ? "#fff" : "#222",
+            lineHeight: 1.8,
+          }}
+        >
+          {order.customer.address}
+          <br />
+          {order.customer.city}, {order.customer.state}
+          <br />
+          {order.customer.pincode}
+        </Typography>
 
-          <Typography>
-            {order.customer.city}, {order.customer.state}
-          </Typography>
-
-          <Typography>{order.customer.pincode}</Typography>
-        </Box>
-
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ my: 3 }} />
 
         {/* Ordered Products */}
 
         <Typography
           variant="h6"
-          gutterBottom
+          sx={{
+            mb: 3,
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#222",
+          }}
         >
           Ordered Products
         </Typography>
 
-        {order.items.map((item) => (
-          <Box
-            key={`${item.productId}-${item.variantId}`}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              py: 2,
-            }}
-          >
-            <Avatar
-              src={item.image}
-              variant="rounded"
+        <Stack spacing={3}>
+          {order.items.map((item) => (
+            <Box
+              key={`${item.productId}-${item.variantId}`}
               sx={{
-                width: 70,
-                height: 70,
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
               }}
-            />
+            >
+              <Avatar
+                src={item.image}
+                variant="rounded"
+                sx={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 2,
+                }}
+              />
 
-            <Box sx={{ flex: 1 }}>
-              <Typography fontWeight={600}>
-                {item.name}
-              </Typography>
+              <Box flex={1}>
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color: darkMode ? "#fff" : "#222",
+                  }}
+                >
+                  {item.name}
+                </Typography>
 
-              <Typography color="text.secondary">
-                {item.size}
-              </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.5,
+                    fontSize: 13,
+                    color: darkMode ? "#AFAFAF" : "#777",
+                  }}
+                >
+                  Size : {item.size}
+                </Typography>
 
-              <Typography color="text.secondary">
-                Qty : {item.quantity}
+                <Typography
+                  sx={{
+                    mt: 0.5,
+                    fontSize: 13,
+                    color: darkMode ? "#AFAFAF" : "#777",
+                  }}
+                >
+                  Qty : {item.quantity}
+                </Typography>
+              </Box>
+
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  color: "#2E7D32",
+                }}
+              >
+                ₹{item.price * item.quantity}
               </Typography>
             </Box>
-
-            <Typography fontWeight={600}>
-              ₹{item.price * item.quantity}
-            </Typography>
-          </Box>
-        ))}
+          ))}
+        </Stack>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Price */}
+        {/* Price Summary */}
 
         <Typography
           variant="h6"
-          gutterBottom
-        >
-          Price Details
-        </Typography>
-
-        <Typography>
-          Subtotal : ₹{order.pricing.subtotal}
-        </Typography>
-
-        <Typography>
-          Shipping : ₹{order.pricing.shipping}
-        </Typography>
-
-        <Typography>
-          GST : ₹{order.pricing.gst}
-        </Typography>
-
-        <Typography>
-          Discount : ₹{order.pricing.discount}
-        </Typography>
-
-        <Typography
           sx={{
+            mb: 3,
             fontWeight: 700,
-            mt: 1,
+            color: darkMode ? "#fff" : "#222",
           }}
         >
-          Grand Total : ₹{order.pricing.total}
+          Price Summary
         </Typography>
+
+        <Stack spacing={2}>
+          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
+            Subtotal : ₹{order.pricing.subtotal}
+          </Typography>
+
+          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
+            Shipping : ₹{order.pricing.shipping}
+          </Typography>
+
+          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
+            GST : ₹{order.pricing.gst}
+          </Typography>
+
+          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
+            Discount : ₹{order.pricing.discount}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: 18,
+              color: "#2E7D32",
+            }}
+          >
+            Total : ₹{order.pricing.total}
+          </Typography>
+        </Stack>
 
         <Divider sx={{ my: 3 }} />
 
         {/* Payment */}
 
-        <Typography variant="h6">
-          Payment
-        </Typography>
-
-        <Typography>
-          {order.paymentMethod}
-        </Typography>
-
         <Typography
-          sx={{
-            mt: 2,
-          }}
           variant="h6"
+          sx={{
+            mb: 3,
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#222",
+          }}
         >
-          Delivery Method
+          Payment Details
         </Typography>
 
-        <Typography>
-          {order.deliveryMethod}
-        </Typography>
+        <Stack spacing={3}>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Payment Method
+            </Typography>
 
-      </DialogContent>
+            <Typography
+              sx={{
+                mt: 1,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.paymentMethod}
+            </Typography>
+          </Box>
 
-      <DialogActions>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Delivery Method
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.deliveryMethod}
+            </Typography>
+          </Box>
+        </Stack>
+
         <Button
-          onClick={handleClose}
+          fullWidth
           variant="contained"
-        >
-          Close
-        </Button>
-      </DialogActions>
+          onClick={onClose}
+          sx={{
+            mt: 5,
+            bgcolor: "#B89478",
+            textTransform: "none",
+            borderRadius: 2,
+            boxShadow: "none",
 
-    </Dialog>
+            "&:hover": {
+              bgcolor: "#A88366",
+              boxShadow: "none",
+            },
+          }}
+        >
+          Back
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
