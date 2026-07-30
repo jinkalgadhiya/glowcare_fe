@@ -240,11 +240,17 @@ const ViewOrder = ({ order, onClose }) => {
             lineHeight: 1.8,
           }}
         >
-          {order.customer.address}
+          {order.shipping.address}
           <br />
-          {order.customer.city}, {order.customer.state}
+          {order.shipping.city}, {order.shipping.state}
           <br />
-          {order.customer.pincode}
+          {order.shipping.pincode}
+          {order.shipping.landmark && (
+            <>
+              <br />
+              {order.shipping.landmark}
+            </>
+          )}
         </Typography>
 
         <Divider sx={{ my: 3 }} />

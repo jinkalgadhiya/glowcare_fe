@@ -9,6 +9,7 @@ import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
 import ProtectedRoute from "../auth/ProtectedRoute";
 import Checkout from "../pages/Checkout";
+import ShopPage from "../pages/shop/ShopPage";
 
 const UserRoute = () => {
   return (
@@ -38,6 +39,8 @@ const UserRoute = () => {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/shop/:category" element={<ShopPage />} />
 
       {/* Future Protected Routes */}
       {/* 

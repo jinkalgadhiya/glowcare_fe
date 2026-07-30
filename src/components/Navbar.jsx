@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import {
   AppBar,
   Toolbar,
@@ -24,6 +25,7 @@ import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const location = useLocation();
+  const closeTimer = useRef(null);
 
   const isHome = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -33,6 +35,20 @@ const Navbar = () => {
   const navigate = useNavigate();
   const loggedIn = isLoggedIn();
   const isDarkNavbar = !isHome || scrolled;
+
+  const openMenu = (menu) => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+    }
+
+    setActiveMenu(menu);
+  };
+
+  const closeMenu = () => {
+    closeTimer.current = setTimeout(() => {
+      setActiveMenu(null);
+    }, 250);
+  };
 
   const totalItems = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -79,15 +95,17 @@ const Navbar = () => {
         {/* Left */}
         <Box
           sx={{ position: "relative" }}
-          onMouseLeave={() => setActiveMenu(null)}
+          onMouseLeave={closeMenu}
+          onMouseEnter={() => {
+            if (closeTimer.current) {
+              clearTimeout(closeTimer.current);
+            }
+          }}
         >
           <Stack direction="row" spacing={6}>
             <Box position="relative">
               <Typography
-                onMouseEnter={() => {
-                  console.log("SKINCARE HOVERED");
-                  setActiveMenu("skincare");
-                }}
+                onMouseEnter={() => openMenu("skincare")}
                 sx={{
                   color: isDarkNavbar ? "#222" : "#fff",
                   fontSize: "13px",
@@ -123,7 +141,18 @@ const Navbar = () => {
               MORE
             </Typography>
           </Stack>
-          {activeMenu && <MegaMenu type={activeMenu} />}
+          {activeMenu && (
+            <Box
+              onMouseEnter={() => {
+                if (closeTimer.current) {
+                  clearTimeout(closeTimer.current);
+                }
+              }}
+              onMouseLeave={closeMenu}
+            >
+              <MegaMenu type={activeMenu} />
+            </Box>
+          )}
         </Box>
 
         {/* Center Logo */}
