@@ -75,7 +75,11 @@ function AdminLogin() {
     }
 
     // Store Login
-    localStorage.setItem("admin", JSON.stringify(foundAdmin));
+    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
+
+    if (!storedAdmin) {
+      localStorage.setItem("admin", JSON.stringify(foundAdmin));
+    }
 
     navigate("/admin/dashboard");
   };

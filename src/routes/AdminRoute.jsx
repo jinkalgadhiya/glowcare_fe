@@ -14,6 +14,9 @@ import AddProducts from "../admin/pages/AddProducts";
 import Orders from "../admin/pages/Orders";
 import Customers from "../admin/pages/Customers";
 
+import Profile from "../admin/pages/Profile";
+import Reviews from "../admin/pages/Reviews";
+
 const AdminRoute = () => {
   return (
     <Routes>
@@ -74,6 +77,10 @@ const AdminRoute = () => {
         path="/admin/customers"
         element={<Customers />}
       />
+
+      <Route path="/admin/profile" element={<Profile />} />
+
+      <Route path="/admin/reviews" element={<Reviews />} />
     </Routes>
   );
 };

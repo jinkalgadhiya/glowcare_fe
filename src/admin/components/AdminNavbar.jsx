@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -13,13 +13,20 @@ import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 
 import { useThemeContext } from "../context/ThemeContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AdminNavbar = () => {
   const { darkMode, toggleTheme } = useThemeContext();
 
   const location = useLocation();
+  const navigate = useNavigate();
 
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
+    setAdmin(storedAdmin);
+  }, []);
   const getPageTitle = () => {
     switch (location.pathname) {
       case "/admin":
@@ -43,6 +50,9 @@ const AdminNavbar = () => {
       case "/admin/settings":
         return "Settings";
 
+      case "/admin/profile":
+        return "Profile";
+
       default:
         return "Dashboard";
     }
@@ -62,9 +72,7 @@ const AdminNavbar = () => {
 
         boxShadow: "0 2px 8px rgba(0,0,0,.08)",
 
-        borderBottom: darkMode
-          ? "1px solid #3D3D3D"
-          : "1px solid #E7DDD2",
+        borderBottom: darkMode ? "1px solid #3D3D3D" : "1px solid #E7DDD2",
       }}
     >
       <Toolbar
@@ -84,7 +92,7 @@ const AdminNavbar = () => {
             fontSize: 28,
             fontWeight: 600,
             color: darkMode ? "#fff" : "#1E2F2B",
-            letterSpacing: .5,
+            letterSpacing: 0.5,
           }}
         >
           {getPageTitle()}
@@ -92,45 +100,30 @@ const AdminNavbar = () => {
 
         {/* Right Side */}
 
-        <Stack
-          direction="row"
-          spacing={2}
-        >
+        <Stack direction="row" spacing={2}>
           <IconButton
             onClick={toggleTheme}
             sx={{
               color: darkMode ? "#FFD54F" : "#555",
 
-              backgroundColor: darkMode
-                ? "#333"
-                : "#F8F5F1",
+              backgroundColor: darkMode ? "#333" : "#F8F5F1",
 
               "&:hover": {
-                backgroundColor: darkMode
-                  ? "#444"
-                  : "#EFE8E1",
+                backgroundColor: darkMode ? "#444" : "#EFE8E1",
               },
             }}
           >
-            {darkMode ? (
-              <LightModeOutlinedIcon />
-            ) : (
-              <DarkModeOutlinedIcon />
-            )}
+            {darkMode ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
           </IconButton>
 
           <IconButton
             sx={{
               color: darkMode ? "#fff" : "#555",
 
-              backgroundColor: darkMode
-                ? "#333"
-                : "#F8F5F1",
+              backgroundColor: darkMode ? "#333" : "#F8F5F1",
 
               "&:hover": {
-                backgroundColor: darkMode
-                  ? "#444"
-                  : "#EFE8E1",
+                backgroundColor: darkMode ? "#444" : "#EFE8E1",
               },
             }}
           >
@@ -138,18 +131,22 @@ const AdminNavbar = () => {
           </IconButton>
 
           <Avatar
+            onClick={() => navigate("/admin/profile")}
             sx={{
               width: 42,
               height: 42,
-
               bgcolor: "#B89478",
-
               fontWeight: 600,
-
               cursor: "pointer",
+              transition: "0.3s",
+
+              "&:hover": {
+                transform: "scale(1.08)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              },
             }}
           >
-            A
+            {admin?.fullName?.charAt(0)?.toUpperCase() || "A"}
           </Avatar>
         </Stack>
       </Toolbar>

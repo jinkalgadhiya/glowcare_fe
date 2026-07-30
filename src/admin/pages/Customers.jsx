@@ -12,6 +12,7 @@ import EditCustomer from "../components/EditCustomer";
 import DeleteCustomer from "../components/DeleteCustomer";
 
 import { getCustomers } from "../../database/userService";
+import { getOrders } from "../../database/orderService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const Customers = () => {
@@ -22,13 +23,34 @@ const Customers = () => {
   const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
-    const loadCustomers = async () => {
-      const data = await getCustomers();
-      setCustomers(data);
-    };
+  const loadCustomers = async () => {
+    const customerList = await getCustomers();
+    const orders = await getOrders();
 
-    loadCustomers();
-  }, []);
+    const updatedCustomers = customerList.map((customer) => {
+      const customerOrders = orders.filter(
+        (order) => order.customer?.id === customer.id
+      );
+
+      const totalOrders = customerOrders.length;
+
+      const totalSpent = customerOrders.reduce(
+        (sum, order) => sum + Number(order.pricing?.total || 0),
+        0
+      );
+
+      return {
+        ...customer,
+        totalOrders,
+        totalSpent,
+      };
+    });
+
+    setCustomers(updatedCustomers);
+  };
+
+  loadCustomers();
+}, []);
 
   /* ---------------- Search ---------------- */
 
