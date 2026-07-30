@@ -42,85 +42,89 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
 
   // Place Order
   const handlePlaceOrder = async () => {
-  try {
-    // Get all users
-    const users = await getUsers();
+    try {
+      // Get all users
+      const users = await getUsers();
 
-    // Find logged-in customer
-    const customer = users.find(
-      (user) =>
-        user.email.toLowerCase() ===
-        checkoutData.shipping.email.toLowerCase()
-    );
+      // Find logged-in customer
+      const customer = users.find(
+        (user) =>
+          user.email.toLowerCase() ===
+          checkoutData.shipping.email.toLowerCase(),
+      );
 
-    if (!customer) {
-      alert("Customer not found");
-      return;
-    }
+      if (!customer) {
+        alert("Customer not found");
+        return;
+      }
 
-    // Create Order
-    const orderData = {
-      customer: {
-        id: customer.id,
-        fullName: customer.fullName,
-        email: customer.email,
-        phone: customer.phone,
-      },
+      // Create Order
+      const orderData = {
+        customer: {
+          id: customer.id,
+          fullName: customer.fullName,
+          email: customer.email,
+          phone: customer.phone,
+        },
 
-      shipping: {
+        shipping: {
+          fullName: checkoutData.shipping.fullName,
+          email: checkoutData.shipping.email,
+          phone: checkoutData.shipping.phone,
+          address: checkoutData.shipping.address,
+          city: checkoutData.shipping.city,
+          state: checkoutData.shipping.state,
+          pincode: checkoutData.shipping.pincode,
+        },
+
+        deliveryMethod: checkoutData.delivery,
+
+        paymentMethod: checkoutData.payment,
+
+        items: cartItems,
+
+        pricing: {
+          subtotal,
+          shipping,
+          discount,
+          gst,
+          total,
+        },
+      };
+
+      // Save Order
+      const order = await createOrder(orderData);
+
+      // Update Customer Details
+      customer.totalOrders = (customer.totalOrders || 0) + 1;
+      customer.totalSpent = (customer.totalSpent || 0) + total;
+
+      customer.address = {
         fullName: checkoutData.shipping.fullName,
-        email: checkoutData.shipping.email,
         phone: checkoutData.shipping.phone,
-        address: checkoutData.shipping.address,
+        street: checkoutData.shipping.address,
         city: checkoutData.shipping.city,
         state: checkoutData.shipping.state,
         pincode: checkoutData.shipping.pincode,
-      },
+        landmark: checkoutData.shipping.landmark || "",
+      };
 
-      deliveryMethod: checkoutData.delivery,
+      // Optional (keep customer's main phone updated)
+      customer.phone = checkoutData.shipping.phone;
 
-      paymentMethod: checkoutData.payment,
+      await updateUser(customer);
 
-      items: cartItems,
+      // Clear Cart
+      dispatch(clearCart());
+      await clearCartItems();
 
-      pricing: {
-        subtotal,
-        shipping,
-        discount,
-        gst,
-        total,
-      },
-    };
-
-    // Save Order
-    const order = await createOrder(orderData);
-
-    // Update Customer Details
-    customer.totalOrders = (customer.totalOrders || 0) + 1;
-    customer.totalSpent = (customer.totalSpent || 0) + total;
-
-    customer.address = {
-      street: checkoutData.shipping.address,
-      city: checkoutData.shipping.city,
-      state: checkoutData.shipping.state,
-      pincode: checkoutData.shipping.pincode,
-    };
-
-    customer.phone = checkoutData.shipping.phone;
-
-    await updateUser(customer);
-
-    // Clear Cart
-    dispatch(clearCart());
-    await clearCartItems();
-
-    // Success Dialog
-    setPlacedOrder(order);
-    setOpenSuccessDialog(true);
-  } catch (error) {
-    console.error("Order Failed:", error);
-  }
-};
+      // Success Dialog
+      setPlacedOrder(order);
+      setOpenSuccessDialog(true);
+    } catch (error) {
+      console.error("Order Failed:", error);
+    }
+  };
 
   return (
     <Box sx={{ width: 520 }}>

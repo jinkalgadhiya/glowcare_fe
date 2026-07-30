@@ -1,11 +1,13 @@
 import React from "react";
 import { Box, Stack, Typography, Button, Grid } from "@mui/material";
-
+import { useNavigate } from "react-router-dom";
 import SkincareImg from "../assets/SkinMenuImg.webp";
 import HaircareImg from "../assets/HairMenuImg.webp";
 import MoreImg from "../assets/MoreMenuImg.webp";
 
 const MegaMenu = ({ type }) => {
+  const navigate = useNavigate();
+
   let menuData = {};
   let menuImage = SkincareImg;
 
@@ -15,10 +17,10 @@ const MegaMenu = ({ type }) => {
     menuData = {
       title1: "CLEANSERS",
       items1: [
-        "Face Wash",
-        "Cleansing Oil",
-        "Cleansing Balm",
-        "Micellar Water",
+        { label: "Face Wash", path: "/shop/face-wash" },
+        { label: "Micellar Water", path: "/shop/micellar-water" },
+        { label: "Cleansing Oil & Balm", path: "/shop/cleansing-oil-balm" },
+        { label: "Scrubs & Exfoliators", path: "/shop/scrubs-exfoliators" },
       ],
 
       title2: "TREATMENTS",
@@ -109,7 +111,8 @@ const MegaMenu = ({ type }) => {
           <Stack spacing={2}>
             {menuData.items1?.map((item) => (
               <Typography
-                key={item}
+                key={item.label}
+                onClick={() => navigate(item.path)}
                 sx={{
                   cursor: "pointer",
                   transition: "all .3s ease",
@@ -121,7 +124,7 @@ const MegaMenu = ({ type }) => {
                   },
                 }}
               >
-                {item}
+                {item.label}
               </Typography>
             ))}
           </Stack>

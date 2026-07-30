@@ -1,10 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Grid, Typography, TextField, Button } from "@mui/material";
+
+import { getUsers } from "../../database/userService";
+import { getCurrentUser } from "../../auth/AuthService";
 
 const ShippingForm = ({ checkoutData, setCheckoutData, nextStep }) => {
   const [errors, setErrors] = useState({});
 
   const shipping = checkoutData.shipping;
+
+  // =============================
+  // Auto Fill Saved Address
+  // =============================
+
+  useEffect(() => {
+    const loadSavedAddress = async () => {
+      try {
+        // Logged in user
+        const loggedInUser = getCurrentUser();
+
+        if (!loggedInUser) return;
+
+        const users = await getUsers();
+
+        const customer = users.find((user) => user.id === loggedInUser.id);
+
+        if (!customer) return;
+
+        setCheckoutData((prev) => ({
+          ...prev,
+          shipping: {
+            fullName: customer.address?.fullName || customer.fullName || "",
+
+            email: customer.email || "",
+
+            phone: customer.address?.phone || customer.phone || "",
+
+            address: customer.address?.street || "",
+
+            city: customer.address?.city || "",
+
+            state: customer.address?.state || "",
+
+            pincode: customer.address?.pincode || "",
+
+            landmark: customer.address?.landmark || "",
+          },
+        }));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadSavedAddress();
+  }, [setCheckoutData]);
+
+  // =============================
+  // Handle Input Change
+  // =============================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,22 +71,40 @@ const ShippingForm = ({ checkoutData, setCheckoutData, nextStep }) => {
     }));
   };
 
+  // =============================
+  // Validation
+  // =============================
+
   const validate = () => {
     const newErrors = {};
 
-    if (!shipping.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!shipping.fullName.trim()) {
+      newErrors.fullName = "Full Name is required";
+    }
 
-    if (!shipping.email.trim()) newErrors.email = "Email is required";
+    if (!shipping.email.trim()) {
+      newErrors.email = "Email is required";
+    }
 
-    if (!shipping.phone.trim()) newErrors.phone = "Phone number is required";
+    if (!shipping.phone.trim()) {
+      newErrors.phone = "Phone Number is required";
+    }
 
-    if (!shipping.address.trim()) newErrors.address = "Address is required";
+    if (!shipping.address.trim()) {
+      newErrors.address = "Street Address is required";
+    }
 
-    if (!shipping.city.trim()) newErrors.city = "City is required";
+    if (!shipping.city.trim()) {
+      newErrors.city = "City is required";
+    }
 
-    if (!shipping.state.trim()) newErrors.state = "State is required";
+    if (!shipping.state.trim()) {
+      newErrors.state = "State is required";
+    }
 
-    if (!shipping.pincode.trim()) newErrors.pincode = "Pincode is required";
+    if (!shipping.pincode.trim()) {
+      newErrors.pincode = "Pincode is required";
+    }
 
     setErrors(newErrors);
 
@@ -155,14 +226,6 @@ const ShippingForm = ({ checkoutData, setCheckoutData, nextStep }) => {
               onChange={handleChange}
               error={!!errors.address}
               helperText={errors.address}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "5px",
-                  alignItems: "flex-start",
-                  py: 1,
-                  width: 220,
-                },
-              }}
             />
           </Grid>
 
