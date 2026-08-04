@@ -16,18 +16,67 @@ const MegaMenu = ({ type }) => {
 
     menuData = {
       title1: "CLEANSERS",
+
       items1: [
-        { label: "Face Wash", path: "/shop/face-wash" },
-        { label: "Micellar Water", path: "/shop/micellar-water" },
-        { label: "Cleansing Oil & Balm", path: "/shop/cleansing-oil-balm" },
-        { label: "Scrubs & Exfoliators", path: "/shop/scrubs-exfoliators" },
+        {
+          label: "Face Wash",
+          path: "/shop/face-wash",
+        },
+        {
+          label: "Micellar Water",
+          path: "/shop/micellar-water",
+        },
+        {
+          label: "Cleansing Oil & Balm",
+          path: "/shop/cleansing-oil-balm",
+        },
+        {
+          label: "Scrubs & Exfoliators",
+          path: "/shop/scrubs-exfoliators",
+        },
       ],
 
       title2: "TREATMENTS",
-      items2: ["Serum", "Toner", "Essence", "Face Mask"],
+
+      items2: [
+        {
+          label: "Serum",
+          path: "/shop/serum",
+        },
+        {
+          label: "Toner",
+          path: "/shop/toner",
+        },
+        {
+          label: "Essence",
+          path: "/shop/essence",
+        },
+        {
+          label: "Face Mask",
+          path: "/shop/face-mask",
+        },
+      ],
 
       title3: "PROTECTION",
-      items3: ["Sunscreen", "Lip Balm", "Eye Cream", "Moisturizer"],
+
+      items3: [
+        {
+          label: "Sunscreen",
+          path: "/shop/sunscreen",
+        },
+        {
+          label: "Lip Balm",
+          path: "/shop/lip-balm",
+        },
+        {
+          label: "Eye Cream",
+          path: "/shop/eye-cream",
+        },
+        {
+          label: "Moisturizer",
+          path: "/shop/moisturizer",
+        },
+      ],
 
       bannerTitle: "Healthy Skin",
     };
@@ -38,23 +87,67 @@ const MegaMenu = ({ type }) => {
 
     menuData = {
       title1: "SHAMPOOS",
+
       items1: [
-        "Anti-Dandruff Shampoo",
-        "Repair Shampoo",
-        "Volumizing Shampoo",
-        "Hydrating Shampoo",
+        {
+          label: "Liquid Shampoo",
+          path: "/shop/liquid-shampoo",
+        },
+        {
+          label: "Dry Shampoo",
+          path: "/shop/dry-shampoo",
+        },
+        {
+          label: "Shampoo Bar",
+          path: "/shop/bar-shampoo",
+        },
+        {
+          label: "Powder Shampoo",
+          path: "/shop/powder-shampoo",
+        },
       ],
 
       title2: "CONDITIONERS",
+
       items2: [
-        "Deep Conditioner",
-        "Leave-In Conditioner",
-        "Keratin Conditioner",
-        "Curl Conditioner",
+        {
+          label: "Liquid Conditioner",
+          path: "/shop/liquid-conditioner",
+        },
+        {
+          label: "Leave-In Conditioner",
+          path: "/shop/leave-in-conditioner",
+        },
+        {
+          label: "Bar Conditioner",
+          path: "/shop/bar-conditioner",
+        },
+        {
+          label: "Powder Conditioner",
+          path: "/shop/powder-conditioner",
+        },
       ],
 
       title3: "TREATMENTS",
-      items3: ["Hair Serum", "Hair Oil", "Hair Mask", "Scalp Treatment"],
+
+      items3: [
+        {
+          label: "Hair Serum",
+          path: "/shop/hair-serum",
+        },
+        {
+          label: "Hair Oil",
+          path: "/shop/hair-oil",
+        },
+        {
+          label: "Hair Mask",
+          path: "/shop/hair-mask",
+        },
+        {
+          label: "Scalp Treatment",
+          path: "/shop/scalp-treatment",
+        },
+      ],
 
       bannerTitle: "Healthy Hair",
     };
@@ -65,13 +158,67 @@ const MegaMenu = ({ type }) => {
 
     menuData = {
       title1: "BODY CARE",
-      items1: ["Body Wash", "Body Lotion", "Body Scrub", "Hand Cream"],
+
+      items1: [
+        {
+          label: "Body Wash",
+          path: "/shop/body-wash",
+        },
+        {
+          label: "Body Lotion",
+          path: "/shop/body-lotion",
+        },
+        {
+          label: "Body Scrub",
+          path: "/shop/body-scrub",
+        },
+        {
+          label: "Hand Cream",
+          path: "/shop/hand-cream",
+        },
+      ],
 
       title2: "FRAGRANCES",
-      items2: ["Perfumes", "Body Mist", "Deodorants", "Gift Sets"],
+
+      items2: [
+        {
+          label: "Perfumes",
+          path: "/shop/perfumes",
+        },
+        {
+          label: "Body Mist",
+          path: "/shop/body-mist",
+        },
+        {
+          label: "Deodorants",
+          path: "/shop/deodorants",
+        },
+        {
+          label: "Gift Sets",
+          path: "/shop/gift-sets",
+        },
+      ],
 
       title3: "ACCESSORIES",
-      items3: ["Beauty Tools", "Travel Kits", "Gift Cards", "Makeup Bags"],
+
+      items3: [
+        {
+          label: "Beauty Tools",
+          path: "/shop/beauty-tools",
+        },
+        {
+          label: "Travel Kits",
+          path: "/shop/travel-kits",
+        },
+        {
+          label: "Gift Cards",
+          path: "/shop/gift-cards",
+        },
+        {
+          label: "Makeup Bags",
+          path: "/shop/makeup-bags",
+        },
+      ],
 
       bannerTitle: "Luxury Essentials",
     };
@@ -147,7 +294,8 @@ const MegaMenu = ({ type }) => {
           <Stack spacing={2}>
             {menuData.items2?.map((item) => (
               <Typography
-                key={item}
+                key={item.label}
+                onClick={() => navigate(item.path)}
                 sx={{
                   cursor: "pointer",
                   transition: "all .3s ease",
@@ -159,7 +307,7 @@ const MegaMenu = ({ type }) => {
                   },
                 }}
               >
-                {item}
+                {item.label}
               </Typography>
             ))}
           </Stack>
@@ -182,7 +330,8 @@ const MegaMenu = ({ type }) => {
           <Stack spacing={2}>
             {menuData.items3?.map((item) => (
               <Typography
-                key={item}
+                key={item.label}
+                onClick={() => navigate(item.path)}
                 sx={{
                   cursor: "pointer",
                   transition: "all .3s ease",
@@ -194,7 +343,7 @@ const MegaMenu = ({ type }) => {
                   },
                 }}
               >
-                {item}
+                {item.label}
               </Typography>
             ))}
           </Stack>

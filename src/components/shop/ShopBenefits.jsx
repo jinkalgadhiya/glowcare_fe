@@ -6,35 +6,31 @@ import {
   Typography,
 } from "@mui/material";
 
-import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import SpaOutlinedIcon from "@mui/icons-material/SpaOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 const benefits = [
   {
-    icon: <VerifiedOutlinedIcon sx={{ fontSize: 42 }} />,
+    icon: <VerifiedUserOutlinedIcon sx={{ fontSize: 42 }} />,
     title: "Dermatologist Tested",
-    description:
-      "Every formula is carefully tested for safety and effectiveness.",
+    text: "Every formula is clinically tested for safety and effectiveness.",
   },
   {
     icon: <SpaOutlinedIcon sx={{ fontSize: 42 }} />,
     title: "Clean Ingredients",
-    description:
-      "Free from harsh chemicals with skin-loving natural ingredients.",
+    text: "Crafted using skin-loving natural ingredients without harsh chemicals.",
   },
   {
     icon: <LocalShippingOutlinedIcon sx={{ fontSize: 42 }} />,
     title: "Free Shipping",
-    description:
-      "Enjoy free shipping on orders above ₹999 anywhere in India.",
+    text: "Free shipping on orders above ₹999 across India.",
   },
   {
     icon: <LockOutlinedIcon sx={{ fontSize: 42 }} />,
     title: "Secure Payments",
-    description:
-      "Fast and secure checkout with trusted payment gateways.",
+    text: "Safe checkout with trusted payment gateways.",
   },
 ];
 
@@ -42,40 +38,47 @@ const ShopBenefits = () => {
   return (
     <Box
       sx={{
-        py: 10,
-        backgroundColor: "#FAF8F4",
+        background: "#fff",
+        pt: 5,
+        pb: 9,
       }}
     >
       <Container maxWidth="xl">
-        <Grid container spacing={4}>
+        <Grid container spacing={3}>
           {benefits.map((item) => (
             <Grid
-              item
-              xs={12}
-              sm={6}
-              lg={3}
               key={item.title}
+              size={{
+                xs: 12,
+                sm: 6,
+                lg: 3,
+              }}
             >
               <Box
                 sx={{
-                  bgcolor: "#fff",
-                  borderRadius: 4,
-                  p: 4,
                   height: "100%",
+                  background: "#FBF8F3",
+                  border: "1px solid #EFE8DE",
+                  borderRadius: "22px",
+                  px: 4,
+                  py: 5,
                   textAlign: "center",
                   transition: ".35s",
 
-                  border: "1px solid #ECECEC",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
 
                   "&:hover": {
                     transform: "translateY(-8px)",
-                    boxShadow: "0 20px 50px rgba(0,0,0,.08)",
+                    boxShadow: "0 18px 35px rgba(0,0,0,.08)",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    color: "#1F3B2D",
+                    color: "#1E2F2B",
                     mb: 3,
                   }}
                 >
@@ -85,7 +88,7 @@ const ShopBenefits = () => {
                 <Typography
                   sx={{
                     fontWeight: 700,
-                    fontSize: 20,
+                    fontSize: 24,
                     color: "#222",
                     mb: 2,
                   }}
@@ -96,11 +99,11 @@ const ShopBenefits = () => {
                 <Typography
                   sx={{
                     color: "#666",
+                    fontSize: 16,
                     lineHeight: 1.8,
-                    fontSize: 15,
                   }}
                 >
-                  {item.description}
+                  {item.text}
                 </Typography>
               </Box>
             </Grid>
