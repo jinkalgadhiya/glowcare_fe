@@ -27,17 +27,36 @@ const ProductGrid = ({ products }) => {
   }
 
   return (
-    <Grid container spacing={4}>
+    <Grid
+      container
+      spacing={4}
+      sx={{
+        alignItems: "stretch",
+        ml: 4,
+        mr: 4,
+      }}
+    >
       {products.map((product) => (
         <Grid
-          item
           key={product.id}
-          xs={12}
-          sm={6}
-          md={4}
-          lg={3}
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 4,
+            lg: 3,
+          }}
+          sx={{
+            display: "flex",
+          }}
         >
-          <ProductCard product={product} />
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+            }}
+          >
+            <ProductCard product={product} />
+          </Box>
         </Grid>
       ))}
     </Grid>

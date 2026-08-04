@@ -41,12 +41,15 @@ const selectStyle = {
 };
 
 const ShopFilters = ({
-  brand,
-  setBrand,
   skinType,
   setSkinType,
+  skinTypes,
   concern,
   setConcern,
+  concerns,
+  ingredient,
+  setIngredient,
+  ingredients,
   price,
   setPrice,
   sortBy,
@@ -127,11 +130,12 @@ const ShopFilters = ({
               onChange={(e) => setSkinType(e.target.value)}
             >
               <MenuItem value="">Skin Type</MenuItem>
-              <MenuItem value="Dry">Dry</MenuItem>
-              <MenuItem value="Oily">Oily</MenuItem>
-              <MenuItem value="Combination">Combination</MenuItem>
-              <MenuItem value="Sensitive">Sensitive</MenuItem>
-              <MenuItem value="Normal">Normal</MenuItem>
+
+              {skinTypes?.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -150,27 +154,20 @@ const ShopFilters = ({
             </Select>
           </FormControl>
 
-          {/* Brand */}
+          {/* Ingredients */}
           <FormControl size="small" sx={selectStyle}>
             <Select
               displayEmpty
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
+              value={ingredient}
+              onChange={(e) => setIngredient(e.target.value)}
             >
-              <MenuItem value="">Brand</MenuItem>
-              <MenuItem value="GlowCare">GlowCare</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Ingredients */}
-          <FormControl size="small" sx={selectStyle}>
-            <Select displayEmpty defaultValue="">
               <MenuItem value="">Ingredients</MenuItem>
-              <MenuItem>Green Tea</MenuItem>
-              <MenuItem>Vitamin C</MenuItem>
-              <MenuItem>Niacinamide</MenuItem>
-              <MenuItem>Salicylic Acid</MenuItem>
-              <MenuItem>Hyaluronic Acid</MenuItem>
+
+              {ingredients?.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -182,11 +179,12 @@ const ShopFilters = ({
               onChange={(e) => setConcern(e.target.value)}
             >
               <MenuItem value="">Concern</MenuItem>
-              <MenuItem value="Acne">Acne</MenuItem>
-              <MenuItem value="Hydration">Hydration</MenuItem>
-              <MenuItem value="Pigmentation">Pigmentation</MenuItem>
-              <MenuItem value="Anti Aging">Anti Aging</MenuItem>
-              <MenuItem value="Brightening">Brightening</MenuItem>
+
+              {concerns?.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Stack>
