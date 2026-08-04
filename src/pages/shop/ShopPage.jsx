@@ -17,7 +17,7 @@ import ShopPagination from "../../components/shop/ShopPagination";
 import { getProducts } from "../../database/productService";
 import shopBannerData from "../../data/shopBannerData";
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 12;
 
 const ShopPage = () => {
   const { category } = useParams();
@@ -32,6 +32,7 @@ const ShopPage = () => {
   const [brand, setBrand] = useState("");
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
+  const [ingredient, setIngredient] = useState("");
   const [price, setPrice] = useState("");
 
   /* ---------------- Sorting ---------------- */
@@ -70,7 +71,15 @@ const ShopPage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [category, brand, skinType, concern, price, sortBy]);
+  }, [
+    category,
+    brand,
+    skinType,
+    concern,
+    ingredient,
+    price,
+    sortBy,
+  ]);
 
   /* ---------------- Clear Filters ---------------- */
 
@@ -78,7 +87,9 @@ const ShopPage = () => {
     setBrand("");
     setSkinType("");
     setConcern("");
+    setIngredient("");
     setPrice("");
+
     setSortBy("latest");
     setPage(1);
   };
@@ -87,7 +98,8 @@ const ShopPage = () => {
 
   const bannerData = shopBannerData[category] || {
     title: "Shop",
-    subtitle: "Discover premium skincare designed for healthy glowing skin.",
+    subtitle:
+      "Discover premium skincare designed for healthy glowing skin.",
     image: "",
   };
 
@@ -113,17 +125,31 @@ const ShopPage = () => {
 
     // Brand
     if (brand) {
-      data = data.filter((product) => product.brand === brand);
+      data = data.filter(
+        (product) => product.brand === brand
+      );
     }
 
-    // Skin Type
+    // Suitable For (Skin Type)
     if (skinType) {
-      data = data.filter((product) => product.skinTypes?.includes(skinType));
+      data = data.filter((product) =>
+        product.suitableFor?.includes(skinType)
+      );
     }
 
-    // Concern
+    // Skin Concern
     if (concern) {
-      data = data.filter((product) => product.concerns?.includes(concern));
+      data = data.filter((product) =>
+        product.skinConcerns?.includes(concern)
+      );
+    }
+
+    // Key Ingredient
+    if (ingredient) {
+      data = data.filter(
+        (product) =>
+          product.keyIngredients === ingredient
+      );
     }
 
     // Price
@@ -139,10 +165,16 @@ const ShopPage = () => {
             return currentPrice <= 500;
 
           case "500-1000":
-            return currentPrice > 500 && currentPrice <= 1000;
+            return (
+              currentPrice > 500 &&
+              currentPrice <= 1000
+            );
 
           case "1000-2000":
-            return currentPrice > 1000 && currentPrice <= 2000;
+            return (
+              currentPrice > 1000 &&
+              currentPrice <= 2000
+            );
 
           case "2000+":
             return currentPrice > 2000;
@@ -154,9 +186,18 @@ const ShopPage = () => {
     }
 
     return data;
-  }, [categoryProducts, brand, skinType, concern, price]);
+  }, [
+    categoryProducts,
+    brand,
+    skinType,
+    concern,
+    ingredient,
+    price,
+  ]);
 
   /* ---------------- Sorting ---------------- */
+
+    /* ---------------- Sorting ---------------- */
 
   const sortedProducts = useMemo(() => {
     const data = [...filteredProducts];
@@ -165,37 +206,45 @@ const ShopPage = () => {
       case "priceLow":
         data.sort((a, b) => {
           const priceA =
-            a.variants?.[0]?.discountPrice || a.variants?.[0]?.price || 0;
+            a.variants?.[0]?.discountPrice ||
+            a.variants?.[0]?.price ||
+            0;
 
           const priceB =
-            b.variants?.[0]?.discountPrice || b.variants?.[0]?.price || 0;
+            b.variants?.[0]?.discountPrice ||
+            b.variants?.[0]?.price ||
+            0;
 
           return priceA - priceB;
         });
-
         break;
 
       case "priceHigh":
         data.sort((a, b) => {
           const priceA =
-            a.variants?.[0]?.discountPrice || a.variants?.[0]?.price || 0;
+            a.variants?.[0]?.discountPrice ||
+            a.variants?.[0]?.price ||
+            0;
 
           const priceB =
-            b.variants?.[0]?.discountPrice || b.variants?.[0]?.price || 0;
+            b.variants?.[0]?.discountPrice ||
+            b.variants?.[0]?.price ||
+            0;
 
           return priceB - priceA;
         });
-
         break;
 
       case "nameAZ":
-        data.sort((a, b) => a.name.localeCompare(b.name));
-
+        data.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
         break;
 
       case "rating":
-        data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-
+        data.sort(
+          (a, b) => (b.rating || 0) - (a.rating || 0)
+        );
         break;
 
       case "latest":
@@ -208,29 +257,63 @@ const ShopPage = () => {
 
   /* ---------------- Pagination ---------------- */
 
-  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(
+    sortedProducts.length / PRODUCTS_PER_PAGE
+  );
 
   const paginatedProducts = useMemo(() => {
-    const start = (page - 1) * PRODUCTS_PER_PAGE;
+    const start =
+      (page - 1) * PRODUCTS_PER_PAGE;
 
-    return sortedProducts.slice(start, start + PRODUCTS_PER_PAGE);
+    return sortedProducts.slice(
+      start,
+      start + PRODUCTS_PER_PAGE
+    );
   }, [sortedProducts, page]);
 
   /* ---------------- Dynamic Filter Options ---------------- */
 
   const brands = useMemo(() => {
-    return [...new Set(products.map((p) => p.brand))].filter(Boolean).sort();
+    return [
+      ...new Set(
+        products
+          .map((p) => p.brand)
+          .filter(Boolean)
+      ),
+    ].sort();
   }, [products]);
 
   const skinTypes = useMemo(() => {
-    return [...new Set(products.flatMap((p) => p.skinTypes || []))].sort();
+    return [
+      ...new Set(
+        products.flatMap(
+          (p) => p.suitableFor || []
+        )
+      ),
+    ].sort();
   }, [products]);
 
   const concerns = useMemo(() => {
-    return [...new Set(products.flatMap((p) => p.concerns || []))].sort();
+    return [
+      ...new Set(
+        products.flatMap(
+          (p) => p.skinConcerns || []
+        )
+      ),
+    ].sort();
   }, [products]);
 
-  if (loading) {
+  const ingredients = useMemo(() => {
+    return [
+      ...new Set(
+        products
+          .map((p) => p.keyIngredients)
+          .filter(Boolean)
+      ),
+    ].sort();
+  }, [products]);
+
+    if (loading) {
     return (
       <>
         <Navbar />
@@ -274,6 +357,9 @@ const ShopPage = () => {
         concern={concern}
         setConcern={setConcern}
         concerns={concerns}
+        ingredient={ingredient}
+        setIngredient={setIngredient}
+        ingredients={ingredients}
         price={price}
         setPrice={setPrice}
         sortBy={sortBy}
@@ -298,7 +384,10 @@ const ShopPage = () => {
           <EmptyProducts clearFilters={clearFilters} />
         ) : (
           <>
-            <ProductGrid products={paginatedProducts} view={view} />
+            <ProductGrid
+              products={paginatedProducts}
+              view={view}
+            />
 
             {totalPages > 1 && (
               <ShopPagination

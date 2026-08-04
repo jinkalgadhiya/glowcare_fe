@@ -1,10 +1,10 @@
 import React from "react";
 import { Box, Typography, Grid, Stack } from "@mui/material";
 
-import SkincareImg from "../assets/Category-Skincare.jfif";
-import HaircareImg from "../assets/Category-Haircare.jfif";
-import FragranceImg from "../assets/Category-Fragrance.jfif";
-import AccessoriesImg from "../assets/Category-Accessories.jfif";
+import SkincareImg from "../assets/Category-Skincare.webp";
+import HaircareImg from "../assets/Category-Haircare.webp";
+import FragranceImg from "../assets/Category-Fragrance.webp";
+import AccessoriesImg from "../assets/Category-Accessories.webp";
 
 const categories = [
   {
