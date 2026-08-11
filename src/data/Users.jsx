@@ -1,4 +1,3 @@
-import { Password } from "@mui/icons-material";
 import profileImage from "../admin/assets/images.jpg"
 
 export const Users = [

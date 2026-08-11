@@ -18,7 +18,7 @@ import {
 } from "../../database/categoryService";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { getCategories } from "../../database/categoryService";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 import { useThemeContext } from "../context/ThemeContext";
@@ -30,68 +30,143 @@ const AddCategory = () => {
 
   const isEdit = Boolean(id);
 
-  const [categoryName, setCategoryName] = useState("");
-  const [description, setDescription] = useState("");
+  const [menuType, setMenuType] = useState("");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [bannerImage, setBannerImage] = useState("");
+  const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("Active");
   const [createdAt, setCreatedAt] = useState(null);
+  const [categoryType, setCategoryType] = useState("main");
+  const [description, setDescription] = useState("");
+
+  const [allCategories, setAllCategories] = useState([]);
+
+  const textFieldStyle = {
+    "& .MuiInputLabel-root": {
+      color: darkMode ? "#BDBDBD" : "#666",
+    },
+
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#B89478",
+    },
+
+    "& .MuiOutlinedInput-root": {
+      color: darkMode ? "#fff" : "#222",
+
+      "& fieldset": {
+        borderColor: darkMode ? "#555" : "#ccc",
+      },
+
+      "&:hover fieldset": {
+        borderColor: "#B89478",
+      },
+
+      "&.Mui-focused fieldset": {
+        borderColor: "#B89478",
+      },
+    },
+
+    "& .MuiSvgIcon-root": {
+      color: darkMode ? "#fff" : "#222",
+    },
+  };
 
   useEffect(() => {
-    const loadCategory = async () => {
+    const loadData = async () => {
+      const categories = await getCategories();
+      setAllCategories(categories);
+
       if (!isEdit) return;
 
       const category = await getCategoryById(id);
 
       if (category) {
-        setCategoryName(category.name);
-        setDescription(category.description);
-        setStatus(category.status);
+        setMenuType(category.menuType || "");
+        setCategoryType(category.categoryType || "main");
+        setMainCategory(category.mainCategory || "");
+        setSubCategory(category.subCategory || "");
+        setDescription(category.description || "");
+        setBannerImage(category.bannerImage || "");
+        setStatus(category.status || "Active");
         setCreatedAt(category.createdAt);
       }
     };
 
-    loadCategory();
+    loadData();
   }, [id, isEdit]);
 
   const handleSaveCategory = async () => {
-  if (categoryName.trim() === "") {
-    alert("Category name is required");
-    return;
-  }
+    const newErrors = {};
 
-  try {
-    if (isEdit) {
-      console.log("Updating category...");
-
-      await updateCategory({
-        id, // Keep the existing ID
-        name: categoryName,
-        description,
-        status,
-        createdAt,
-        productCount: 0,
-      });
-
-      console.log("Category updated successfully");
-    } else {
-      console.log("Adding category...");
-
-      await addCategory({
-        id: crypto.randomUUID(),
-        name: categoryName,
-        description,
-        status,
-        createdAt: Date.now(),
-        productCount: 0,
-      });
-
-      console.log("Category added successfully");
+    if (!menuType) {
+      newErrors.menuType = "Please select menu type";
     }
 
-    navigate("/admin/categories");
-  } catch (err) {
-    console.error("FULL ERROR:", err);
-  }
-};
+    if (categoryType === "main") {
+      if (!mainCategory.trim()) {
+        newErrors.mainCategory = "Category name is required";
+      }
+    }
+
+    if (categoryType === "sub") {
+      if (!mainCategory) {
+        newErrors.mainCategory = "Please select main category";
+      }
+
+      if (!subCategory.trim()) {
+        newErrors.subCategory = "Sub category is required";
+      }
+
+      if (!description.trim()) {
+        newErrors.description = "Description is required";
+      }
+
+      if (!bannerImage.trim()) {
+        newErrors.bannerImage = "Banner image URL is required";
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      const payload =
+        categoryType === "main"
+          ? {
+              id: isEdit ? id : crypto.randomUUID(),
+              menuType,
+              categoryType: "main",
+              mainCategory,
+              status,
+              createdAt: createdAt || Date.now(),
+            }
+          : {
+              id: isEdit ? id : crypto.randomUUID(),
+              menuType,
+              categoryType: "sub",
+              mainCategory,
+              subCategory,
+              description,
+              bannerImage,
+              status,
+              createdAt: createdAt || Date.now(),
+            };
+
+      if (isEdit) {
+        await updateCategory(payload);
+      } else {
+        await addCategory(payload);
+      }
+
+      navigate("/admin/categories");
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <Box
       sx={{
@@ -220,11 +295,21 @@ const AddCategory = () => {
 
             <Stack spacing={3}>
               <TextField
-                label="Category Name"
-                placeholder="Enter category name"
+                select
+                label="Menu Type"
+                value={menuType}
+                onChange={(e) => {
+                  setMenuType(e.target.value);
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    menuType: "",
+                    subCategory: "",
+                  }));
+                }}
                 fullWidth
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
+                error={Boolean(errors.menuType)}
+                helperText={errors.menuType}
                 sx={{
                   "& .MuiInputLabel-root": {
                     color: darkMode ? "#BDBDBD" : "#666",
@@ -245,37 +330,133 @@ const AddCategory = () => {
                     },
                   },
                 }}
-              />
+              >
+                <MenuItem value="skincare">Skincare</MenuItem>
+
+                <MenuItem value="haircare">Haircare</MenuItem>
+
+                <MenuItem value="more">More</MenuItem>
+              </TextField>
 
               <TextField
-                label="Description"
-                placeholder="Enter category description"
-                multiline
-                rows={4}
-                fullWidth
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
+                select
+                label="Category Type"
+                value={categoryType}
+                onChange={(e) => {
+                  setCategoryType(e.target.value);
+
+                  setMainCategory("");
+                  setSubCategory("");
+                  setDescription("");
+                  setBannerImage("");
+
+                  setErrors({});
                 }}
-              />
+                fullWidth
+                sx={textFieldStyle}
+              >
+                <MenuItem value="main">Main Category</MenuItem>
+                <MenuItem value="sub">Sub Category</MenuItem>
+              </TextField>
+
+              {categoryType === "main" ? (
+                <TextField
+                  label="Category Name"
+                  value={mainCategory}
+                  onChange={(e) => setMainCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.mainCategory)}
+                  helperText={errors.mainCategory}
+                  sx={textFieldStyle}
+                />
+              ) : (
+                <TextField
+                  select
+                  label="Main Category"
+                  value={mainCategory}
+                  onChange={(e) => setMainCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.mainCategory)}
+                  helperText={errors.mainCategory}
+                  sx={textFieldStyle}
+                >
+                  {allCategories
+                    .filter(
+                      (item) =>
+                        item.categoryType === "main" &&
+                        item.menuType === menuType,
+                    )
+                    .map((item) => (
+                      <MenuItem key={item.id} value={item.mainCategory}>
+                        {item.mainCategory}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              )}
+
+              {categoryType === "sub" && (
+                <TextField
+                  label="Sub Category"
+                  value={subCategory}
+                  onChange={(e) => setSubCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.subCategory)}
+                  helperText={errors.subCategory}
+                  sx={textFieldStyle}
+                />
+              )}
+
+              {categoryType === "sub" && (
+                <TextField
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.description)}
+                  helperText={errors.description}
+                  sx={textFieldStyle}
+                />
+              )}
+
+              {categoryType === "sub" && (
+                <>
+                  <TextField
+                    label="Banner Image URL"
+                    value={bannerImage}
+                    onChange={(e) => {
+                      setBannerImage(e.target.value);
+
+                      setErrors((prev) => ({
+                        ...prev,
+                        bannerImage: "",
+                      }));
+                    }}
+                    placeholder="https://example.com/banner.jpg"
+                    fullWidth
+                    error={Boolean(errors.bannerImage)}
+                    helperText={errors.bannerImage}
+                    sx={textFieldStyle}
+                  />
+
+                  {bannerImage && (
+                    <Box
+                      component="img"
+                      src={bannerImage}
+                      alt="Banner Preview"
+                      sx={{
+                        width: "100%",
+                        height: 200,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  )}
+                </>
+              )}
+
               <TextField
                 select
                 label="Status"
@@ -319,6 +500,13 @@ const AddCategory = () => {
                     height: 44,
                     textTransform: "none",
                     borderRadius: 2,
+                    color: "#B89478",
+                    borderColor: "#B89478",
+
+                    "&:hover": {
+                      backgroundColor: darkMode ? "#333" : "#f0f0f0",
+                      borderColor: "#B89478",
+                    },
                   }}
                 >
                   Cancel

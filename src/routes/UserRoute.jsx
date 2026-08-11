@@ -7,9 +7,10 @@ import Register from "../auth/Register";
 import NotFound from "../pages/NotFound";
 import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
-import ProtectedRoute from "../auth/ProtectedRoute";
+import ProtectedRoute from "../auth/UserProtectedRoute";
 import Checkout from "../pages/Checkout";
 import ShopPage from "../pages/shop/ShopPage";
+import ProductDetails from "../pages/shop/ProductDetails";
 
 const UserRoute = () => {
   return (
@@ -42,6 +43,8 @@ const UserRoute = () => {
 
       <Route path="/shop/:category" element={<ShopPage />} />
 
+      <Route path="/product/:id" element={<ProductDetails />} />
+
       {/* Future Protected Routes */}
       {/* 
       <Route
@@ -55,7 +58,6 @@ const UserRoute = () => {
 
       
       */}
-
       {/* <Route path="/best-sellers" element={<BestSellerPage />} /> */}
     </Routes>
   );

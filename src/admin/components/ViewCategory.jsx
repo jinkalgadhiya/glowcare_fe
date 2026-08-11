@@ -2,8 +2,6 @@ import React from "react";
 import { Box, Typography, Button, Stack, Divider, Chip } from "@mui/material";
 
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
   if (!category) return null;
@@ -22,9 +20,11 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
 
       <Stack direction="row" spacing={2} alignItems="center" mb={4}>
         <ArrowBackIosNewRoundedIcon
+          onClick={onClose}
           sx={{
-            color: "#4F6BFF",
+            color: "#A88366",
             fontSize: 22,
+            cursor: "pointer",
           }}
         />
 
@@ -41,7 +41,7 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
 
       {/* Buttons */}
 
-      <Divider sx={{ mb: 4 }} />
+      <Divider sx={{ mb: 4, mt: 4 }} />
 
       {/* Details */}
 
@@ -49,7 +49,7 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
         <Box>
           <Typography
             sx={{
-              fontSize: 15,
+              fontSize: 13,
               color: darkMode ? "#AFAFAF" : "#777",
             }}
           >
@@ -74,7 +74,7 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
               color: darkMode ? "#AFAFAF" : "#777",
             }}
           >
-            Category Name
+            Menu Type
           </Typography>
 
           <Typography
@@ -83,9 +83,10 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
               fontSize: 18,
               fontWeight: 500,
               color: darkMode ? "#ffffff" : "#222",
+              textTransform: "capitalize",
             }}
           >
-            {category.name}
+            {category.menuType || "-"}
           </Typography>
         </Box>
 
@@ -96,7 +97,30 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
               color: darkMode ? "#AFAFAF" : "#777",
             }}
           >
-            Description
+            Category Type
+          </Typography>
+
+          <Typography
+            mt={1}
+            sx={{
+              fontSize: 18,
+              fontWeight: 500,
+              color: darkMode ? "#ffffff" : "#222",
+              textTransform: "capitalize",
+            }}
+          >
+            {category.categoryType || "-"}
+          </Typography>
+        </Box>
+
+        <Box>
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: darkMode ? "#AFAFAF" : "#777",
+            }}
+          >
+            Main Category
           </Typography>
 
           <Typography
@@ -107,9 +131,88 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
               color: darkMode ? "#ffffff" : "#222",
             }}
           >
-            {category.description || "-"}
+            {category.mainCategory || "-"}
           </Typography>
         </Box>
+
+        {category.categoryType === "sub" && (
+          <>
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Sub Category
+              </Typography>
+
+              <Typography
+                mt={1}
+                sx={{
+                  fontSize: 18,
+                  fontWeight: 500,
+                  color: darkMode ? "#ffffff" : "#222",
+                }}
+              >
+                {category.subCategory || "-"}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Description
+              </Typography>
+
+              <Typography
+                mt={1}
+                sx={{
+                  fontSize: 16,
+                  lineHeight: 1.7,
+                  color: darkMode ? "#ffffff" : "#222",
+                }}
+              >
+                {category.description || "-"}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                  mb: 1,
+                }}
+              >
+                Banner Image
+              </Typography>
+
+              {category.bannerImage ? (
+                <Box
+                  component="img"
+                  src={category.bannerImage}
+                  alt={category.subCategory}
+                  sx={{
+                    width: "100%",
+                    height: 180,
+                    objectFit: "cover",
+                    borderRadius: 2,
+                    border: darkMode ? "1px solid #444" : "1px solid #EAEAEA",
+                  }}
+                />
+              ) : (
+                <Typography color="text.secondary">
+                  No banner image available
+                </Typography>
+              )}
+            </Box>
+          </>
+        )}
 
         <Box>
           <Typography
@@ -148,29 +251,9 @@ const ViewCategory = ({ category, onClose, onEdit, onDelete, darkMode }) => {
               color: darkMode ? "#ffffff" : "#222",
             }}
           >
-            {category.createdAt}
-          </Typography>
-        </Box>
-
-        <Box>
-          <Typography
-            sx={{
-              fontSize: 13,
-              color: darkMode ? "#AFAFAF" : "#777",
-            }}
-          >
-            Total Products
-          </Typography>
-
-          <Typography
-            mt={1}
-            sx={{
-              fontSize: 18,
-              fontWeight: 500,
-              color: darkMode ? "#ffffff" : "#222",
-            }}
-          >
-            {category.productCount || 0}
+            {category.createdAt
+              ? new Date(category.createdAt).toLocaleString()
+              : "-"}
           </Typography>
         </Box>
       </Stack>

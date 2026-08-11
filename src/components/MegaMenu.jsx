@@ -1,227 +1,59 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Stack, Typography, Button, Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+
 import SkincareImg from "../assets/SkinMenuImg.webp";
 import HaircareImg from "../assets/HairMenuImg.webp";
 import MoreImg from "../assets/MoreMenuImg.webp";
 
+import { getCategories } from "../database/categoryService";
+
 const MegaMenu = ({ type }) => {
   const navigate = useNavigate();
 
-  let menuData = {};
-  let menuImage = SkincareImg;
+  const [categories, setCategories] = useState([]);
 
-  if (type === "skincare") {
-    menuImage = SkincareImg;
+  useEffect(() => {
+    const loadCategories = async () => {
+      const data = (await getCategories()) || [];
 
-    menuData = {
-      title1: "CLEANSERS",
+      const activeCategories = data.filter(
+        (item) => item.status === "Active" && item.menuType === type,
+      );
 
-      items1: [
-        {
-          label: "Face Wash",
-          path: "/shop/face-wash",
-        },
-        {
-          label: "Micellar Water",
-          path: "/shop/micellar-water",
-        },
-        {
-          label: "Cleansing Oil & Balm",
-          path: "/shop/cleansing-oil-balm",
-        },
-        {
-          label: "Scrubs & Exfoliators",
-          path: "/shop/scrubs-exfoliators",
-        },
-      ],
-
-      title2: "TREATMENTS",
-
-      items2: [
-        {
-          label: "Serum",
-          path: "/shop/serum",
-        },
-        {
-          label: "Toner",
-          path: "/shop/toner",
-        },
-        {
-          label: "Essence",
-          path: "/shop/essence",
-        },
-        {
-          label: "Face Mask",
-          path: "/shop/face-mask",
-        },
-      ],
-
-      title3: "PROTECTION",
-
-      items3: [
-        {
-          label: "Sunscreen",
-          path: "/shop/sunscreen",
-        },
-        {
-          label: "Lip Balm",
-          path: "/shop/lip-balm",
-        },
-        {
-          label: "Eye Cream",
-          path: "/shop/eye-cream",
-        },
-        {
-          label: "Moisturizer",
-          path: "/shop/moisturizer",
-        },
-      ],
-
-      bannerTitle: "Healthy Skin",
+      setCategories(activeCategories);
     };
-  }
+
+    loadCategories();
+  }, [type]);
+
+  const mainCategories = categories.filter(
+    (item) => item.categoryType === "main",
+  );
+
+  const subCategories = categories.filter(
+    (item) => item.categoryType === "sub",
+  );
+
+  const groupedCategories = mainCategories.reduce((acc, main) => {
+    acc[main.mainCategory] = subCategories.filter(
+      (sub) => sub.mainCategory === main.mainCategory,
+    );
+
+    return acc;
+  }, {});
+
+  let menuImage = SkincareImg;
+  const bannerTitle = type.charAt(0).toUpperCase() + type.slice(1);
 
   if (type === "haircare") {
     menuImage = HaircareImg;
-
-    menuData = {
-      title1: "SHAMPOOS",
-
-      items1: [
-        {
-          label: "Liquid Shampoo",
-          path: "/shop/liquid-shampoo",
-        },
-        {
-          label: "Dry Shampoo",
-          path: "/shop/dry-shampoo",
-        },
-        {
-          label: "Shampoo Bar",
-          path: "/shop/bar-shampoo",
-        },
-        {
-          label: "Powder Shampoo",
-          path: "/shop/powder-shampoo",
-        },
-      ],
-
-      title2: "CONDITIONERS",
-
-      items2: [
-        {
-          label: "Liquid Conditioner",
-          path: "/shop/liquid-conditioner",
-        },
-        {
-          label: "Leave-In Conditioner",
-          path: "/shop/leave-in-conditioner",
-        },
-        {
-          label: "Bar Conditioner",
-          path: "/shop/bar-conditioner",
-        },
-        {
-          label: "Powder Conditioner",
-          path: "/shop/powder-conditioner",
-        },
-      ],
-
-      title3: "TREATMENTS",
-
-      items3: [
-        {
-          label: "Hair Serum",
-          path: "/shop/hair-serum",
-        },
-        {
-          label: "Hair Oil",
-          path: "/shop/hair-oil",
-        },
-        {
-          label: "Hair Mask",
-          path: "/shop/hair-mask",
-        },
-        {
-          label: "Scalp Treatment",
-          path: "/shop/scalp-treatment",
-        },
-      ],
-
-      bannerTitle: "Healthy Hair",
-    };
+    bannerTitle = "Shop Haircare";
   }
 
   if (type === "more") {
     menuImage = MoreImg;
-
-    menuData = {
-      title1: "BODY CARE",
-
-      items1: [
-        {
-          label: "Body Wash",
-          path: "/shop/body-wash",
-        },
-        {
-          label: "Body Lotion",
-          path: "/shop/body-lotion",
-        },
-        {
-          label: "Body Scrub",
-          path: "/shop/body-scrub",
-        },
-        {
-          label: "Hand Cream",
-          path: "/shop/hand-cream",
-        },
-      ],
-
-      title2: "FRAGRANCES",
-
-      items2: [
-        {
-          label: "Perfumes",
-          path: "/shop/perfumes",
-        },
-        {
-          label: "Body Mist",
-          path: "/shop/body-mist",
-        },
-        {
-          label: "Deodorants",
-          path: "/shop/deodorants",
-        },
-        {
-          label: "Gift Sets",
-          path: "/shop/gift-sets",
-        },
-      ],
-
-      title3: "ACCESSORIES",
-
-      items3: [
-        {
-          label: "Beauty Tools",
-          path: "/shop/beauty-tools",
-        },
-        {
-          label: "Travel Kits",
-          path: "/shop/travel-kits",
-        },
-        {
-          label: "Gift Cards",
-          path: "/shop/gift-cards",
-        },
-        {
-          label: "Makeup Bags",
-          path: "/shop/makeup-bags",
-        },
-      ],
-
-      bannerTitle: "Luxury Essentials",
-    };
+    bannerTitle = "Shop More";
   }
 
   return (
@@ -230,9 +62,9 @@ const MegaMenu = ({ type }) => {
         position: "absolute",
         top: "100%",
         left: "60px",
-        width: "92vw",
-        backgroundColor: "white",
-        color: "black",
+        width: "85vw",
+        backgroundColor: "#fff",
+        color: "#222",
         borderRadius: 4,
         px: 8,
         py: 4,
@@ -240,119 +72,62 @@ const MegaMenu = ({ type }) => {
         zIndex: 1000,
       }}
     >
-      <Grid container spacing={8}>
-        {/* Column 1 */}
-        <Grid size={2}>
-          <Typography
-            sx={{
-              mb: 3,
-              fontWeight: 600,
-              letterSpacing: 2,
-              fontSize: "14px",
-              color: "#1e2f2b",
-            }}
-          >
-            {menuData.title1}
-          </Typography>
+      <Grid container spacing={4}>
+        {/* Dynamic Categories */}
 
-          <Stack spacing={2}>
-            {menuData.items1?.map((item) => (
+        {Object.entries(groupedCategories)
+          .filter(([_, items]) => items.length > 0)
+          .map(([mainCategory, items]) => (
+            <Grid item xs={2} key={mainCategory} sx={{ pr: 12 }}>
               <Typography
-                key={item.label}
-                onClick={() => navigate(item.path)}
                 sx={{
-                  cursor: "pointer",
-                  transition: "all .3s ease",
-
-                  "&:hover": {
-                    color: "#1e2f2b",
-                    pl: 1,
-                    fontWeight: 500,
-                  },
+                  mb: 3,
+                  fontWeight: 600,
+                  letterSpacing: 2,
+                  fontSize: "14px",
+                  color: "#1E2F2B",
+                  textTransform: "uppercase",
                 }}
               >
-                {item.label}
+                {mainCategory}
               </Typography>
-            ))}
-          </Stack>
-        </Grid>
 
-        {/* Column 2 */}
-        <Grid size={2}>
-          <Typography
-            sx={{
-              mb: 3,
-              fontWeight: 600,
-              letterSpacing: 2,
-              fontSize: "14px",
-              color: "#1e2f2b",
-            }}
-          >
-            {menuData.title2}
-          </Typography>
+              <Stack spacing={2}>
+                {items.map((item) => (
+                  <Typography
+                    key={item.id}
+                    onClick={() =>
+                      navigate(
+                        `/shop/${encodeURIComponent(
+                          item.subCategory.toLowerCase().replaceAll(" ", "-"),
+                        )}`,
+                      )
+                    }
+                    sx={{
+                      cursor: "pointer",
+                      transition: "all .3s ease",
 
-          <Stack spacing={2}>
-            {menuData.items2?.map((item) => (
-              <Typography
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                sx={{
-                  cursor: "pointer",
-                  transition: "all .3s ease",
+                      "&:hover": {
+                        color: "#1E2F2B",
+                        pl: 1,
+                        fontWeight: 500,
+                      },
+                    }}
+                  >
+                    {item.subCategory}
+                  </Typography>
+                ))}
+              </Stack>
+            </Grid>
+          ))}
 
-                  "&:hover": {
-                    color: "#1e2f2b",
-                    pl: 1,
-                    fontWeight: 500,
-                  },
-                }}
-              >
-                {item.label}
-              </Typography>
-            ))}
-          </Stack>
-        </Grid>
+        {/* Banner */}
 
-        {/* Column 3 */}
-        <Grid size={2}>
-          <Typography
-            sx={{
-              mb: 3,
-              fontWeight: 600,
-              letterSpacing: 2,
-              fontSize: "14px",
-              color: "#1e2f2b",
-            }}
-          >
-            {menuData.title3}
-          </Typography>
-
-          <Stack spacing={2}>
-            {menuData.items3?.map((item) => (
-              <Typography
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                sx={{
-                  cursor: "pointer",
-                  transition: "all .3s ease",
-
-                  "&:hover": {
-                    color: "#1e2f2b",
-                    pl: 1,
-                    fontWeight: 500,
-                  },
-                }}
-              >
-                {item.label}
-              </Typography>
-            ))}
-          </Stack>
-        </Grid>
-
-        {/* Image Section */}
         <Grid
-          size={4}
+          item
+          xs={4}
           sx={{
+            ml: "50px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -361,13 +136,15 @@ const MegaMenu = ({ type }) => {
           <Box
             component="img"
             src={menuImage}
-            alt={menuData.bannerTitle}
+            alt={bannerTitle}
+            onClick={() => navigate(`/shop/${type}`)}
             sx={{
               width: 260,
               height: 260,
               objectFit: "cover",
               borderRadius: 3,
               mb: 3,
+              cursor: "pointer",
             }}
           />
 
@@ -376,16 +153,17 @@ const MegaMenu = ({ type }) => {
               mb: 2,
               fontWeight: 600,
               fontSize: "28px",
-              color: "#1e2f2b",
+              color: "#1E2F2B",
             }}
           >
-            {menuData.bannerTitle}
+            {bannerTitle}
           </Typography>
 
           <Button
             variant="contained"
+            onClick={() => navigate(`/shop/${type}`)}
             sx={{
-              backgroundColor: "#1e2f2b",
+              backgroundColor: "#1E2F2B",
               borderRadius: "30px",
               px: 5,
               py: 1.3,
@@ -393,7 +171,7 @@ const MegaMenu = ({ type }) => {
               letterSpacing: 1.5,
 
               "&:hover": {
-                backgroundColor: "#2d463f",
+                backgroundColor: "#2D463F",
               },
             }}
           >

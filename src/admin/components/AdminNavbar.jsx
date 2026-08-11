@@ -8,7 +8,6 @@ import {
   Stack,
 } from "@mui/material";
 
-import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 
@@ -114,20 +113,6 @@ const AdminNavbar = () => {
             }}
           >
             {darkMode ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
-          </IconButton>
-
-          <IconButton
-            sx={{
-              color: darkMode ? "#fff" : "#555",
-
-              backgroundColor: darkMode ? "#333" : "#F8F5F1",
-
-              "&:hover": {
-                backgroundColor: darkMode ? "#444" : "#EFE8E1",
-              },
-            }}
-          >
-            <NotificationsNoneOutlinedIcon />
           </IconButton>
 
           <Avatar

@@ -33,7 +33,11 @@ const Navbar = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const cartItems = useSelector((state) => state.cart.items);
   const navigate = useNavigate();
-  const loggedIn = isLoggedIn();
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+
+useEffect(() => {
+  setLoggedIn(isLoggedIn());
+}, [location.pathname]);
   const isDarkNavbar = !isHome || scrolled;
 
   const openMenu = (menu) => {
@@ -54,8 +58,6 @@ const Navbar = () => {
     (total, item) => total + item.quantity,
     0,
   );
-
-  console.log(activeMenu);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,7 +120,7 @@ const Navbar = () => {
             </Box>
 
             <Typography
-              onMouseEnter={() => setActiveMenu("haircare")}
+              onMouseEnter={() => openMenu("haircare")}
               sx={{
                 color: isDarkNavbar ? "#222" : "#fff",
                 fontSize: "13px",
@@ -130,7 +132,7 @@ const Navbar = () => {
             </Typography>
 
             <Typography
-              onMouseEnter={() => setActiveMenu("more")}
+              onMouseEnter={() => openMenu("more")}
               sx={{
                 color: isDarkNavbar ? "#222" : "#fff",
                 fontSize: "13px",

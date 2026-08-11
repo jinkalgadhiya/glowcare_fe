@@ -9,6 +9,7 @@ import {
   FormControlLabel,
   Radio,
   Button,
+  TextField,
 } from "@mui/material";
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
@@ -21,11 +22,20 @@ const CategoryFilter = ({
   statusFilter,
   setStatusFilter,
 
+  menuFilter,
+  setMenuFilter,
+
+  mainCategoryFilter,
+  setMainCategoryFilter,
+
+  subCategoryFilter,
+  setSubCategoryFilter,
+
+  categoryTypeFilter,
+  setCategoryTypeFilter,
+
   sortBy,
   setSortBy,
-
-  productFilter,
-  setProductFilter,
 
   onReset,
 }) => {
@@ -161,6 +171,100 @@ const CategoryFilter = ({
           }}
         />
 
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Menu Type
+        </Typography>
+
+        <RadioGroup
+          value={menuFilter}
+          onChange={(e) => setMenuFilter(e.target.value)}
+        >
+          {["All", "skincare", "haircare", "more"].map((item) => (
+            <FormControlLabel
+              key={item}
+              value={item}
+              control={
+                <Radio
+                  sx={{
+                    color: darkMode ? "#888" : "#B89478",
+
+                    "&.Mui-checked": {
+                      color: "#B89478",
+                    },
+                  }}
+                />
+              }
+              label={item}
+              sx={{
+                color: darkMode ? "#E0E0E0" : "#444",
+              }}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider
+          sx={{
+            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+            my: 3,
+          }}
+        />
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Category Type
+        </Typography>
+
+        <RadioGroup
+          value={categoryTypeFilter}
+          onChange={(e) => setCategoryTypeFilter(e.target.value)}
+        >
+          {["All", "main", "sub"].map((item) => (
+            <FormControlLabel
+              key={item}
+              value={item}
+              control={
+                <Radio
+                  sx={{
+                    color: darkMode ? "#888" : "#B89478",
+
+                    "&.Mui-checked": {
+                      color: "#B89478",
+                    },
+                  }}
+                />
+              }
+              label={
+                item === "main"
+                  ? "Main Category"
+                  : item === "sub"
+                    ? "Sub Category"
+                    : "All"
+              }
+              sx={{
+                color: darkMode ? "#E0E0E0" : "#444",
+              }}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider
+          sx={{
+            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+            my: 3,
+          }}
+        />
+
         {/* Sort */}
 
         <Typography
@@ -202,54 +306,6 @@ const CategoryFilter = ({
             />
           ))}
         </RadioGroup>
-
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
-
-        {/* Product Count */}
-
-        <Typography
-          sx={{
-            fontWeight: 600,
-            mb: 2,
-            color: darkMode ? "#fff" : "#222",
-          }}
-        >
-          Product Count
-        </Typography>
-
-        <RadioGroup
-          value={productFilter}
-          onChange={(e) => setProductFilter(e.target.value)}
-        >
-          {["All", "Has Products", "Empty Categories"].map((item) => (
-            <FormControlLabel
-              key={item}
-              value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
-              label={item === "All" ? "All Categories" : item}
-              sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
-              }}
-            />
-          ))}
-        </RadioGroup>
-
-        <Box sx={{ flexGrow: 1 }} />
 
         <Divider
           sx={{

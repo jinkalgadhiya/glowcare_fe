@@ -231,6 +231,7 @@ function Login() {
       <ForgetPassword
         open={openForgotPassword}
         handleClose={() => setOpenForgotPassword(false)}
+        type="user"
       />
     </Box>
   );
