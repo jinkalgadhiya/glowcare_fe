@@ -3,7 +3,7 @@ import { Box, Typography, Button, Rating } from "@mui/material";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import IconButton from "@mui/material/IconButton";
-
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -22,7 +22,7 @@ const ProductCard = ({
   showCart = true,
 }) => {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const wishlistItems = useSelector((state) => state.wishlist.items);
 
   const firstVariant = product?.variants?.[0];
@@ -33,7 +33,12 @@ const ProductCard = ({
 
   const isWishlisted = wishlistItems.some((item) => item.id === product.id);
 
-  const handleWishlist = () => {
+  const handleOpenProduct = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleWishlist = (e) => {
+    e.stopPropagation();
     if (isWishlisted) {
       dispatch(removeFromWishlist(product.id));
     } else {
@@ -41,7 +46,8 @@ const ProductCard = ({
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
     dispatch(
       addProductToCart({
         productId: product.id,
@@ -63,8 +69,13 @@ const ProductCard = ({
     );
   };
 
+  const discount = firstVariant?.discountPrice
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : 0;
+
   return (
     <Box
+      onClick={handleOpenProduct}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -74,6 +85,12 @@ const ProductCard = ({
         overflow: "hidden",
         bgcolor: "#fff",
         boxShadow: "0 4px 15px rgba(0,0,0,.08)",
+        transition: ".35s",
+
+        "&:hover": {
+          transform: "translateY(-8px)",
+          boxShadow: "0 18px 40px rgba(0,0,0,.12)",
+        },
       }}
     >
       {/* Image Section */}
@@ -90,7 +107,7 @@ const ProductCard = ({
           alignItems: "center",
 
           "&:hover img": {
-            transform: "scale(1.08)",
+            transform: "translateY(-8px) scale(1.05)",
           },
         }}
       >
@@ -265,7 +282,12 @@ const ProductCard = ({
               mb: 1,
             }}
           >
-            <Rating value={4.8} precision={0.5} readOnly size="small" />
+            <Rating
+              value={product.rating || 4.8}
+              precision={0.5}
+              readOnly
+              size="small"
+            />
 
             <Typography
               sx={{
@@ -273,7 +295,7 @@ const ProductCard = ({
                 color: "#666",
               }}
             >
-              4.8
+              {product.rating || 4.8} ({product.reviewCount || 0} Reviews)
             </Typography>
           </Box>
         )}
@@ -308,6 +330,18 @@ const ProductCard = ({
               }}
             >
               ₹{originalPrice}
+            </Typography>
+          )}
+
+          {firstVariant?.discountPrice && (
+            <Typography
+              sx={{
+                color: "#2E7D32",
+                fontWeight: 600,
+                fontSize: 13,
+              }}
+            >
+              {discount}% OFF
             </Typography>
           )}
         </Box>

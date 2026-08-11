@@ -32,26 +32,15 @@ const OtpVerification = ({ open, handleClose, onOtpVerified }) => {
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <Stack spacing={4} sx={{ p: 5 }}>
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          textAlign="center"
-        >
+        <Typography variant="h4" fontWeight="bold" textAlign="center">
           Verify OTP
         </Typography>
 
-        <Typography
-          color="text.secondary"
-          textAlign="center"
-        >
+        <Typography color="text.secondary" textAlign="center">
           Enter the 6-digit OTP
         </Typography>
 
-        <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-        >
+        <Stack direction="row" spacing={2} justifyContent="center">
           {otp.map((digit, index) => (
             <TextField
               key={index}
@@ -63,21 +52,36 @@ const OtpVerification = ({ open, handleClose, onOtpVerified }) => {
                 maxLength: 1,
                 style: {
                   textAlign: "center",
-                  fontSize: "20px",
+                  fontSize: "28px",
+                  fontWeight: 500,
+                  padding: 0,
+                  height: "100%",
                 },
               }}
               sx={{
-                width: 55,
+                width: 70,
+                height: 70,
+
+                "& .MuiOutlinedInput-root": {
+                  height: "70px",
+                },
+
+                "& .MuiOutlinedInput-input": {
+                  textAlign: "center",
+                  padding: 0,
+                  height: "70px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxSizing: "border-box",
+                },
               }}
             />
           ))}
         </Stack>
 
         {otpError && (
-          <Typography
-            color="error"
-            textAlign="center"
-          >
+          <Typography color="error" textAlign="center">
             {otpError}
           </Typography>
         )}
@@ -86,11 +90,12 @@ const OtpVerification = ({ open, handleClose, onOtpVerified }) => {
           variant="contained"
           size="large"
           onClick={handleVerifyOtp}
+          sx={{ backgroundColor: "#b18044" }}
         >
           Verify OTP
         </Button>
 
-        <Button onClick={handleClose}>
+        <Button onClick={handleClose} sx={{ color: "#b18044" }}>
           Back
         </Button>
       </Stack>

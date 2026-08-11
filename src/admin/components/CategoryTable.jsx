@@ -19,22 +19,12 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { getProducts } from "../../database/productService";
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "../context/ThemeContext";
 
 const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  useEffect(() => {
-    const loadProducts = async () => {
-      const data = await getProducts();
-      setProducts(data);
-    };
-
-    loadProducts();
-  }, []);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -76,10 +66,12 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           >
             {[
               "#",
-              "Category Name",
+              "Menu",
+              "Category Type",
+              "Main Category",
+              "Sub Category",
               "Description",
               "Status",
-              "Products",
               "Actions",
             ].map((item) => (
               <TableCell
@@ -100,7 +92,7 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           {categories.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={7}
+                colSpan={8}
                 align="center"
                 sx={{
                   py: 8,
@@ -127,10 +119,6 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
             </TableRow>
           ) : (
             categories.map((category, index) => {
-              const productCount = products.filter(
-                (product) => product.category === category.name,
-              ).length;
-
               return (
                 <TableRow
                   key={category.id}
@@ -145,9 +133,38 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
                 >
                   <TableCell>{index + 1}</TableCell>
 
-                  <TableCell>{category.name}</TableCell>
+                  <TableCell sx={{ textTransform: "capitalize" }}>
+                    {category.menuType}
+                  </TableCell>
 
-                  <TableCell>{category.description}</TableCell>
+                  <TableCell sx={{ textTransform: "capitalize" }}>
+                    {category.categoryType}
+                  </TableCell>
+
+                  <TableCell>
+                    {category.categoryType === "main"
+                      ? category.mainCategory
+                      : category.mainCategory}
+                  </TableCell>
+
+                  <TableCell>
+                    {category.categoryType === "sub"
+                      ? category.subCategory
+                      : "-"}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      maxWidth: 250,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {category.categoryType === "sub"
+                      ? category.description || "-"
+                      : "-"}
+                  </TableCell>
 
                   <TableCell>
                     <Chip
@@ -158,8 +175,6 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
                       size="small"
                     />
                   </TableCell>
-
-                  <TableCell>{productCount}</TableCell>
 
                   <TableCell align="center">
                     <IconButton
@@ -201,7 +216,9 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
       >
         <MenuItem
           onClick={() => {
-            setSelectedCategory(selectedRow);
+            if (selectedRow) {
+              setSelectedCategory(selectedRow);
+            }
             handleClose();
           }}
           sx={{
@@ -226,7 +243,9 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
 
         <MenuItem
           onClick={() => {
-            navigate(`/admin/categories/edit/${selectedRow.id}`);
+            if (selectedRow) {
+              navigate(`/admin/categories/edit/${selectedRow.id}`);
+            }
             handleClose();
           }}
           sx={{
@@ -251,7 +270,9 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
 
         <MenuItem
           onClick={() => {
-            onDelete(selectedRow);
+            if (selectedRow) {
+              onDelete(selectedRow);
+            }
             handleClose();
           }}
           sx={{

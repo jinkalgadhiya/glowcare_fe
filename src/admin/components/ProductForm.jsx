@@ -249,6 +249,17 @@ const ProductForm = ({
     }
   };
 
+  const handleGalleryImages = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 3) {
+      alert("Maximum 3 gallery images allowed.");
+      return;
+    }
+
+    setGalleryImages(files);
+  };
+
   return (
     <Stack spacing={3}>
       {/* Product Name */}
@@ -687,7 +698,7 @@ const ProductForm = ({
       <Box>
         <Typography
           sx={{
-            mb: 1,
+            mb: 2,
             fontWeight: 600,
             color: darkMode ? "#fff" : "#222",
           }}
@@ -695,31 +706,56 @@ const ProductForm = ({
           Gallery Images (Maximum 3)
         </Typography>
 
-        <TextField
-          type="file"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          inputProps={{
-            multiple: true,
-            accept: "image/*",
+        <Button
+          component="label"
+          variant="outlined"
+          sx={{
+            borderColor: "#B89478",
+            color: "#B89478",
+            textTransform: "none",
+            mb: 2,
           }}
-          onChange={(e) =>
-            setGalleryImages(Array.from(e.target.files).slice(0, 3))
-          }
-          sx={inputStyle}
-        />
+        >
+          Upload Gallery Images
+          <input
+            hidden
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleGalleryImages}
+          />
+        </Button>
 
-        {galleryImages?.length > 0 && (
-          <Typography
-            sx={{
-              mt: 1,
-              fontSize: 13,
-              color: darkMode ? "#aaa" : "#666",
-            }}
-          >
-            {galleryImages.length} image(s) selected
-          </Typography>
-        )}
+        {/* Preview images here */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          {galleryImages.map((image, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: 120,
+                height: 120,
+                position: "relative",
+              }}
+            >
+              <Box
+                component="img"
+                src={URL.createObjectURL(image)}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: 2,
+                }}
+              />
+            </Box>
+          ))}
+        </Box>
       </Box>
     </Stack>
   );
