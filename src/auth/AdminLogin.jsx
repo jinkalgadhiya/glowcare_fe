@@ -19,7 +19,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../assets/LogoDark.png";
 import ForgetPassword from "./ForgetPassword";
 import { useNavigate } from "react-router-dom";
-import { Users } from "../data/Users";
+import { getAdmin } from "../database/adminService";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ function AdminLogin() {
 
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setEmailError("");
     setPassError("");
     setLoginError("");
@@ -63,23 +63,31 @@ function AdminLogin() {
     }
 
     // Find Admin
-    const foundAdmin = Users.find(
-      (user) =>
-        user.email.toLowerCase() === email.trim().toLowerCase() &&
-        user.password === password,
-    );
+    const admin = await getAdmin();
 
-    if (!foundAdmin) {
+    console.log("===========");
+    console.log("Admin From DB:", admin);
+    console.log("DB Email:", admin?.email);
+    console.log("DB Password:", admin?.password);
+    console.log("Entered Email:", email);
+    console.log("Entered Password:", password);
+    console.log(
+      "Email Match:",
+      admin?.email?.toLowerCase() === email.trim().toLowerCase(),
+    );
+    console.log("Password Match:", admin?.password === password);
+    console.log("===========");
+
+    if (
+      !admin ||
+      admin.email.toLowerCase() !== email.trim().toLowerCase() ||
+      admin.password !== password
+    ) {
       setLoginError("Invalid admin email or password");
       return;
     }
 
-    // Store Login
-    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
-
-    if (!storedAdmin) {
-      localStorage.setItem("admin", JSON.stringify(foundAdmin));
-    }
+    localStorage.setItem("admin", JSON.stringify(admin));
 
     navigate("/admin/dashboard");
   };
@@ -217,6 +225,7 @@ function AdminLogin() {
                 component="button"
                 underline="hover"
                 onClick={() => setOpenForgotPassword(true)}
+                sx={{ color: "#d29c5a"}}
               >
                 Forgot Password?
               </Link>
@@ -248,6 +257,7 @@ function AdminLogin() {
       <ForgetPassword
         open={openForgotPassword}
         handleClose={() => setOpenForgotPassword(false)}
+        type="admin"
       />
     </Box>
   );

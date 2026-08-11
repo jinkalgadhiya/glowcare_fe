@@ -12,6 +12,7 @@ import { getCategories } from "../../database/categoryService";
 import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
+import { Pagination } from "@mui/material";
 
 const Categories = () => {
   const { darkMode } = useThemeContext();
@@ -20,6 +21,10 @@ const Categories = () => {
   /* Search */
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [page, setPage] = useState(1);
+
+  const rowsPerPage = 20;
 
   /* Categories */
 
@@ -35,26 +40,35 @@ const Categories = () => {
   const [filterOpen, setFilterOpen] = useState(false);
 
   /* Filter States */
-
   const [statusFilter, setStatusFilter] = useState("All");
-
   const [sortBy, setSortBy] = useState("Newest");
-
-  const [productFilter, setProductFilter] = useState("All");
-
-  const [products, setProducts] = useState([]);
+  const [menuFilter, setMenuFilter] = useState("All");
+  const [mainCategoryFilter, setMainCategoryFilter] = useState("");
+  const [subCategoryFilter, setSubCategoryFilter] = useState("");
+  const [categoryTypeFilter, setCategoryTypeFilter] = useState("All");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
 
   useEffect(() => {
-  const loadData = async () => {
-    const categoryData = await getCategories();
-    const productData = await getProducts();
+    const loadData = async () => {
+      const categoryData = await getCategories();
+      setCategories(categoryData);
+    };
 
-    setCategories(categoryData);
-    setProducts(productData);
-  };
+    loadData();
+  }, []);
 
-  loadData();
-}, []);
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    menuFilter,
+    mainCategoryFilter,
+    subCategoryFilter,
+    categoryTypeFilter,
+    descriptionFilter,
+    sortBy,
+  ]);
 
   /* Combined Search + Filter */
 
@@ -65,9 +79,12 @@ const Categories = () => {
 
     if (searchTerm.trim()) {
       filtered = filtered.filter((category) =>
-        Object.values(category).some((value) =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
+        `${category.menuType}
+         ${category.categoryType}
+         ${category.mainCategory}
+         ${category.subCategory}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -79,47 +96,109 @@ const Categories = () => {
       );
     }
 
-    /* Product Count */
+    if (menuFilter !== "All") {
+      filtered = filtered.filter(
+        (category) => category.menuType === menuFilter,
+      );
+    }
 
-    if (productFilter !== "All") {
-      filtered = filtered.filter((category) => {
-        const count = products.filter(
-          (product) => product.category === category.name,
-        ).length;
+    if (categoryTypeFilter !== "All") {
+      filtered = filtered.filter(
+        (category) => category.categoryType === categoryTypeFilter,
+      );
+    }
 
-        if (productFilter === "Has Products") return count > 0;
+    if (mainCategoryFilter.trim()) {
+      filtered = filtered.filter((category) =>
+        category.mainCategory
+          ?.toLowerCase()
+          .includes(mainCategoryFilter.toLowerCase()),
+      );
+    }
 
-        if (productFilter === "Empty Categories") return count === 0;
+    if (subCategoryFilter.trim()) {
+      filtered = filtered.filter((category) =>
+        category.subCategory
+          ?.toLowerCase()
+          .includes(subCategoryFilter.toLowerCase()),
+      );
+    }
 
-        return true;
-      });
+    if (descriptionFilter.trim()) {
+      filtered = filtered.filter((category) =>
+        category.description
+          ?.toLowerCase()
+          .includes(descriptionFilter.toLowerCase()),
+      );
     }
 
     /* Sorting */
 
     switch (sortBy) {
       case "A-Z":
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        filtered.sort((a, b) =>
+          (a.subCategory || a.mainCategory || "").localeCompare(
+            b.subCategory || b.mainCategory || "",
+          ),
+        );
         break;
 
       case "Z-A":
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        filtered.sort((a, b) =>
+          (b.subCategory || b.mainCategory || "").localeCompare(
+            a.subCategory || a.mainCategory || "",
+          ),
+        );
+        break;
+      case "A-Z":
+        filtered.sort((a, b) =>
+          (a.subCategory || a.mainCategory || "").localeCompare(
+            b.subCategory || b.mainCategory || "",
+          ),
+        );
+        break;
+
+      case "Z-A":
+        filtered.sort((a, b) =>
+          (b.subCategory || b.mainCategory || "").localeCompare(
+            a.subCategory || a.mainCategory || "",
+          ),
+        );
         break;
 
       case "Newest":
-  filtered.sort((a, b) => b.createdAt - a.createdAt);
-  break;
+        filtered.sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+        );
+        break;
 
-case "Oldest":
-  filtered.sort((a, b) => a.createdAt - b.createdAt);
-  break;
+      case "Oldest":
+        filtered.sort(
+          (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+        );
+        break;
 
       default:
         break;
     }
 
     return filtered;
-  }, [categories, searchTerm, statusFilter, sortBy, productFilter, products]);
+  }, [
+    categories,
+    searchTerm,
+    statusFilter,
+    menuFilter,
+    mainCategoryFilter,
+    subCategoryFilter,
+    categoryTypeFilter,
+    descriptionFilter,
+    sortBy,
+  ]);
+
+  const paginatedCategories = filteredCategories.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage,
+  );
   return (
     <Box
       sx={{
@@ -155,12 +234,39 @@ case "Oldest":
           />
 
           <CategoryTable
-            categories={filteredCategories}
-            setCategories={setCategories}
+            categories={paginatedCategories}
             setSelectedCategory={setSelectedCategory}
             onDelete={(category) => {
               setSelectedCategory(category);
               setOpenDelete(true);
+            }}
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 3,
+          }}
+        >
+          <Pagination
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            count={Math.ceil(filteredCategories.length / rowsPerPage)}
+            sx={{
+              mb: 6,
+              "& .MuiPaginationItem-root": {
+                color: darkMode ? "#fff" : "#555",
+              },
+
+              "& .Mui-selected": {
+                backgroundColor: "#B89478 !important",
+                color: "#fff",
+              },
+
+              "& .Mui-selected:hover": {
+                backgroundColor: "#A88366 !important",
+              },
             }}
           />
         </Box>
@@ -173,14 +279,26 @@ case "Oldest":
         onClose={() => setFilterOpen(false)}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        menuFilter={menuFilter}
+        setMenuFilter={setMenuFilter}
+        mainCategoryFilter={mainCategoryFilter}
+        setMainCategoryFilter={setMainCategoryFilter}
+        subCategoryFilter={subCategoryFilter}
+        setSubCategoryFilter={setSubCategoryFilter}
+        categoryTypeFilter={categoryTypeFilter}
+        setCategoryTypeFilter={setCategoryTypeFilter}
+        descriptionFilter={descriptionFilter}
+        setDescriptionFilter={setDescriptionFilter}
         sortBy={sortBy}
         setSortBy={setSortBy}
-        productFilter={productFilter}
-        setProductFilter={setProductFilter}
         onReset={() => {
           setStatusFilter("All");
+          setMenuFilter("All");
+          setMainCategoryFilter("");
+          setSubCategoryFilter("");
+          setCategoryTypeFilter("All");
+          setDescriptionFilter("");
           setSortBy("Newest");
-          setProductFilter("All");
         }}
       />
 

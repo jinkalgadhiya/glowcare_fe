@@ -13,6 +13,7 @@ import {
 
 import { updateUser } from "../../database/userService";
 import { useThemeContext } from "../context/ThemeContext";
+import { updateAdmin } from "../../database/adminService";
 
 const EditProfile = ({ admin, onClose, onUpdated }) => {
   const { darkMode } = useThemeContext();
@@ -32,19 +33,27 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
   }, [admin]);
 
   const handleSave = async () => {
-    const updatedAdmin = {
-      ...admin,
-      fullName,
-      email,
-      phone,
-      image,
-    };
-
-    localStorage.setItem("admin", JSON.stringify(updatedAdmin));
-
-    onUpdated(updatedAdmin);
-    onClose();
+  const updatedAdmin = {
+    ...admin,
+    fullName,
+    email,
+    phone,
+    image,
   };
+
+  await updateAdmin(updatedAdmin);
+
+  localStorage.setItem(
+    "admin",
+    JSON.stringify(updatedAdmin)
+  );
+
+  onUpdated(updatedAdmin);
+
+  alert("Profile updated successfully");
+
+  onClose();
+};
 
   if (!admin) return null;
   const textFieldStyle = {

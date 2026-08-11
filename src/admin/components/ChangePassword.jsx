@@ -14,7 +14,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-
+import { updateAdmin } from "../../database/adminService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const ChangePassword = ({ admin }) => {
@@ -28,7 +28,7 @@ const ChangePassword = ({ admin }) => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     if (!admin) return;
 
     if (currentPassword !== admin.password) {
@@ -46,7 +46,12 @@ const ChangePassword = ({ admin }) => {
       password: newPassword,
     };
 
-    localStorage.setItem("admin", JSON.stringify(updatedAdmin));
+    await updateAdmin(updatedAdmin);
+
+    localStorage.setItem(
+  "admin",
+  JSON.stringify(updatedAdmin)
+);
 
     alert("Password updated successfully.");
 

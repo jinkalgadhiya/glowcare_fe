@@ -18,8 +18,13 @@ import OtpVerification from "./OTPVerification";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Users } from "../data/Users";
 import { getUsers, updateUser } from "../database/userService";
+import { getAdmin, updateAdmin } from "../database/adminService";
 
-const ForgetPassword = ({ open, handleClose }) => {
+const ForgetPassword = ({
+  open,
+  handleClose,
+  type = "user",
+}) => {
   const [formData, setFormData] = useState({
     email: "",
     newPassword: "",
@@ -63,24 +68,37 @@ const ForgetPassword = ({ open, handleClose }) => {
       return;
     }
 
-    const registeredUsers = await getUsers();
+    if (type === "admin") {
+  const admin = await getAdmin();
 
-    // Check Static User
-    const staticUser = Users.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
+  if (
+    !admin ||
+    admin.email.toLowerCase() !==
+      formData.email.trim().toLowerCase()
+  ) {
+    setEmailNotFound("Email not found");
+    return;
+  }
+} else {
+  const registeredUsers = await getUsers();
 
-    // Check Registered User
-    const registeredUser = registeredUsers.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
+  const staticUser = Users.find(
+    (user) =>
+      user.email.toLowerCase() ===
+      formData.email.trim().toLowerCase()
+  );
 
-    if (!staticUser && !registeredUser) {
-      setEmailNotFound("Email not found");
-      return;
-    }
+  const registeredUser = registeredUsers.find(
+    (user) =>
+      user.email.toLowerCase() ===
+      formData.email.trim().toLowerCase()
+  );
+
+  if (!staticUser && !registeredUser) {
+    setEmailNotFound("Email not found");
+    return;
+  }
+}
 
     setOpenOtp(true);
   };
@@ -128,21 +146,39 @@ const ForgetPassword = ({ open, handleClose }) => {
     }
 
     // Registered Users
-    const users = await getUsers();
+    if (type === "admin") {
+  const admin = await getAdmin();
 
-    const registeredUser = users.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
+  await updateAdmin({
+    ...admin,
+    password: formData.newPassword,
+  });
 
-    if (registeredUser) {
-      await updateUser({
-        ...registeredUser,
-        password: formData.newPassword,
-      });
-    }
+  localStorage.setItem(
+    "admin",
+    JSON.stringify({
+      ...admin,
+      password: formData.newPassword,
+    })
+  );
+} else {
+  const users = await getUsers();
 
-    setOpenSuccess(true);
+  const registeredUser = users.find(
+    (user) =>
+      user.email.toLowerCase() ===
+      formData.email.trim().toLowerCase(),
+  );
+
+  if (registeredUser) {
+    await updateUser({
+      ...registeredUser,
+      password: formData.newPassword,
+    });
+  }
+}
+
+setOpenSuccess(true);
   };
 
   const resetDialog = () => {
@@ -236,6 +272,7 @@ const ForgetPassword = ({ open, handleClose }) => {
                   variant="contained"
                   size="large"
                   onClick={handleVerifyEmail}
+                  sx={{ backgroundColor: "#ae7f45"}}
                 >
                   Verify Email
                 </Button>
@@ -331,6 +368,7 @@ const ForgetPassword = ({ open, handleClose }) => {
                   variant="contained"
                   size="large"
                   onClick={handleResetPassword}
+                  sx={{ backgroundColor: "#ae7f45" }}
                 >
                   Change Password
                 </Button>
@@ -375,9 +413,9 @@ const ForgetPassword = ({ open, handleClose }) => {
           }}
         >
           <CheckCircleIcon
-            color="primary"
             sx={{
               fontSize: 80,
+              color: "#ae7f45",
             }}
           />
 
@@ -396,6 +434,7 @@ const ForgetPassword = ({ open, handleClose }) => {
             onClick={handleSuccessClose}
             sx={{
               width: "100%",
+              backgroundColor: "#ae7f45",
             }}
           >
             Back to Login

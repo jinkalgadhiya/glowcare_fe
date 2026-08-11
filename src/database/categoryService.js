@@ -35,3 +35,23 @@ export const clearCategories = async () => {
   const db = await dbPromise;
   await db.clear("categories");
 };
+
+// Check duplicate category
+export const checkCategoryExists = async (
+  menuType,
+  mainCategory,
+  subCategory,
+  excludeId = null
+) => {
+  const categories = await getCategories();
+
+  return categories.find(
+    (item) =>
+      item.menuType === menuType &&
+      item.mainCategory?.toLowerCase().trim() ===
+        mainCategory?.toLowerCase().trim() &&
+      item.subCategory?.toLowerCase().trim() ===
+        subCategory?.toLowerCase().trim() &&
+      item.id !== excludeId
+  );
+};
