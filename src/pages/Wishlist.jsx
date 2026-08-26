@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Container, Typography, Grid, Button, Paper } from "@mui/material";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import ProductCard from "../components/ProductCard";
 import Navbar from "../components/Navbar";
+import { getWishlist } from "../database/wishlistService";
+import Footer from "../components/Footer";
 
 const Wishlist = () => {
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  
+  const [wishlistItems, setWishlistItems] = useState([]);
+
+useEffect(() => {
+  const loadWishlist = async () => {
+    const data = await getWishlist();
+    setWishlistItems(data || []);
+  };
+
+  loadWishlist();
+}, []);
   const navigate = useNavigate();
 
   return (
@@ -248,6 +259,7 @@ const Wishlist = () => {
           )}
         </Container>
       </Box>
+      <Footer />
     </>
   );
 };

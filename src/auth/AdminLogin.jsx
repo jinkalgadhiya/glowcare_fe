@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Paper,
   Typography,
-  TextField,
   Button,
   Stack,
   Alert,
@@ -19,7 +17,10 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../assets/LogoDark.png";
 import ForgetPassword from "./ForgetPassword";
 import { useNavigate } from "react-router-dom";
-import { Users } from "../data/Users";
+import adminApi from "../api/adminApi";
+import { adminLogin } from "./AdminAuthService";
+
+import CustomTextField from "../components/common/CustomTextField";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ function AdminLogin() {
 
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setEmailError("");
     setPassError("");
     setLoginError("");
@@ -62,26 +63,42 @@ function AdminLogin() {
       return;
     }
 
-    // Find Admin
-    const foundAdmin = Users.find(
-      (user) =>
-        user.email.toLowerCase() === email.trim().toLowerCase() &&
-        user.password === password,
-    );
+    try {
+      const response = await adminApi.post("/admin/login", {
+        email: email.trim(),
+        password,
+      });
 
-    if (!foundAdmin) {
-      setLoginError("Invalid admin email or password");
-      return;
+      if (response.data.status === "success") {
+        const admin = response.data.data;
+        const token = response.data.token;
+
+        adminLogin(
+          {
+            ...admin,
+            role: "admin",
+          },
+          token,
+        );
+
+        navigate("/admin/dashboard");
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+
+      if (error.response?.status === 401) {
+        setLoginError("Invalid admin email or password");
+      } else if (error.response?.status === 403) {
+        setLoginError(
+          error.response?.data?.message || "Admin account is inactive.",
+        );
+      } else {
+        setLoginError(
+          error.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        );
+      }
     }
-
-    // Store Login
-    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
-
-    if (!storedAdmin) {
-      localStorage.setItem("admin", JSON.stringify(foundAdmin));
-    }
-
-    navigate("/admin/dashboard");
   };
 
   return (
@@ -107,6 +124,7 @@ function AdminLogin() {
         }}
       >
         {/* Left Side */}
+
         <Box
           sx={{
             width: "42%",
@@ -145,6 +163,7 @@ function AdminLogin() {
         </Box>
 
         {/* Right Side */}
+
         <Box
           sx={{
             width: "58%",
@@ -178,7 +197,9 @@ function AdminLogin() {
               </Typography>
             </Box>
 
-            <TextField
+            {/* Email */}
+
+            <CustomTextField
               label="Email"
               placeholder="Enter your email"
               fullWidth
@@ -188,7 +209,9 @@ function AdminLogin() {
               helperText={emailError}
             />
 
-            <TextField
+            {/* Password */}
+
+            <CustomTextField
               label="Password"
               placeholder="Enter your password"
               fullWidth
@@ -212,17 +235,26 @@ function AdminLogin() {
               }}
             />
 
+            {/* Forgot Password */}
+
             <Box display="flex" justifyContent="flex-end">
               <Link
                 component="button"
                 underline="hover"
                 onClick={() => setOpenForgotPassword(true)}
+                sx={{
+                  color: "#d29c5a",
+                }}
               >
                 Forgot Password?
               </Link>
             </Box>
 
+            {/* Login Error */}
+
             {loginError && <Alert severity="error">{loginError}</Alert>}
+
+            {/* Login Button */}
 
             <Button
               variant="contained"
@@ -245,9 +277,12 @@ function AdminLogin() {
         </Box>
       </Paper>
 
+      {/* Forgot Password */}
+
       <ForgetPassword
         open={openForgotPassword}
         handleClose={() => setOpenForgotPassword(false)}
+        type="admin"
       />
     </Box>
   );

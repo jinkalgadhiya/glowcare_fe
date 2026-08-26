@@ -21,15 +21,35 @@ const CategoryFilter = ({
   statusFilter,
   setStatusFilter,
 
+  menuFilter,
+  setMenuFilter,
+
+  categoryTypeFilter,
+  setCategoryTypeFilter,
+
   sortBy,
   setSortBy,
-
-  productFilter,
-  setProductFilter,
 
   onReset,
 }) => {
   const { darkMode } = useThemeContext();
+
+  const radioStyle = {
+    color: darkMode ? "#888" : "#B89478",
+
+    "&.Mui-checked": {
+      color: "#B89478",
+    },
+  };
+
+  const labelStyle = {
+    color: darkMode ? "#E0E0E0" : "#444",
+  };
+
+  const dividerStyle = {
+    borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+    my: 3,
+  };
 
   return (
     <Drawer
@@ -41,9 +61,7 @@ const CategoryFilter = ({
           width: 360,
           backgroundColor: darkMode ? "#1E1E1E" : "#fff",
           color: darkMode ? "#fff" : "#222",
-
           overflow: "hidden",
-
           display: "flex",
           flexDirection: "column",
         },
@@ -54,9 +72,7 @@ const CategoryFilter = ({
           p: 3,
           height: "100vh",
           overflowY: "auto",
-
           backgroundColor: darkMode ? "#1E1E1E" : "#FFFFFF",
-
           display: "flex",
           flexDirection: "column",
 
@@ -108,14 +124,11 @@ const CategoryFilter = ({
           </IconButton>
         </Box>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Status */}
+        {/* =========================
+            STATUS
+        ========================= */}
 
         <Typography
           sx={{
@@ -135,33 +148,89 @@ const CategoryFilter = ({
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
-              sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
-              }}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Sort */}
+        {/* =========================
+            MENU TYPE
+        ========================= */}
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Menu Type
+        </Typography>
+
+        <RadioGroup
+          value={menuFilter}
+          onChange={(e) => setMenuFilter(e.target.value)}
+        >
+          {[
+            { value: "All", label: "All" },
+            { value: "skincare", label: "Skincare" },
+            { value: "haircare", label: "Haircare" },
+            { value: "more", label: "More" },
+          ].map((item) => (
+            <FormControlLabel
+              key={item.value}
+              value={item.value}
+              control={<Radio sx={radioStyle} />}
+              label={item.label}
+              sx={labelStyle}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider sx={dividerStyle} />
+
+        {/* =========================
+            CATEGORY TYPE
+        ========================= */}
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Category Type
+        </Typography>
+
+        <RadioGroup
+          value={categoryTypeFilter}
+          onChange={(e) => setCategoryTypeFilter(e.target.value)}
+        >
+          {[
+            { value: "All", label: "All" },
+            { value: "main", label: "Main Category" },
+            { value: "sub", label: "Sub Category" },
+          ].map((item) => (
+            <FormControlLabel
+              key={item.value}
+              value={item.value}
+              control={<Radio sx={radioStyle} />}
+              label={item.label}
+              sx={labelStyle}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider sx={dividerStyle} />
+
+        {/* =========================
+            SORT
+        ========================= */}
 
         <Typography
           sx={{
@@ -174,91 +243,31 @@ const CategoryFilter = ({
         </Typography>
 
         <RadioGroup value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          {["Newest", "Oldest", "A-Z", "Z-A"].map((item) => (
+          {[
+            { value: "Newest", label: "Newest First" },
+            { value: "Oldest", label: "Oldest First" },
+            { value: "A-Z", label: "A-Z" },
+            { value: "Z-A", label: "Z-A" },
+          ].map((item) => (
             <FormControlLabel
-              key={item}
-              value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
-              label={
-                item === "Newest"
-                  ? "Newest First"
-                  : item === "Oldest"
-                    ? "Oldest First"
-                    : item
-              }
-              sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
-              }}
+              key={item.value}
+              value={item.value}
+              control={<Radio sx={radioStyle} />}
+              label={item.label}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
-
-        {/* Product Count */}
-
-        <Typography
-          sx={{
-            fontWeight: 600,
-            mb: 2,
-            color: darkMode ? "#fff" : "#222",
-          }}
-        >
-          Product Count
-        </Typography>
-
-        <RadioGroup
-          value={productFilter}
-          onChange={(e) => setProductFilter(e.target.value)}
-        >
-          {["All", "Has Products", "Empty Categories"].map((item) => (
-            <FormControlLabel
-              key={item}
-              value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
-              label={item === "All" ? "All Categories" : item}
-              sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
-              }}
-            />
-          ))}
-        </RadioGroup>
+        {/* Push buttons to bottom */}
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Buttons */}
+        {/* =========================
+            BUTTONS
+        ========================= */}
 
         <Box
           sx={{
@@ -276,6 +285,7 @@ const CategoryFilter = ({
               color: "#B89478",
               textTransform: "none",
               fontWeight: 600,
+              borderRadius: 2,
 
               "&:hover": {
                 borderColor: "#A88366",
@@ -295,8 +305,10 @@ const CategoryFilter = ({
             sx={{
               height: 48,
               bgcolor: "#B89478",
+              color: "#fff",
               textTransform: "none",
               fontWeight: 600,
+              borderRadius: 2,
               boxShadow: "none",
 
               "&:hover": {

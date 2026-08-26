@@ -19,26 +19,77 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { getProducts } from "../../database/productService";
+
 import { useNavigate } from "react-router-dom";
+import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
   const [products, setProducts] = useState([]);
+
+  const open = Boolean(anchorEl);
+
   useEffect(() => {
     const loadProducts = async () => {
-      const data = await getProducts();
-      setProducts(data);
+      try {
+        const data = await getProducts();
+        setProducts(data || []);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
     };
 
     loadProducts();
   }, []);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedRow, setSelectedRow] = useState(null);
 
-  const open = Boolean(anchorEl);
+  const normalize = (value) =>
+    String(value ?? "")
+      .trim()
+      .toLowerCase();
+
+  const getProductCount = (category) => {
+    // ===============================
+    // Sub Category
+    // ===============================
+
+    if (category.categoryType === "sub") {
+      return products.filter((product) => {
+        const productCategoryId =
+          typeof product.category === "object"
+            ? product.category?._id
+            : product.category;
+
+        return productCategoryId === category._id;
+      }).length;
+    }
+
+    // ===============================
+    // Main Category
+    // ===============================
+
+    const subCategoryIds = categories
+      .filter(
+        (item) =>
+          item.categoryType === "sub" &&
+          normalize(item.menuType) === normalize(category.menuType) &&
+          normalize(item.mainCategory) === normalize(category.mainCategory),
+      )
+      .map((item) => item._id);
+
+    return products.filter((product) => {
+      const productCategoryId =
+        typeof product.category === "object"
+          ? product.category?._id
+          : product.category;
+
+      return subCategoryIds.includes(productCategoryId);
+    }).length;
+  };
 
   const handleMenu = (event, category) => {
     setAnchorEl(event.currentTarget);
@@ -76,10 +127,13 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           >
             {[
               "#",
-              "Category Name",
+              "Menu",
+              "Category Type",
+              "Main Category",
+              "Sub Category",
               "Description",
-              "Status",
               "Products",
+              "Status",
               "Actions",
             ].map((item) => (
               <TableCell
@@ -99,13 +153,7 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
         <TableBody>
           {categories.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                align="center"
-                sx={{
-                  py: 8,
-                }}
-              >
+              <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
                 <Typography
                   variant="h6"
                   sx={{
@@ -127,17 +175,14 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
             </TableRow>
           ) : (
             categories.map((category, index) => {
-              const productCount = products.filter(
-                (product) => product.category === category.name,
-              ).length;
+              const productCount = getProductCount(category);
 
               return (
                 <TableRow
-                  key={category.id}
+                  key={category._id}
                   hover
                   sx={{
                     transition: ".25s",
-
                     "&:hover": {
                       bgcolor: darkMode ? "#2F2F2F" : "#FAF7F4",
                     },
@@ -145,9 +190,48 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
                 >
                   <TableCell>{index + 1}</TableCell>
 
-                  <TableCell>{category.name}</TableCell>
+                  <TableCell sx={{ textTransform: "capitalize" }}>
+                    {category.menuType}
+                  </TableCell>
 
-                  <TableCell>{category.description}</TableCell>
+                  <TableCell sx={{ textTransform: "capitalize" }}>
+                    {category.categoryType}
+                  </TableCell>
+
+                  <TableCell>{category.mainCategory}</TableCell>
+
+                  <TableCell>
+                    {category.categoryType === "sub"
+                      ? category.subCategory
+                      : "-"}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      maxWidth: 250,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {category.categoryType === "sub"
+                      ? category.description || "-"
+                      : "-"}
+                  </TableCell>
+
+                  <TableCell>
+                    <Chip
+                      label={`${productCount} ${
+                        productCount === 1 ? "Product" : "Products"
+                      }`}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        color: darkMode ? "#FFFFFF" : "#6B4E3D",
+                        backgroundColor: darkMode ? "#3D322B" : "#F4E7DD",
+                      }}
+                    />
+                  </TableCell>
 
                   <TableCell>
                     <Chip
@@ -159,14 +243,11 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
                     />
                   </TableCell>
 
-                  <TableCell>{productCount}</TableCell>
-
                   <TableCell align="center">
                     <IconButton
                       onClick={(e) => handleMenu(e, category)}
                       sx={{
                         color: darkMode ? "#F5F5F5" : "#444",
-
                         "&:hover": {
                           bgcolor: darkMode ? "#383838" : "#F2F2F2",
                         },
@@ -181,6 +262,7 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           )}
         </TableBody>
       </Table>
+
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -201,13 +283,14 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
       >
         <MenuItem
           onClick={() => {
-            setSelectedCategory(selectedRow);
+            if (selectedRow) {
+              setSelectedCategory(selectedRow);
+            }
             handleClose();
           }}
           sx={{
             py: 1.2,
             color: darkMode ? "#F5F5F5" : "#222",
-
             "&:hover": {
               bgcolor: darkMode ? "#383838" : "#F8F5F1",
             },
@@ -220,19 +303,19 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           >
             <VisibilityOutlinedIcon fontSize="small" />
           </ListItemIcon>
-
           <ListItemText>Show</ListItemText>
         </MenuItem>
 
         <MenuItem
           onClick={() => {
-            navigate(`/admin/categories/edit/${selectedRow.id}`);
+            if (selectedRow) {
+              navigate(`/admin/categories/edit/${selectedRow._id}`);
+            }
             handleClose();
           }}
           sx={{
             py: 1.2,
             color: darkMode ? "#F5F5F5" : "#222",
-
             "&:hover": {
               bgcolor: darkMode ? "#383838" : "#F8F5F1",
             },
@@ -245,32 +328,27 @@ const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
           >
             <EditOutlinedIcon fontSize="small" />
           </ListItemIcon>
-
           <ListItemText>Edit</ListItemText>
         </MenuItem>
 
         <MenuItem
           onClick={() => {
-            onDelete(selectedRow);
+            if (selectedRow) {
+              onDelete(selectedRow);
+            }
             handleClose();
           }}
           sx={{
             py: 1.2,
             color: "#EF5350",
-
             "&:hover": {
               bgcolor: darkMode ? "#3A2626" : "#FFF5F5",
             },
           }}
         >
-          <ListItemIcon
-            sx={{
-              color: "#EF5350",
-            }}
-          >
+          <ListItemIcon sx={{ color: "#EF5350" }}>
             <DeleteOutlineOutlinedIcon fontSize="small" />
           </ListItemIcon>
-
           <ListItemText>Delete</ListItemText>
         </MenuItem>
       </Menu>

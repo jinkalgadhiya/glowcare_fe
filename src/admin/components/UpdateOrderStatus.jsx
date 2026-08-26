@@ -15,47 +15,84 @@ import {
   Box,
 } from "@mui/material";
 
-import { updateOrder } from "../../database/orderService";
+import { updateOrderStatus } from "../../database/orderService";
 import { useThemeContext } from "../context/ThemeContext";
 
-const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
+const UpdateOrderStatus = ({
+  open,
+  onClose,
+  order,
+  onStatusUpdated,
+}) => {
   const { darkMode } = useThemeContext();
 
   const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (order) {
-      setStatus(order.status || "");
+      setStatus(order.status || "Pending");
     }
   }, [order]);
+
+  const getOrderId = () => {
+    return order?._id || order?.id;
+  };
+
+  const getPaymentStatus = () => {
+    return (
+      order?.paymentStatus ||
+      order?.payment?.status ||
+      "Pending"
+    );
+  };
 
   const handleSave = async () => {
     if (!order) return;
 
-    const updatedOrder = {
-      ...order,
-      status,
-    };
+    const orderId = getOrderId();
 
-    await updateOrder(updatedOrder);
+    if (!orderId) {
+      console.error("Order ID is missing");
+      return;
+    }
 
-    onStatusUpdated?.(updatedOrder);
+    try {
+      setSaving(true);
 
-    onClose();
+      const updatedOrder = await updateOrderStatus(
+        orderId,
+        status,
+        getPaymentStatus(),
+      );
+
+      onStatusUpdated?.(updatedOrder);
+
+      onClose();
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getStatusColor = (value) => {
-    switch (value) {
-      case "Pending":
+    switch (value?.toLowerCase()) {
+      case "pending":
         return "warning";
-      case "Processing":
+
+      case "processing":
         return "info";
-      case "Shipped":
+
+      case "shipped":
         return "secondary";
-      case "Delivered":
+
+      case "delivered":
         return "success";
-      case "Cancelled":
+
+      case "cancelled":
         return "error";
+
       default:
         return "default";
     }
@@ -64,12 +101,14 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={saving ? undefined : onClose}
       fullWidth
       maxWidth="xs"
       sx={{
         "& .MuiPaper-root": {
-          backgroundColor: darkMode ? "#252525 !important" : "#fff",
+          backgroundColor: darkMode
+            ? "#252525 !important"
+            : "#fff",
           color: darkMode ? "#fff" : "#222",
           borderRadius: 3,
         },
@@ -80,11 +119,9 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
         },
       }}
     >
-      <DialogTitle
-        sx={{
-          pb: 1,
-        }}
-      >
+      {/* Header */}
+
+      <DialogTitle sx={{ pb: 1 }}>
         <Typography
           variant="h6"
           sx={{
@@ -106,8 +143,12 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
         </Typography>
       </DialogTitle>
 
+      {/* Content */}
+
       <DialogContent sx={{ pt: "12px !important" }}>
         <Stack spacing={3}>
+          {/* Current Status */}
+
           <Box>
             <Typography
               sx={{
@@ -119,8 +160,13 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
               Current Status
             </Typography>
 
-            <Chip label={order?.status} color={getStatusColor(order?.status)} />
+            <Chip
+              label={order?.status || "Pending"}
+              color={getStatusColor(order?.status)}
+            />
           </Box>
+
+          {/* New Status */}
 
           <FormControl
             fullWidth
@@ -161,17 +207,33 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
               value={status}
               label="New Status"
               onChange={(e) => setStatus(e.target.value)}
-              displayEmpty
+              disabled={saving}
             >
-              <MenuItem value="Pending">Pending</MenuItem>
-              <MenuItem value="Processing">Processing</MenuItem>
-              <MenuItem value="Shipped">Shipped</MenuItem>
-              <MenuItem value="Delivered">Delivered</MenuItem>
-              <MenuItem value="Cancelled">Cancelled</MenuItem>
+              <MenuItem value="Pending">
+                Pending
+              </MenuItem>
+
+              <MenuItem value="Processing">
+                Processing
+              </MenuItem>
+
+              <MenuItem value="Shipped">
+                Shipped
+              </MenuItem>
+
+              <MenuItem value="Delivered">
+                Delivered
+              </MenuItem>
+
+              <MenuItem value="Cancelled">
+                Cancelled
+              </MenuItem>
             </Select>
           </FormControl>
         </Stack>
       </DialogContent>
+
+      {/* Actions */}
 
       <DialogActions
         sx={{
@@ -185,6 +247,7 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
         <Button
           variant="outlined"
           onClick={onClose}
+          disabled={saving}
           sx={{
             textTransform: "none",
             borderRadius: 2,
@@ -202,6 +265,7 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
         <Button
           variant="contained"
           onClick={handleSave}
+          disabled={saving || !status}
           sx={{
             bgcolor: "#B89478",
             textTransform: "none",
@@ -214,7 +278,7 @@ const UpdateOrderStatus = ({ open, onClose, order, onStatusUpdated }) => {
             },
           }}
         >
-          Save Changes
+          {saving ? "Saving..." : "Save Changes"}
         </Button>
       </DialogActions>
     </Dialog>

@@ -55,7 +55,7 @@ const CustomerTable = ({
     return (
       customer.fullName?.toLowerCase().includes(search) ||
       customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.toLowerCase().includes(search)
+      customer.contactNumber?.toLowerCase().includes(search)
     );
   });
 
@@ -140,7 +140,7 @@ const CustomerTable = ({
             filteredCustomers.map((customer) => (
               <TableRow
                 hover
-                key={customer.id}
+                key={customer._id}
                 sx={{
                   "&:hover": {
                     backgroundColor: darkMode ? "#2F2F2F" : "#FAFAFA",
@@ -193,7 +193,7 @@ const CustomerTable = ({
                     color: darkMode ? "#fff" : "#222",
                   }}
                 >
-                  {customer.phone || "-"}
+                  {customer.contactNumber || "-"}
                 </TableCell>
 
                 <TableCell
@@ -225,9 +225,9 @@ const CustomerTable = ({
                     color: darkMode ? "#fff" : "#222",
                   }}
                 >
-                  {customer.joinedDate
-                    ? new Date(customer.joinedDate).toLocaleDateString()
-                    : "-"}
+                  {customer.createdAt
+  ? new Date(customer.createdAt).toLocaleDateString()
+  : "-"}
                 </TableCell>
 
                 <TableCell align="center">

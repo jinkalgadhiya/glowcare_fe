@@ -4,23 +4,40 @@ import { Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../auth/Login";
 import Register from "../auth/Register";
-import NotFound from "../pages/NotFound";
 import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
-import ProtectedRoute from "../auth/ProtectedRoute";
 import Checkout from "../pages/Checkout";
+import ShopPage from "../pages/shop/ShopPage";
+import ProductDetails from "../pages/shop/ProductDetails";
+import UserProfile from "../pages/UserProfile";
+
+import ProtectedRoute from "../auth/UserProtectedRoute";
 
 const UserRoute = () => {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/notfound" element={<NotFound />} />
+      {/* ================= PUBLIC ================= */}
 
-      {/* Protected Routes */}
+      <Route path="/" element={<Home />} />
+
+      <Route path="/login" element={<Login />} />
+
+      <Route path="/register" element={<Register />} />
+
+      <Route path="/cart" element={<Cart />} />
+
+      <Route
+        path="/shop/:category"
+        element={<ShopPage />}
+      />
+
+      <Route
+        path="/product/:id"
+        element={<ProductDetails />}
+      />
+
+      {/* ================= PROTECTED ================= */}
+
       <Route
         path="/wishlist"
         element={
@@ -39,21 +56,16 @@ const UserRoute = () => {
         }
       />
 
-      {/* Future Protected Routes */}
-      {/* 
+      {/* ================= USER PROFILE ================= */}
+
       <Route
-        path="/profile"
+        path="/user/*"
         element={
           <ProtectedRoute>
-            <Profile />
+            <UserProfile />
           </ProtectedRoute>
         }
       />
-
-      
-      */}
-
-      {/* <Route path="/best-sellers" element={<BestSellerPage />} /> */}
     </Routes>
   );
 };

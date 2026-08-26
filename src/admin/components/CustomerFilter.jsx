@@ -125,7 +125,7 @@ const CustomerFilter = ({
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          {["All", "Active", "Inactive", "Blocked"].map((item) => (
+          {["All", "Active", "Inactive"].map((item) => (
             <FormControlLabel
               key={item}
               value={item}

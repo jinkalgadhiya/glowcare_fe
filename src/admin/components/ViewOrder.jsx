@@ -19,18 +19,52 @@ const ViewOrder = ({ order, onClose }) => {
 
   if (!order) return null;
 
+  // ==============================
+  // Backend-compatible data
+  // ==============================
+
+  const orderId = order._id || order.id || "N/A";
+
+  const orderDate =
+    order.orderDate ||
+    order.createdAt ||
+    null;
+
+  const customer = order.customer || {};
+
+  const shipping = order.shipping || {};
+
+  const items = order.items || [];
+
+  const pricing = order.pricing || {};
+
+  const paymentMethod =
+    order.paymentMethod ||
+    order.payment?.method ||
+    "N/A";
+
+  const deliveryMethod =
+    order.deliveryMethod ||
+    order.delivery?.method ||
+    "N/A";
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending":
         return "warning";
+
       case "Processing":
         return "info";
+
       case "Shipped":
         return "secondary";
+
       case "Delivered":
         return "success";
+
       case "Cancelled":
         return "error";
+
       default:
         return "default";
     }
@@ -45,7 +79,7 @@ const ViewOrder = ({ order, onClose }) => {
         overflowY: "auto",
       }}
     >
-      {/* Header */}
+      {/* ================= HEADER ================= */}
 
       <Box
         sx={{
@@ -77,14 +111,10 @@ const ViewOrder = ({ order, onClose }) => {
         </IconButton>
       </Box>
 
-      {/* Content */}
+      {/* ================= CONTENT ================= */}
 
-      <Box
-        sx={{
-          p: 3,
-        }}
-      >
-        {/* Order Information */}
+      <Box sx={{ p: 3 }}>
+        {/* ================= ORDER INFORMATION ================= */}
 
         <Box sx={{ mb: 3 }}>
           <Typography
@@ -101,9 +131,10 @@ const ViewOrder = ({ order, onClose }) => {
               mt: 1,
               fontWeight: 600,
               color: darkMode ? "#fff" : "#222",
+              wordBreak: "break-all",
             }}
           >
-            {order.id}
+            {orderId}
           </Typography>
         </Box>
 
@@ -123,7 +154,9 @@ const ViewOrder = ({ order, onClose }) => {
               color: darkMode ? "#fff" : "#222",
             }}
           >
-            {new Date(order.orderDate).toLocaleString()}
+            {orderDate
+              ? new Date(orderDate).toLocaleString()
+              : "N/A"}
           </Typography>
         </Box>
 
@@ -138,12 +171,15 @@ const ViewOrder = ({ order, onClose }) => {
             Status
           </Typography>
 
-          <Chip label={order.status} color={getStatusColor(order.status)} />
+          <Chip
+            label={order.status || "Pending"}
+            color={getStatusColor(order.status)}
+          />
         </Box>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Customer */}
+        {/* ================= CUSTOMER ================= */}
 
         <Typography
           variant="h6"
@@ -157,6 +193,8 @@ const ViewOrder = ({ order, onClose }) => {
         </Typography>
 
         <Stack spacing={3}>
+          {/* Name */}
+
           <Box>
             <Typography
               sx={{
@@ -174,9 +212,11 @@ const ViewOrder = ({ order, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {order.customer.fullName}
+              {customer.fullName || "N/A"}
             </Typography>
           </Box>
+
+          {/* Email */}
 
           <Box>
             <Typography
@@ -194,9 +234,11 @@ const ViewOrder = ({ order, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {order.customer.email}
+              {customer.email || "N/A"}
             </Typography>
           </Box>
+
+          {/* Phone */}
 
           <Box>
             <Typography
@@ -214,14 +256,16 @@ const ViewOrder = ({ order, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {order.customer.phone}
+              {customer.phone ||
+                customer.contactNumber ||
+                "N/A"}
             </Typography>
           </Box>
         </Stack>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Shipping */}
+        {/* ================= SHIPPING ================= */}
 
         <Typography
           variant="h6"
@@ -240,16 +284,29 @@ const ViewOrder = ({ order, onClose }) => {
             lineHeight: 1.8,
           }}
         >
-          {order.customer.address}
+          {shipping.address || "N/A"}
+
           <br />
-          {order.customer.city}, {order.customer.state}
+
+          {shipping.city || ""}
+          {shipping.city && shipping.state ? ", " : ""}
+          {shipping.state || ""}
+
           <br />
-          {order.customer.pincode}
+
+          {shipping.pincode || ""}
+
+          {shipping.landmark && (
+            <>
+              <br />
+              {shipping.landmark}
+            </>
+          )}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Ordered Products */}
+        {/* ================= PRODUCTS ================= */}
 
         <Typography
           variant="h6"
@@ -263,71 +320,92 @@ const ViewOrder = ({ order, onClose }) => {
         </Typography>
 
         <Stack spacing={3}>
-          {order.items.map((item) => (
-            <Box
-              key={`${item.productId}-${item.variantId}`}
+          {items.length === 0 ? (
+            <Typography
               sx={{
-                display: "flex",
-                gap: 2,
-                alignItems: "center",
+                color: darkMode ? "#aaa" : "#777",
               }}
             >
-              <Avatar
-                src={item.image}
-                variant="rounded"
+              No products found.
+            </Typography>
+          ) : (
+            items.map((item, index) => (
+              <Box
+                key={
+                  item._id ||
+                  `${item.productId}-${item.variantId}-${index}`
+                }
                 sx={{
-                  width: 70,
-                  height: 70,
-                  borderRadius: 2,
-                }}
-              />
-
-              <Box flex={1}>
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    color: darkMode ? "#fff" : "#222",
-                  }}
-                >
-                  {item.name}
-                </Typography>
-
-                <Typography
-                  sx={{
-                    mt: 0.5,
-                    fontSize: 13,
-                    color: darkMode ? "#AFAFAF" : "#777",
-                  }}
-                >
-                  Size : {item.size}
-                </Typography>
-
-                <Typography
-                  sx={{
-                    mt: 0.5,
-                    fontSize: 13,
-                    color: darkMode ? "#AFAFAF" : "#777",
-                  }}
-                >
-                  Qty : {item.quantity}
-                </Typography>
-              </Box>
-
-              <Typography
-                sx={{
-                  fontWeight: 700,
-                  color: "#2E7D32",
+                  display: "flex",
+                  gap: 2,
+                  alignItems: "center",
                 }}
               >
-                ₹{item.price * item.quantity}
-              </Typography>
-            </Box>
-          ))}
+                <Avatar
+                  src={item.image || ""}
+                  variant="rounded"
+                  sx={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: 2,
+                    backgroundColor: darkMode
+                      ? "#333"
+                      : "#F5F2ED",
+                  }}
+                />
+
+                <Box flex={1}>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                      color: darkMode ? "#fff" : "#222",
+                    }}
+                  >
+                    {item.name || "Product"}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      fontSize: 13,
+                      color: darkMode ? "#AFAFAF" : "#777",
+                    }}
+                  >
+                    Size : {item.size || "N/A"}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      fontSize: 13,
+                      color: darkMode ? "#AFAFAF" : "#777",
+                    }}
+                  >
+                    Qty : {item.quantity || 0}
+                  </Typography>
+                </Box>
+
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    color: "#2E7D32",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ₹
+                  {(
+                    Number(item.price || 0) *
+                    Number(item.quantity || 0)
+                  ).toLocaleString("en-IN")}
+                </Typography>
+              </Box>
+            ))
+          )}
         </Stack>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Price Summary */}
+        {/* ================= PRICE SUMMARY ================= */}
 
         <Typography
           variant="h6"
@@ -341,20 +419,36 @@ const ViewOrder = ({ order, onClose }) => {
         </Typography>
 
         <Stack spacing={2}>
-          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
-            Subtotal : ₹{order.pricing.subtotal}
+          <Typography
+            sx={{
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            Subtotal : ₹{pricing.subtotal || 0}
           </Typography>
 
-          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
-            Shipping : ₹{order.pricing.shipping}
+          <Typography
+            sx={{
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            Shipping : ₹{pricing.shipping || 0}
           </Typography>
 
-          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
-            GST : ₹{order.pricing.gst}
+          <Typography
+            sx={{
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            GST : ₹{pricing.gst || 0}
           </Typography>
 
-          <Typography sx={{ color: darkMode ? "#fff" : "#222" }}>
-            Discount : ₹{order.pricing.discount}
+          <Typography
+            sx={{
+              color: darkMode ? "#fff" : "#222",
+            }}
+          >
+            Discount : ₹{pricing.discount || 0}
           </Typography>
 
           <Typography
@@ -364,13 +458,13 @@ const ViewOrder = ({ order, onClose }) => {
               color: "#2E7D32",
             }}
           >
-            Total : ₹{order.pricing.total}
+            Total : ₹{pricing.total || 0}
           </Typography>
         </Stack>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Payment */}
+        {/* ================= PAYMENT ================= */}
 
         <Typography
           variant="h6"
@@ -384,6 +478,8 @@ const ViewOrder = ({ order, onClose }) => {
         </Typography>
 
         <Stack spacing={3}>
+          {/* Payment Method */}
+
           <Box>
             <Typography
               sx={{
@@ -400,9 +496,35 @@ const ViewOrder = ({ order, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {order.paymentMethod}
+              {paymentMethod}
             </Typography>
           </Box>
+
+          {/* Payment Status */}
+
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: darkMode ? "#AFAFAF" : "#777",
+              }}
+            >
+              Payment Status
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1,
+                color: darkMode ? "#fff" : "#222",
+              }}
+            >
+              {order.paymentStatus ||
+                order.payment?.status ||
+                "Pending"}
+            </Typography>
+          </Box>
+
+          {/* Delivery Method */}
 
           <Box>
             <Typography
@@ -420,10 +542,12 @@ const ViewOrder = ({ order, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {order.deliveryMethod}
+              {deliveryMethod}
             </Typography>
           </Box>
         </Stack>
+
+        {/* Back */}
 
         <Button
           fullWidth

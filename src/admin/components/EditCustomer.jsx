@@ -13,7 +13,7 @@ import {
   Box,
 } from "@mui/material";
 
-import { updateCustomerStatus } from "../../database/userService";
+import api from "../../api/axios";
 import { useThemeContext } from "../context/ThemeContext";
 
 const EditCustomer = ({ open, onClose, customer, onStatusUpdated }) => {
@@ -28,17 +28,34 @@ const EditCustomer = ({ open, onClose, customer, onStatusUpdated }) => {
   }, [customer]);
 
   const handleUpdate = async () => {
-    const updatedCustomer = {
-      ...customer,
-      status,
-    };
+  if (!customer) return;
 
-    await updateCustomerStatus(customer.id, status);
+  try {
+    const response = await api.put(
+      `/users/update/${customer._id}`,
+      {
+        fullName: customer.fullName,
+        email: customer.email,
+        contactNumber: customer.contactNumber,
+        image: customer.image || "",
+        address: customer.address || {},
+        status,
+      },
+    );
 
-    onStatusUpdated(updatedCustomer);
+    if (response.data.status === "success") {
+      onStatusUpdated(response.data.data);
+      onClose();
+    }
+  } catch (error) {
+    console.error("Update customer error:", error);
 
-    onClose();
-  };
+    alert(
+      error.response?.data?.message ||
+        "Failed to update customer status",
+    );
+  }
+};
 
   if (!customer) return null;
 
@@ -135,8 +152,6 @@ const EditCustomer = ({ open, onClose, customer, onStatusUpdated }) => {
               <MenuItem value="Active">Active</MenuItem>
 
               <MenuItem value="Inactive">Inactive</MenuItem>
-
-              <MenuItem value="Blocked">Blocked</MenuItem>
             </Select>
           </FormControl>
         </Box>

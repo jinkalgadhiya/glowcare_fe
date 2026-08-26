@@ -22,12 +22,29 @@ const DeleteProduct = ({ open, onClose, product }) => {
   if (!product) return null;
 
   const handleDelete = async () => {
-    await deleteProduct(product.id);
+    try {
+      await deleteProduct(product._id);
 
-    onClose();
+      onClose();
 
-    window.location.reload();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to delete product. Please try again.",
+      );
+    }
   };
+
+  const categoryName = product.category
+    ? `${product.category.mainCategory || ""} → ${
+        product.category.subCategory || ""
+      }`
+    : "-";
+
+  const firstVariant = product.variants?.[0];
 
   return (
     <Dialog
@@ -85,6 +102,8 @@ const DeleteProduct = ({ open, onClose, product }) => {
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center">
+            {/* Product Image */}
+
             <Avatar
               src={product.image}
               variant="rounded"
@@ -95,14 +114,39 @@ const DeleteProduct = ({ open, onClose, product }) => {
             />
 
             <Box>
-              <Typography fontWeight={600}>{product.name}</Typography>
+              {/* Product Name */}
 
-              <Typography variant="body2" color="text.secondary">
-                {product.category}
+              <Typography
+                fontWeight={600}
+                sx={{
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.productName}
               </Typography>
 
-              <Typography variant="body2" color="success.main">
-                ₹ {product.price}
+              {/* Category */}
+
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 0.5,
+                  color: darkMode ? "#BDBDBD" : "#777",
+                }}
+              >
+                {categoryName}
+              </Typography>
+
+              {/* Price */}
+
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 0.5,
+                  color: "#2E7D32",
+                }}
+              >
+                ₹ {firstVariant?.discountPrice || firstVariant?.price || 0}
               </Typography>
             </Box>
           </Stack>

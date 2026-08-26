@@ -5,14 +5,14 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  TextField,
   Button,
   Avatar,
   Stack,
 } from "@mui/material";
 
-import { updateUser } from "../../database/userService";
 import { useThemeContext } from "../context/ThemeContext";
+import api from "../../api/axios";
+import CustomTextField from "../../components/common/CustomTextField";
 
 const EditProfile = ({ admin, onClose, onUpdated }) => {
   const { darkMode } = useThemeContext();
@@ -26,60 +26,69 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
     if (admin) {
       setFullName(admin.fullName || "");
       setEmail(admin.email || "");
-      setPhone(admin.phone || "");
+      setPhone(admin.contactNumber || "");
       setImage(admin.image || "");
     }
   }, [admin]);
 
   const handleSave = async () => {
-    const updatedAdmin = {
-      ...admin,
-      fullName,
-      email,
-      phone,
-      image,
-    };
+    try {
+      const response = await api.put("/admin/profile", {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        contactNumber: phone.trim(),
+        image,
+      });
 
-    localStorage.setItem("admin", JSON.stringify(updatedAdmin));
+      if (response.data.status === "success") {
+        onUpdated(response.data.data);
 
-    onUpdated(updatedAdmin);
-    onClose();
+        alert("Profile updated successfully");
+
+        onClose();
+      }
+    } catch (error) {
+      console.error("Update admin profile error:", error);
+
+      alert(error.response?.data?.message || "Failed to update profile");
+    }
   };
 
   if (!admin) return null;
+
   const textFieldStyle = {
-  "& .MuiOutlinedInput-root": {
-    color: darkMode ? "#FFFFFF" : "#222",
+    "& .MuiOutlinedInput-root": {
+      color: darkMode ? "#FFFFFF" : "#222",
 
-    "& fieldset": {
-      borderColor: darkMode ? "#4B4B4B" : "#D9D9D9",
+      "& fieldset": {
+        borderColor: darkMode ? "#4B4B4B" : "#D9D9D9",
+      },
+
+      "&:hover fieldset": {
+        borderColor: "#B89478",
+      },
+
+      "&.Mui-focused fieldset": {
+        borderColor: "#B89478",
+      },
     },
 
-    "&:hover fieldset": {
-      borderColor: "#B89478",
+    "& .MuiInputLabel-root": {
+      color: darkMode ? "#CFCFCF" : "#666",
     },
 
-    "&.Mui-focused fieldset": {
-      borderColor: "#B89478",
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#B89478",
     },
-  },
 
-  "& .MuiInputLabel-root": {
-    color: darkMode ? "#CFCFCF" : "#666",
-  },
+    "& .MuiFormHelperText-root": {
+      color: darkMode ? "#A8A8A8" : "#777",
+    },
 
-  "& .MuiInputLabel-root.Mui-focused": {
-    color: "#B89478",
-  },
-
-  "& .MuiFormHelperText-root": {
-    color: darkMode ? "#A8A8A8" : "#777",
-  },
-
-  "& input": {
-    color: darkMode ? "#FFFFFF" : "#222",
-  },
-};
+    "& input": {
+      color: darkMode ? "#FFFFFF" : "#222",
+    },
+  };
 
   return (
     <>
@@ -111,19 +120,19 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             }}
           >
             <Avatar
-  src={image}
-  sx={{
-    width: 110,
-    height: 110,
-    fontSize: 42,
-    fontWeight: 700,
-  }}
->
+              src={image}
+              sx={{
+                width: 110,
+                height: 110,
+                fontSize: 42,
+                fontWeight: 700,
+              }}
+            >
               {fullName?.charAt(0)}
             </Avatar>
           </Box>
 
-          <TextField
+          <CustomTextField
             label="Full Name"
             fullWidth
             value={fullName}
@@ -131,7 +140,7 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             sx={textFieldStyle}
           />
 
-          <TextField
+          <CustomTextField
             label="Email"
             fullWidth
             value={email}
@@ -139,7 +148,7 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             sx={textFieldStyle}
           />
 
-          <TextField
+          <CustomTextField
             label="Phone Number"
             fullWidth
             value={phone}
@@ -147,7 +156,7 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             sx={textFieldStyle}
           />
 
-          <TextField
+          <CustomTextField
             label="Profile Image URL"
             fullWidth
             value={image}

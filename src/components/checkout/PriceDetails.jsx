@@ -1,24 +1,58 @@
 import React from "react";
 import { Box, Divider, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
 
-const PriceDetails = () => {
-  const cartItems = useSelector((state) => state.cart.items);
+const PriceDetails = ({
+  subtotal = 0,
+  discount = 0,
+  appliedCoupon = null,
+  delivery = "standard",
+}) => {
+  // =====================================================
+  // SHIPPING BASED ON DELIVERY METHOD
+  // =====================================================
 
-  // Calculate subtotal
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  const shipping = delivery === "express" ? 99 : 0;
+
+  // =====================================================
+  // COUPON DISCOUNT
+  // =====================================================
+
+  const couponDiscount = Number(discount) || 0;
+
+  // =====================================================
+  // TAXABLE AMOUNT
+  // =====================================================
+
+  const taxableAmount = Math.max(
+    subtotal - couponDiscount,
     0
   );
 
-  // Static values (we'll make these dynamic later)
-  const shipping = subtotal >= 999 ? 0 : 50;
-  const discount = subtotal >= 1500 ? 100 : 0;
-  const gst = Math.round(subtotal * 0.05);
+  // =====================================================
+  // GST
+  // =====================================================
 
-  const total = subtotal + shipping + gst - discount;
+  const gst = Math.round(taxableAmount * 0.05);
 
-  const Row = ({ label, value, color = "#1E2F2B", bold = false }) => (
+  // =====================================================
+  // FINAL TOTAL
+  // =====================================================
+
+  const total =
+    taxableAmount +
+    shipping +
+    gst;
+
+  // =====================================================
+  // ROW
+  // =====================================================
+
+  const Row = ({
+    label,
+    value,
+    color = "#1E2F2B",
+    bold = false,
+  }) => (
     <Box
       sx={{
         display: "flex",
@@ -40,7 +74,7 @@ const PriceDetails = () => {
         sx={{
           fontWeight: bold ? 700 : 600,
           color,
-          fontSize: 15,
+          fontSize: bold ? 18 : 15,
         }}
       >
         {value}
@@ -61,30 +95,66 @@ const PriceDetails = () => {
         Price Details
       </Typography>
 
-      <Row label="Subtotal" value={`₹${subtotal}`} />
+      {/* SUBTOTAL */}
 
       <Row
-        label="Shipping"
-        value={shipping === 0 ? "FREE" : `₹${shipping}`}
-        color={shipping === 0 ? "#2E7D32" : "#1E2F2B"}
+        label="Subtotal"
+        value={`₹${subtotal.toLocaleString("en-IN")}`}
       />
 
+      {/* SHIPPING */}
+
       <Row
-        label="Discount"
-        value={`-₹${discount}`}
+        label={
+          delivery === "express"
+            ? "Express Delivery"
+            : "Standard Delivery"
+        }
+        value={
+          shipping === 0
+            ? "FREE"
+            : `₹${shipping.toLocaleString("en-IN")}`
+        }
+        color={
+          shipping === 0
+            ? "#2E7D32"
+            : "#1E2F2B"
+        }
+      />
+
+      {/* DISCOUNT */}
+
+      <Row
+        label={
+          appliedCoupon
+            ? `Discount (${appliedCoupon.code})`
+            : "Discount"
+        }
+        value={`-₹${couponDiscount.toLocaleString(
+          "en-IN"
+        )}`}
         color="#2E7D32"
       />
 
+      {/* GST */}
+
       <Row
         label="GST (5%)"
-        value={`₹${gst}`}
+        value={`₹${gst.toLocaleString("en-IN")}`}
       />
 
-      <Divider sx={{ my: 2 }} />
+      <Divider
+        sx={{
+          my: 2,
+          borderColor: "#E5DED5",
+        }}
+      />
+
+      {/* TOTAL */}
 
       <Row
         label="Total"
-        value={`₹${total}`}
+        value={`₹${total.toLocaleString("en-IN")}`}
         bold
       />
     </>

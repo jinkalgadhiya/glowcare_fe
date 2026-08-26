@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Grid,
   Paper,
   Box,
   Typography,
-  TextField,
   Button,
   Link,
   Stack,
@@ -12,25 +11,37 @@ import {
   InputAdornment,
   Alert,
 } from "@mui/material";
+
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
 import loginImg from "../assets/loginImg.png";
-import { useState } from "react";
-import { Users } from "../data/Users";
 import { useNavigate } from "react-router-dom";
+
 import ForgetPassword from "./ForgetPassword";
 import Logo from "../assets/LogoDark.png";
-import { getUsers } from "../database/userService";
+
 import { login } from "./AuthService";
+import api from "../api/axios";
+
+// Common TextField
+import CustomTextField from "../components/common/CustomTextField";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [emailError, setEmailError] = useState("");
   const [passError, setPassError] = useState("");
   const [loginError, setLoginError] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
+
+  const [openForgotPassword, setOpenForgotPassword] = useState(false);
+
   const navigate = useNavigate();
+
+  // LOGIN
 
   const handleLogin = async () => {
     setEmailError("");
@@ -39,6 +50,7 @@ function Login() {
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&]).{8,}$/;
 
+    // Email Validation
     if (!email.trim()) {
       setEmailError("Please enter your email address");
       return;
@@ -47,6 +59,7 @@ function Login() {
       return;
     }
 
+    // Password Validation
     if (!password.trim()) {
       setPassError("Please enter your password");
       return;
@@ -57,32 +70,37 @@ function Login() {
       return;
     }
 
-    const users = await getUsers();
+    try {
+      const response = await api.post("/login", {
+        email: email.trim(),
+        password,
+      });
 
-    const foundUser = Users.find(
-      (user) =>
-        user.email.toLowerCase() === email.trim().toLowerCase() &&
-        user.password === password,
-    );
+      if (response.data.status === "success") {
+        const loggedInUser = response.data.data;
+        const token = response.data.token;
 
-    const registeredUser = users.find(
-      (user) =>
-        user.email.toLowerCase() === email.trim().toLowerCase() &&
-        user.password === password,
-    );
+        login(loggedInUser, token);
 
-    if (!foundUser && !registeredUser) {
-      setLoginError("Invalid email or password");
-      return;
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+
+      if (error.response?.status === 401) {
+        setLoginError("Invalid email or password");
+      } else if (error.response?.status === 403) {
+        setLoginError(
+          error.response?.data?.message || "Your account is inactive",
+        );
+      } else {
+        setLoginError(
+          error.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        );
+      }
     }
-
-    const loggedInUser = foundUser || registeredUser;
-
-    login(loggedInUser);
-    navigate("/");
   };
-
-  const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
   return (
     <Box
@@ -99,7 +117,14 @@ function Login() {
           height: "100%",
         }}
       >
-        <Grid container sx={{ height: "100%" }}>
+        <Grid
+          container
+          sx={{
+            height: "100%",
+          }}
+        >
+          {/* LEFT SIDE IMAGE */}
+
           <Grid size={7}>
             <Box
               component="img"
@@ -113,6 +138,8 @@ function Login() {
               }}
             />
           </Grid>
+
+          {/* RIGHT SIDE LOGIN FORM */}
 
           <Grid
             size={5}
@@ -128,6 +155,8 @@ function Login() {
                 width: "70%",
               }}
             >
+              {/* Logo + Welcome */}
+
               <Box textAlign="center">
                 <Box
                   component="img"
@@ -144,7 +173,7 @@ function Login() {
                   variant="h3"
                   fontWeight="bold"
                   sx={{
-                    mt: -2, // adjust between -1 and -3 if needed
+                    mt: -2,
                   }}
                 >
                   Welcome Back!
@@ -159,8 +188,9 @@ function Login() {
                 Sign in to continue shopping with GlowCare.
               </Typography>
 
-              <TextField
-                variant="standard"
+              {/* EMAIL */}
+
+              <CustomTextField
                 label="Email"
                 placeholder="Enter Your Email"
                 value={email}
@@ -169,8 +199,9 @@ function Login() {
                 helperText={emailError}
               />
 
-              <TextField
-                variant="standard"
+              {/* PASSWORD */}
+
+              <CustomTextField
                 label="Password"
                 placeholder="Enter Your Password"
                 type={showPassword ? "text" : "password"}
@@ -193,10 +224,14 @@ function Login() {
                 }}
               />
 
+              {/* FORGOT PASSWORD */}
+
               <Typography
                 variant="body2"
                 color="textSecondary"
-                sx={{ alignSelf: "flex-end" }}
+                sx={{
+                  alignSelf: "flex-end",
+                }}
               >
                 Forgot your password?{" "}
                 <Link
@@ -208,11 +243,17 @@ function Login() {
                 </Link>
               </Typography>
 
+              {/* LOGIN ERROR */}
+
               {loginError && <Alert severity="error">{loginError}</Alert>}
+
+              {/* SIGN IN BUTTON */}
 
               <Button variant="contained" size="large" onClick={handleLogin}>
                 Sign In
               </Button>
+
+              {/* REGISTER */}
 
               <Typography textAlign="center">
                 Don't have an account?{" "}
@@ -228,9 +269,13 @@ function Login() {
           </Grid>
         </Grid>
       </Paper>
+
+      {/* FORGOT PASSWORD */}
+
       <ForgetPassword
         open={openForgotPassword}
         handleClose={() => setOpenForgotPassword(false)}
+        type="user"
       />
     </Box>
   );
