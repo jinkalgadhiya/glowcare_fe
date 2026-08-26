@@ -11,6 +11,7 @@ const ProductGrid = ({ products }) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          width: "100%",
         }}
       >
         <Typography
@@ -31,28 +32,32 @@ const ProductGrid = ({ products }) => {
       container
       spacing={4}
       sx={{
-        alignItems: "stretch",
-        ml: 4,
-        mr: 4,
+        width: "100%",
+        px: {
+          xs: 2,
+          sm: 3,
+          md: 4,
+        },
       }}
     >
       {products.map((product) => (
         <Grid
-          key={product.id}
-          size={{
-            xs: 12,
-            sm: 6,
-            md: 4,
-            lg: 3,
-          }}
+          item
+          key={product._id || product.id}
+          xs={12}
+          sm={6}
+          md={4}
+          lg={3}
           sx={{
             display: "flex",
+            justifyContent: "center",
           }}
         >
           <Box
             sx={{
               width: "100%",
               display: "flex",
+              justifyContent: "center",
             }}
           >
             <ProductCard product={product} />

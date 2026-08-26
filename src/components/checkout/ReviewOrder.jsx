@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
   Box,
   Typography,
@@ -10,125 +11,320 @@ import {
   Divider,
 } from "@mui/material";
 
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+
 import { useSelector, useDispatch } from "react-redux";
 
-import PriceDetails from "./PriceDetails";
-import { getUsers, updateUser } from "../../database/userService";
 import { createOrder } from "../../database/orderService";
-import { clearCartItems } from "../../database/cartService";
-import { clearCart } from "../../redux/cart/cartSlice";
+
+import { clearWholeCart } from "../../redux/cart/cartActions";
 
 const ReviewOrder = ({ checkoutData, backStep }) => {
   const cartItems = useSelector((state) => state.cart.items);
 
   const dispatch = useDispatch();
 
-  const [openSuccessDialog, setOpenSuccessDialog] = React.useState(false);
+  const [openSuccessDialog, setOpenSuccessDialog] =
+    React.useState(false);
+
   const [placedOrder, setPlacedOrder] = React.useState(null);
-  // Calculate totals
+
+  const [placingOrder, setPlacingOrder] =
+    React.useState(false);
+
+  // =====================================================
+  // SHIPPING DATA
+  // =====================================================
+
+  const shippingData = checkoutData?.shipping || {};
+
+  // =====================================================
+  // CALCULATE TOTALS
+  // =====================================================
+
   const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) =>
+      total +
+      Number(item.price || 0) *
+        Number(item.quantity || 0),
     0,
   );
 
   const shipping = subtotal >= 999 ? 0 : 50;
+
   const discount = subtotal >= 1500 ? 100 : 0;
+
   const gst = Math.round(subtotal * 0.05);
 
-  const total = subtotal + shipping + gst - discount;
+  const total =
+    subtotal +
+    shipping +
+    gst -
+    discount;
 
-  // Place Order
+  // =====================================================
+  // FORMAT PRICE
+  // =====================================================
+
+  const formatPrice = (value) => {
+    return Number(value || 0).toLocaleString(
+      "en-IN",
+    );
+  };
+
+  // =====================================================
+  // FULL SHIPPING ADDRESS
+  // =====================================================
+  //
+  // Supports different names that may already exist
+  // in your saved-address structure.
+  // =====================================================
+
+  const addressLine =
+    shippingData.addressLine ||
+    shippingData.address ||
+    "";
+
+  const city =
+    shippingData.city || "";
+
+  const state =
+    shippingData.state || "";
+
+  const pincode =
+    shippingData.pincode || "";
+
+  // =====================================================
+  // CREATE DISPLAY ADDRESS
+  // =====================================================
+
+  const addressParts = [
+    addressLine,
+    city,
+    state,
+    pincode,
+  ].filter(Boolean);
+
+  // =====================================================
+  // PLACE ORDER
+  // =====================================================
+
   const handlePlaceOrder = async () => {
+    if (
+      placingOrder ||
+      cartItems.length === 0
+    ) {
+      return;
+    }
+
     try {
-      // Get all users
-      const users = await getUsers();
+      setPlacingOrder(true);
 
-      // Find logged-in customer
-      const customer = users.find(
-        (user) =>
-          user.email.toLowerCase() ===
-          checkoutData.shipping.email.toLowerCase(),
-      );
+      // =================================================
+      // PREPARE ORDER ITEMS
+      // =================================================
 
-      if (!customer) {
-        alert("Customer not found");
-        return;
-      }
+      const items = cartItems.map((item) => ({
+        productId:
+          item.productId || item._id,
 
-      // Create Order
+        variantId:
+          item.variantId || "",
+
+        name: item.name,
+
+        image: item.image || "",
+
+        category: item.category || "",
+
+        size: item.size || "",
+
+        price: Number(item.price || 0),
+
+        quantity:
+          Number(item.quantity || 1),
+
+        total:
+          Number(item.price || 0) *
+          Number(item.quantity || 1),
+      }));
+
+      // =================================================
+      // PREPARE SHIPPING ADDRESS
+      // =================================================
+
+      const shippingAddress = {
+        fullName:
+          shippingData.fullName || "",
+
+        email:
+          shippingData.email || "",
+
+        contactNumber:
+          shippingData.phone || "",
+
+        address:
+          addressLine,
+
+        city,
+
+        state,
+
+        pincode,
+      };
+
+      // =================================================
+      // PAYMENT METHOD
+      // =================================================
+
+      const paymentMethod =
+        checkoutData.payment === "cod"
+          ? "COD"
+          : "Online";
+
+      // =================================================
+      // DELIVERY METHOD
+      // =================================================
+
+      const deliveryMethod =
+        checkoutData.delivery === "express"
+          ? "Express"
+          : "Standard";
+
+      // =================================================
+      // ORDER DATA
+      // =================================================
+
       const orderData = {
-        customer: {
-          id: customer.id,
-          fullName: customer.fullName,
-          email: customer.email,
-          phone: customer.phone,
-        },
+        items,
 
-        shipping: {
-          fullName: checkoutData.shipping.fullName,
-          email: checkoutData.shipping.email,
-          phone: checkoutData.shipping.phone,
-          address: checkoutData.shipping.address,
-          city: checkoutData.shipping.city,
-          state: checkoutData.shipping.state,
-          pincode: checkoutData.shipping.pincode,
-        },
-
-        deliveryMethod: checkoutData.delivery,
-
-        paymentMethod: checkoutData.payment,
-
-        items: cartItems,
+        shippingAddress,
 
         pricing: {
           subtotal,
-          shipping,
           discount,
           gst,
+          shipping,
           total,
         },
+
+        deliveryMethod,
+
+        paymentMethod,
       };
 
-      // Save Order
-      const order = await createOrder(orderData);
+      console.log(
+        "Sending order to backend:",
+        orderData,
+      );
 
-      // Update Customer Details
-      customer.totalOrders = (customer.totalOrders || 0) + 1;
-      customer.totalSpent = (customer.totalSpent || 0) + total;
+      // =================================================
+      // CREATE ORDER
+      // =================================================
 
-      customer.address = {
-        fullName: checkoutData.shipping.fullName,
-        phone: checkoutData.shipping.phone,
-        street: checkoutData.shipping.address,
-        city: checkoutData.shipping.city,
-        state: checkoutData.shipping.state,
-        pincode: checkoutData.shipping.pincode,
-        landmark: checkoutData.shipping.landmark || "",
-      };
+      const order =
+        await createOrder(orderData);
 
-      // Optional (keep customer's main phone updated)
-      customer.phone = checkoutData.shipping.phone;
+      console.log(
+        "Order created successfully:",
+        order,
+      );
 
-      await updateUser(customer);
+      // =================================================
+      // CLEAR CART
+      // =================================================
 
-      // Clear Cart
-      dispatch(clearCart());
-      await clearCartItems();
+      await dispatch(
+        clearWholeCart(),
+      );
 
-      // Success Dialog
+      // =================================================
+      // SHOW SUCCESS
+      // =================================================
+
       setPlacedOrder(order);
+
       setOpenSuccessDialog(true);
     } catch (error) {
-      console.error("Order Failed:", error);
+      console.error(
+        "Order Failed:",
+        error,
+      );
+
+      const message =
+        error?.response?.data?.message ||
+        "Unable to place order. Please try again.";
+
+      alert(message);
+    } finally {
+      setPlacingOrder(false);
     }
   };
 
+  // =====================================================
+  // SECTION TITLE
+  // =====================================================
+
+  const SectionTitle = ({
+    icon,
+    children,
+  }) => {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.2,
+          mb: 2.5,
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "10px",
+            backgroundColor: "#F3F0EA",
+            color: "#1E2F2B",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {icon}
+        </Box>
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            fontSize: 18,
+            color: "#1E2F2B",
+          }}
+        >
+          {children}
+        </Typography>
+      </Box>
+    );
+  };
+
+  // =====================================================
+  // RETURN
+  // =====================================================
+
   return (
-    <Box sx={{ width: 520 }}>
-      {/* Heading */}
+    <Box
+      sx={{
+        width: "520px",
+      }}
+    >
+      {/* =================================================
+          HEADING
+      ================================================= */}
 
       <Typography
         sx={{
@@ -145,213 +341,646 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
         sx={{
           color: "#777",
           mb: 5,
+          fontSize: 14,
         }}
       >
-        Please review your order before placing it.
+        Please review your order details before
+        placing your order.
       </Typography>
 
-      {/* Shipping */}
+      {/* =================================================
+          SHIPPING ADDRESS
+      ================================================= */}
 
       <Paper
         elevation={0}
         sx={{
           p: 3,
           mb: 3,
-          borderRadius: 3,
-          border: "1px solid #ECE6DE",
+          borderRadius: "16px",
+          border: "1px solid #E8E2D9",
+          backgroundColor: "#FFFFFF",
         }}
       >
+        <SectionTitle
+          icon={
+            <LocationOnOutlinedIcon
+              sx={{ fontSize: 21 }}
+            />
+          }
+        >
+          Shipping Address
+        </SectionTitle>
+
+        {/* NAME */}
+
         <Typography
           sx={{
+            fontSize: 15,
             fontWeight: 600,
-            fontSize: 20,
-            mb: 2,
+            color: "#292D2B",
+            mb: 0.6,
           }}
         >
-          📍 Shipping Address
+          {shippingData.fullName || "-"}
         </Typography>
 
-        <Typography>{checkoutData.shipping.fullName}</Typography>
-        <Typography>{checkoutData.shipping.email}</Typography>
-        <Typography>{checkoutData.shipping.phone}</Typography>
-        <Typography>{checkoutData.shipping.address}</Typography>
+        {/* EMAIL */}
 
-        <Typography>
-          {checkoutData.shipping.city}, {checkoutData.shipping.state}
-        </Typography>
-
-        <Typography>{checkoutData.shipping.pincode}</Typography>
-      </Paper>
-
-      {/* Delivery */}
-
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #ECE6DE",
-        }}
-      >
         <Typography
           sx={{
-            fontWeight: 600,
-            fontSize: 20,
-            mb: 2,
+            fontSize: 14,
+            color: "#666",
+            mb: 0.4,
           }}
         >
-          🚚 Delivery Method
+          {shippingData.email || "-"}
         </Typography>
 
-        <Typography sx={{ textTransform: "capitalize" }}>
-          {checkoutData.delivery}
-        </Typography>
-      </Paper>
+        {/* PHONE */}
 
-      {/* Payment */}
-
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #ECE6DE",
-        }}
-      >
         <Typography
           sx={{
-            fontWeight: 600,
-            fontSize: 20,
-            mb: 2,
+            fontSize: 14,
+            color: "#666",
+            mb: addressParts.length
+              ? 1.5
+              : 0,
           }}
         >
-          💳 Payment Method
+          {shippingData.phone || "-"}
         </Typography>
 
-        <Typography sx={{ textTransform: "capitalize" }}>
-          {checkoutData.payment}
-        </Typography>
-      </Paper>
+        {/* FULL ADDRESS */}
 
-      {/* Order Items */}
-
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #ECE6DE",
-        }}
-      >
-        <Typography
-          sx={{
-            fontWeight: 600,
-            fontSize: 20,
-            mb: 3,
-          }}
-        >
-          🛍 Order Items
-        </Typography>
-
-        {cartItems.map((item) => (
+        {addressParts.length > 0 && (
           <Box
-            key={`${item.productId}-${item.variantId}`}
+            sx={{
+              pt: 1.5,
+              borderTop:
+                "1px solid #EEE9E2",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 14,
+                lineHeight: 1.7,
+                color: "#555",
+              }}
+            >
+              {addressLine}
+            </Typography>
+
+            {(city ||
+              state ||
+              pincode) && (
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  color: "#555",
+                }}
+              >
+                {[city, state]
+                  .filter(Boolean)
+                  .join(", ")}
+                {pincode
+                  ? ` - ${pincode}`
+                  : ""}
+              </Typography>
+            )}
+          </Box>
+        )}
+
+        {/* FALLBACK */}
+
+        {addressParts.length === 0 && (
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: "#999",
+              fontStyle: "italic",
+              mt: 1,
+            }}
+          >
+            Address details are not available.
+          </Typography>
+        )}
+      </Paper>
+
+      {/* =================================================
+          DELIVERY METHOD
+      ================================================= */}
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          borderRadius: "16px",
+          border: "1px solid #E8E2D9",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <SectionTitle
+          icon={
+            <LocalShippingOutlinedIcon
+              sx={{ fontSize: 21 }}
+            />
+          }
+        >
+          Delivery Method
+        </SectionTitle>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent:
+              "space-between",
+            px: 1.5,
+            py: 1.5,
+            borderRadius: "10px",
+            backgroundColor: "#F8F6F2",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#555",
+            }}
+          >
+            Delivery
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#1E2F2B",
+              textTransform:
+                "capitalize",
+            }}
+          >
+            {checkoutData.delivery ||
+              "Standard"}
+          </Typography>
+        </Box>
+      </Paper>
+
+      {/* =================================================
+          PAYMENT METHOD
+      ================================================= */}
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          borderRadius: "16px",
+          border: "1px solid #E8E2D9",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <SectionTitle
+          icon={
+            <CreditCardOutlinedIcon
+              sx={{ fontSize: 21 }}
+            />
+          }
+        >
+          Payment Method
+        </SectionTitle>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent:
+              "space-between",
+            px: 1.5,
+            py: 1.5,
+            borderRadius: "10px",
+            backgroundColor: "#F8F6F2",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#555",
+            }}
+          >
+            Payment
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#1E2F2B",
+            }}
+          >
+            {checkoutData.payment ===
+            "cod"
+              ? "Cash on Delivery"
+              : checkoutData.payment ||
+                "Online"}
+          </Typography>
+        </Box>
+      </Paper>
+
+      {/* =================================================
+          ORDER ITEMS
+      ================================================= */}
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          borderRadius: "16px",
+          border: "1px solid #E8E2D9",
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <SectionTitle
+          icon={
+            <ShoppingBagOutlinedIcon
+              sx={{ fontSize: 21 }}
+            />
+          }
+        >
+          Order Items
+        </SectionTitle>
+
+        {cartItems.map((item, index) => (
+          <Box
+            key={`${item.productId || item._id}-${item.variantId || index}`}
             sx={{
               display: "flex",
               alignItems: "center",
               gap: 2,
-              mb: 3,
+              mb:
+                index ===
+                cartItems.length - 1
+                  ? 0
+                  : 2.5,
+              pb:
+                index ===
+                cartItems.length - 1
+                  ? 0
+                  : 2.5,
+              borderBottom:
+                index ===
+                cartItems.length - 1
+                  ? "none"
+                  : "1px solid #F0ECE6",
             }}
           >
+            {/* PRODUCT IMAGE */}
+
             <Avatar
               src={item.image}
               variant="rounded"
               sx={{
-                width: 70,
-                height: 70,
-                borderRadius: 2,
+                width: 68,
+                height: 68,
+                borderRadius: "10px",
+                backgroundColor: "#F7F4EF",
               }}
             />
 
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontWeight: 600 }}>{item.name}</Typography>
+            {/* PRODUCT DETAILS */}
 
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               <Typography
                 sx={{
-                  color: "#777",
+                  fontWeight: 600,
                   fontSize: 14,
+                  color: "#292D2B",
+                  mb: 0.4,
                 }}
               >
-                {item.size}
+                {item.name}
               </Typography>
 
+              {item.size && (
+                <Typography
+                  sx={{
+                    color: "#888",
+                    fontSize: 12,
+                    mb: 0.3,
+                  }}
+                >
+                  {item.size}
+                </Typography>
+              )}
+
               <Typography
                 sx={{
-                  color: "#777",
-                  fontSize: 14,
+                  color: "#888",
+                  fontSize: 12,
                 }}
               >
-                Qty : {item.quantity}
+                Quantity: {item.quantity}
               </Typography>
             </Box>
 
-            <Typography sx={{ fontWeight: 600 }}>
-              ₹{item.price * item.quantity}
+            {/* ITEM TOTAL */}
+
+            <Typography
+              sx={{
+                fontWeight: 600,
+                fontSize: 14,
+                color: "#1E2F2B",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ₹
+              {formatPrice(
+                Number(item.price || 0) *
+                  Number(
+                    item.quantity || 1,
+                  ),
+              )}
             </Typography>
           </Box>
         ))}
       </Paper>
 
-      {/* Price Details */}
+      {/* =================================================
+          PRICE DETAILS
+      ================================================= */}
 
       <Paper
         elevation={0}
         sx={{
           p: 3,
           mb: 4,
-          borderRadius: 3,
-          border: "1px solid #ECE6DE",
+          borderRadius: "16px",
+          border: "1px solid #E8E2D9",
+          backgroundColor: "#FFFFFF",
         }}
       >
-        <PriceDetails />
+        <SectionTitle
+          icon={
+            <CreditCardOutlinedIcon
+              sx={{ fontSize: 21 }}
+            />
+          }
+        >
+          Price Details
+        </SectionTitle>
+
+        {/* SUBTOTAL */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+            mb: 1.5,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#666",
+            }}
+          >
+            Subtotal
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#333",
+              fontWeight: 500,
+            }}
+          >
+            ₹{formatPrice(subtotal)}
+          </Typography>
+        </Box>
+
+        {/* DISCOUNT */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+            mb: 1.5,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#666",
+            }}
+          >
+            Discount
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 500,
+              color:
+                discount > 0
+                  ? "#2E7D32"
+                  : "#666",
+            }}
+          >
+            {discount > 0
+              ? `- ₹${formatPrice(
+                  discount,
+                )}`
+              : "₹0"}
+          </Typography>
+        </Box>
+
+        {/* GST */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+            mb: 1.5,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#666",
+            }}
+          >
+            GST (5%)
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#333",
+              fontWeight: 500,
+            }}
+          >
+            ₹{formatPrice(gst)}
+          </Typography>
+        </Box>
+
+        {/* SHIPPING */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+            mb: 2.5,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#666",
+            }}
+          >
+            Shipping
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 500,
+              color:
+                shipping === 0
+                  ? "#2E7D32"
+                  : "#333",
+            }}
+          >
+            {shipping === 0
+              ? "FREE"
+              : `₹${formatPrice(
+                  shipping,
+                )}`}
+          </Typography>
+        </Box>
+
+        <Divider
+          sx={{
+            borderColor: "#EAE5DE",
+            mb: 2,
+          }}
+        />
+
+        {/* TOTAL */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: "#1E2F2B",
+              }}
+            >
+              Total Amount
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 12,
+                color: "#999",
+                mt: 0.3,
+              }}
+            >
+              Inclusive of applicable taxes
+            </Typography>
+          </Box>
+
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#1E2F2B",
+            }}
+          >
+            ₹{formatPrice(total)}
+          </Typography>
+        </Box>
       </Paper>
 
-      {/* Buttons */}
+      {/* =================================================
+          BUTTONS
+      ================================================= */}
 
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
+          gap: 2,
         }}
       >
+        {/* BACK */}
+
         <Button
           variant="outlined"
           onClick={backStep}
+          disabled={placingOrder}
           sx={{
             px: 5,
             height: 52,
-            borderRadius: 2,
+            borderRadius: "10px",
             textTransform: "none",
             borderColor: "#1E2F2B",
             color: "#1E2F2B",
+            fontSize: 14,
+            fontWeight: 600,
+
+            "&:hover": {
+              borderColor: "#1E2F2B",
+              backgroundColor: "#F5F3EF",
+            },
           }}
         >
           ← Back
         </Button>
 
+        {/* PLACE ORDER */}
+
         <Button
           variant="contained"
           onClick={handlePlaceOrder}
+          disabled={
+            placingOrder ||
+            cartItems.length === 0
+          }
           sx={{
             px: 5,
             height: 52,
             background: "#1E2F2B",
-            borderRadius: 2,
+            borderRadius: "10px",
             textTransform: "none",
             boxShadow: "none",
+            fontSize: 14,
+            fontWeight: 600,
 
             "&:hover": {
               background: "#16251F",
@@ -359,9 +988,16 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
             },
           }}
         >
-          Place Order
+          {placingOrder
+            ? "Placing Order..."
+            : "Place Order"}
         </Button>
       </Box>
+
+      {/* =================================================
+          SUCCESS DIALOG
+      ================================================= */}
+
       <Dialog
         open={openSuccessDialog}
         maxWidth="sm"
@@ -379,7 +1015,7 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
             textAlign: "center",
           }}
         >
-          {/* Success Icon */}
+          {/* SUCCESS ICON */}
 
           <Box
             sx={{
@@ -393,13 +1029,15 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
               justifyContent: "center",
               mb: 3,
 
-              animation: "pop .4s ease",
+              animation:
+                "pop .4s ease",
 
               "@keyframes pop": {
                 "0%": {
                   transform: "scale(.5)",
                   opacity: 0,
                 },
+
                 "100%": {
                   transform: "scale(1)",
                   opacity: 1,
@@ -415,6 +1053,8 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
             />
           </Box>
 
+          {/* TITLE */}
+
           <Typography
             sx={{
               fontSize: 30,
@@ -424,6 +1064,8 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
           >
             Order Placed Successfully
           </Typography>
+
+          {/* MESSAGE */}
 
           <Typography
             sx={{
@@ -435,10 +1077,13 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
           >
             Thank you for choosing GlowCare.
             <br />
-            Your order has been confirmed and is now being prepared.
+            Your order has been confirmed and
+            is now being prepared.
           </Typography>
 
           <Divider sx={{ my: 4 }} />
+
+          {/* ORDER NUMBER */}
 
           <Typography
             sx={{
@@ -446,7 +1091,7 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
               fontSize: 14,
             }}
           >
-            ORDER ID
+            ORDER NUMBER
           </Typography>
 
           <Typography
@@ -456,8 +1101,11 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
               mb: 3,
             }}
           >
-            {placedOrder?.id}
+            {placedOrder?.orderNumber ||
+              "-"}
           </Typography>
+
+          {/* ESTIMATED DELIVERY */}
 
           <Typography
             sx={{
@@ -478,10 +1126,14 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
             3 - 5 Business Days
           </Typography>
 
+          {/* CONTINUE SHOPPING */}
+
           <Button
             fullWidth
             variant="contained"
-            startIcon={<ShoppingBagOutlinedIcon />}
+            startIcon={
+              <ShoppingBagOutlinedIcon />
+            }
             sx={{
               height: 52,
               borderRadius: 3,
@@ -496,15 +1148,20 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
             }}
             onClick={() => {
               setOpenSuccessDialog(false);
+              window.location.href = "/";
             }}
           >
             Continue Shopping
           </Button>
 
+          {/* VIEW ORDERS */}
+
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<Inventory2OutlinedIcon />}
+            startIcon={
+              <Inventory2OutlinedIcon />
+            }
             sx={{
               height: 52,
               borderRadius: 3,
@@ -517,6 +1174,11 @@ const ReviewOrder = ({ checkoutData, backStep }) => {
                 borderColor: "#1E2F2B",
                 bgcolor: "#F8F8F8",
               },
+            }}
+            onClick={() => {
+              setOpenSuccessDialog(false);
+              window.location.href =
+                "/user/orders";
             }}
           >
             View My Orders

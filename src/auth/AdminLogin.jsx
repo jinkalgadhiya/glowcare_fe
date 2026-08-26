@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Paper,
   Typography,
-  TextField,
   Button,
   Stack,
   Alert,
@@ -19,7 +17,10 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../assets/LogoDark.png";
 import ForgetPassword from "./ForgetPassword";
 import { useNavigate } from "react-router-dom";
-import { getAdmin } from "../database/adminService";
+import adminApi from "../api/adminApi";
+import { adminLogin } from "./AdminAuthService";
+
+import CustomTextField from "../components/common/CustomTextField";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -62,34 +63,42 @@ function AdminLogin() {
       return;
     }
 
-    // Find Admin
-    const admin = await getAdmin();
+    try {
+      const response = await adminApi.post("/admin/login", {
+        email: email.trim(),
+        password,
+      });
 
-    console.log("===========");
-    console.log("Admin From DB:", admin);
-    console.log("DB Email:", admin?.email);
-    console.log("DB Password:", admin?.password);
-    console.log("Entered Email:", email);
-    console.log("Entered Password:", password);
-    console.log(
-      "Email Match:",
-      admin?.email?.toLowerCase() === email.trim().toLowerCase(),
-    );
-    console.log("Password Match:", admin?.password === password);
-    console.log("===========");
+      if (response.data.status === "success") {
+        const admin = response.data.data;
+        const token = response.data.token;
 
-    if (
-      !admin ||
-      admin.email.toLowerCase() !== email.trim().toLowerCase() ||
-      admin.password !== password
-    ) {
-      setLoginError("Invalid admin email or password");
-      return;
+        adminLogin(
+          {
+            ...admin,
+            role: "admin",
+          },
+          token,
+        );
+
+        navigate("/admin/dashboard");
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+
+      if (error.response?.status === 401) {
+        setLoginError("Invalid admin email or password");
+      } else if (error.response?.status === 403) {
+        setLoginError(
+          error.response?.data?.message || "Admin account is inactive.",
+        );
+      } else {
+        setLoginError(
+          error.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        );
+      }
     }
-
-    localStorage.setItem("admin", JSON.stringify(admin));
-
-    navigate("/admin/dashboard");
   };
 
   return (
@@ -115,6 +124,7 @@ function AdminLogin() {
         }}
       >
         {/* Left Side */}
+
         <Box
           sx={{
             width: "42%",
@@ -153,6 +163,7 @@ function AdminLogin() {
         </Box>
 
         {/* Right Side */}
+
         <Box
           sx={{
             width: "58%",
@@ -186,7 +197,9 @@ function AdminLogin() {
               </Typography>
             </Box>
 
-            <TextField
+            {/* Email */}
+
+            <CustomTextField
               label="Email"
               placeholder="Enter your email"
               fullWidth
@@ -196,7 +209,9 @@ function AdminLogin() {
               helperText={emailError}
             />
 
-            <TextField
+            {/* Password */}
+
+            <CustomTextField
               label="Password"
               placeholder="Enter your password"
               fullWidth
@@ -220,18 +235,26 @@ function AdminLogin() {
               }}
             />
 
+            {/* Forgot Password */}
+
             <Box display="flex" justifyContent="flex-end">
               <Link
                 component="button"
                 underline="hover"
                 onClick={() => setOpenForgotPassword(true)}
-                sx={{ color: "#d29c5a"}}
+                sx={{
+                  color: "#d29c5a",
+                }}
               >
                 Forgot Password?
               </Link>
             </Box>
 
+            {/* Login Error */}
+
             {loginError && <Alert severity="error">{loginError}</Alert>}
+
+            {/* Login Button */}
 
             <Button
               variant="contained"
@@ -253,6 +276,8 @@ function AdminLogin() {
           </Stack>
         </Box>
       </Paper>
+
+      {/* Forgot Password */}
 
       <ForgetPassword
         open={openForgotPassword}

@@ -3,7 +3,6 @@ import {
   Box,
   Paper,
   Typography,
-  TextField,
   Button,
   MenuItem,
   Stack,
@@ -11,20 +10,27 @@ import {
   Link,
   Divider,
 } from "@mui/material";
+
 import {
-  addCategory,
+  createCategory,
   updateCategory,
   getCategoryById,
+  getCategories,
 } from "../../database/categoryService";
+
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCategories } from "../../database/categoryService";
+
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 import { useThemeContext } from "../context/ThemeContext";
 
+// Common TextField
+import CustomTextField from "../../components/common/CustomTextField";
+
 const AddCategory = () => {
   const { darkMode } = useThemeContext();
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -33,15 +39,17 @@ const AddCategory = () => {
   const [menuType, setMenuType] = useState("");
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
-  const [subtitle, setSubtitle] = useState("");
   const [bannerImage, setBannerImage] = useState("");
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("Active");
-  const [createdAt, setCreatedAt] = useState(null);
   const [categoryType, setCategoryType] = useState("main");
   const [description, setDescription] = useState("");
 
   const [allCategories, setAllCategories] = useState([]);
+
+  // ======================================================
+  // DARK / LIGHT THEME STYLE
+  // ======================================================
 
   const textFieldStyle = {
     "& .MuiInputLabel-root": {
@@ -73,9 +81,14 @@ const AddCategory = () => {
     },
   };
 
+  // ======================================================
+  // LOAD DATA
+  // ======================================================
+
   useEffect(() => {
     const loadData = async () => {
       const categories = await getCategories();
+
       setAllCategories(categories);
 
       if (!isEdit) return;
@@ -90,12 +103,15 @@ const AddCategory = () => {
         setDescription(category.description || "");
         setBannerImage(category.bannerImage || "");
         setStatus(category.status || "Active");
-        setCreatedAt(category.createdAt);
       }
     };
 
     loadData();
   }, [id, isEdit]);
+
+  // ======================================================
+  // SAVE CATEGORY
+  // ======================================================
 
   const handleSaveCategory = async () => {
     const newErrors = {};
@@ -137,36 +153,38 @@ const AddCategory = () => {
       const payload =
         categoryType === "main"
           ? {
-              id: isEdit ? id : crypto.randomUUID(),
               menuType,
               categoryType: "main",
-              mainCategory,
+              mainCategory: mainCategory.trim(),
               status,
-              createdAt: createdAt || Date.now(),
             }
           : {
-              id: isEdit ? id : crypto.randomUUID(),
               menuType,
               categoryType: "sub",
               mainCategory,
-              subCategory,
-              description,
-              bannerImage,
+              subCategory: subCategory.trim(),
+              description: description.trim(),
+              bannerImage: bannerImage.trim(),
               status,
-              createdAt: createdAt || Date.now(),
             };
 
       if (isEdit) {
-        await updateCategory(payload);
+        await updateCategory(id, payload);
       } else {
-        await addCategory(payload);
+        await createCategory(payload);
       }
 
       navigate("/admin/categories");
     } catch (err) {
-      console.error(err);
+      console.error("Error saving category:", err);
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to save category. Please try again.",
+      );
     }
   };
+
   return (
     <Box
       sx={{
@@ -181,7 +199,7 @@ const AddCategory = () => {
       <Box
         sx={{
           flex: 1,
-          ml: "300px", // Same width as your sidebar
+          ml: "300px",
           backgroundColor: darkMode ? "#181818" : "#F7F5F2",
         }}
       >
@@ -194,7 +212,6 @@ const AddCategory = () => {
           }}
         >
           {/* Breadcrumb */}
-
           <Breadcrumbs
             separator={<NavigateNextIcon sx={{ fontSize: 16 }} />}
             sx={{
@@ -245,7 +262,6 @@ const AddCategory = () => {
           </Breadcrumbs>
 
           {/* Heading */}
-
           <Typography
             variant="h4"
             sx={{
@@ -271,7 +287,6 @@ const AddCategory = () => {
           </Typography>
 
           {/* Form Card */}
-
           <Paper
             elevation={2}
             sx={{
@@ -294,7 +309,8 @@ const AddCategory = () => {
             <Divider sx={{ mb: 4 }} />
 
             <Stack spacing={3}>
-              <TextField
+              {/* Menu Type */}
+              <CustomTextField
                 select
                 label="Menu Type"
                 value={menuType}
@@ -310,35 +326,15 @@ const AddCategory = () => {
                 fullWidth
                 error={Boolean(errors.menuType)}
                 helperText={errors.menuType}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
-                }}
+                sx={textFieldStyle}
               >
                 <MenuItem value="skincare">Skincare</MenuItem>
-
                 <MenuItem value="haircare">Haircare</MenuItem>
-
                 <MenuItem value="more">More</MenuItem>
-              </TextField>
+              </CustomTextField>
 
-              <TextField
+              {/* Category Type */}
+              <CustomTextField
                 select
                 label="Category Type"
                 value={categoryType}
@@ -357,10 +353,11 @@ const AddCategory = () => {
               >
                 <MenuItem value="main">Main Category</MenuItem>
                 <MenuItem value="sub">Sub Category</MenuItem>
-              </TextField>
+              </CustomTextField>
 
+              {/* Main Category */}
               {categoryType === "main" ? (
-                <TextField
+                <CustomTextField
                   label="Category Name"
                   value={mainCategory}
                   onChange={(e) => setMainCategory(e.target.value)}
@@ -370,7 +367,7 @@ const AddCategory = () => {
                   sx={textFieldStyle}
                 />
               ) : (
-                <TextField
+                <CustomTextField
                   select
                   label="Main Category"
                   value={mainCategory}
@@ -387,15 +384,19 @@ const AddCategory = () => {
                         item.menuType === menuType,
                     )
                     .map((item) => (
-                      <MenuItem key={item.id} value={item.mainCategory}>
+                      <MenuItem
+                        key={item._id}
+                        value={item.mainCategory}
+                      >
                         {item.mainCategory}
                       </MenuItem>
                     ))}
-                </TextField>
+                </CustomTextField>
               )}
 
+              {/* Sub Category */}
               {categoryType === "sub" && (
-                <TextField
+                <CustomTextField
                   label="Sub Category"
                   value={subCategory}
                   onChange={(e) => setSubCategory(e.target.value)}
@@ -406,8 +407,9 @@ const AddCategory = () => {
                 />
               )}
 
+              {/* Description */}
               {categoryType === "sub" && (
-                <TextField
+                <CustomTextField
                   label="Description"
                   multiline
                   rows={4}
@@ -420,9 +422,10 @@ const AddCategory = () => {
                 />
               )}
 
+              {/* Banner Image */}
               {categoryType === "sub" && (
                 <>
-                  <TextField
+                  <CustomTextField
                     label="Banner Image URL"
                     value={bannerImage}
                     onChange={(e) => {
@@ -457,41 +460,27 @@ const AddCategory = () => {
                 </>
               )}
 
-              <TextField
+              {/* Status */}
+              <CustomTextField
                 select
                 label="Status"
                 fullWidth
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
-                  "& .MuiSvgIcon-root": {
-                    color: darkMode ? "#fff" : "#222",
-                  },
-                }}
+                sx={textFieldStyle}
               >
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Inactive">Inactive</MenuItem>
-              </TextField>
+              </CustomTextField>
 
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              {/* Buttons */}
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{
+                  mt: 2,
+                }}
+              >
                 <Button
                   variant="outlined"
                   onClick={() => navigate("/admin/categories")}
@@ -522,7 +511,6 @@ const AddCategory = () => {
                     textTransform: "none",
                     borderRadius: 2,
                     boxShadow: "none",
-                    // saveBtnStyle,
 
                     "&:hover": {
                       backgroundColor: "#A88366",

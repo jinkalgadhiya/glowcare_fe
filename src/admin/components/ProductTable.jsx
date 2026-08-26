@@ -24,7 +24,11 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "../context/ThemeContext";
 
-const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
+const ProductTable = ({
+  products = [],
+  setSelectedProduct,
+  onDelete,
+}) => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
 
@@ -59,75 +63,35 @@ const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
               backgroundColor: darkMode ? "#303030" : "#F8F5F1",
             }}
           >
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               #
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Image
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Product
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Category
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Price
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Stock
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Badge
             </TableCell>
 
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                color: darkMode ? "#fff" : "#222",
-              }}
-            >
+            <TableCell sx={{ fontWeight: 700, color: darkMode ? "#fff" : "#222" }}>
               Status
             </TableCell>
 
@@ -146,13 +110,7 @@ const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
         <TableBody>
           {products.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={9}
-                align="center"
-                sx={{
-                  py: 8,
-                }}
-              >
+              <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
                 <Typography
                   variant="h6"
                   sx={{
@@ -173,137 +131,187 @@ const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
               </TableCell>
             </TableRow>
           ) : (
-            products.map((product, index) => (
-              <TableRow
-                key={product.id}
-                hover
-                sx={{
-                  "& td": {
-                    color: darkMode ? "#fff" : "#222",
-                    borderColor: darkMode ? "#444" : "#EAEAEA",
-                  },
+            products.map((product, index) => {
+              const category = product.category;
 
-                  "&:hover": {
-                    backgroundColor: darkMode ? "#2E2E2E" : "#FAF8F5",
-                  },
-                }}
-              >
-                <TableCell>{index + 1}</TableCell>
+              const categoryName =
+                category?.subCategory ||
+                category?.mainCategory ||
+                "-";
 
-                <TableCell>
-                  <Avatar
-                    src={product.image}
-                    variant="rounded"
-                    sx={{
-                      width: 55,
-                      height: 55,
-                      borderRadius: 2,
-                    }}
-                  />
-                </TableCell>
+              const variant = product.variants?.[0];
 
-                <TableCell
+              return (
+                <TableRow
+                  key={product._id}
+                  hover
                   sx={{
-                    fontWeight: 600,
+                    "& td": {
+                      color: darkMode ? "#fff" : "#222",
+                      borderColor: darkMode ? "#444" : "#EAEAEA",
+                    },
+
+                    "&:hover": {
+                      backgroundColor: darkMode
+                        ? "#2E2E2E"
+                        : "#FAF8F5",
+                    },
                   }}
                 >
-                  {product.name}
-                </TableCell>
+                  {/* Number */}
 
-                <TableCell>{product.category}</TableCell>
+                  <TableCell>
+                    {index + 1}
+                  </TableCell>
 
-                <TableCell>
-                  {product.variants?.[0]?.discountPrice ? (
-                    <>
-                      <Typography
-                        component="span"
-                        sx={{
-                          textDecoration: "line-through",
-                          color: "gray",
-                          mr: 1,
-                        }}
-                      >
-                        ₹{product.variants[0].price}
-                      </Typography>
+                  {/* Image */}
 
-                      <Typography component="span" color="error">
-                        ₹{product.variants[0].discountPrice}
-                      </Typography>
-                    </>
-                  ) : (
-                    <>₹{product.variants?.[0]?.price || 0}</>
-                  )}
-                </TableCell>
+                  <TableCell>
+                    <Avatar
+                      src={product.image}
+                      alt={product.productName}
+                      variant="rounded"
+                      sx={{
+                        width: 55,
+                        height: 55,
+                        borderRadius: 2,
+                      }}
+                    />
+                  </TableCell>
 
-                <TableCell>{product.variants?.[0]?.stock || 0}</TableCell>
+                  {/* Product */}
 
-                <TableCell>
-                  <Chip
-                    label={product.badge || "None"}
-                    size="small"
+                  <TableCell
                     sx={{
-                      bgcolor:
-                        product.badge === "Best Seller"
-                          ? "#FFF4E5"
-                          : product.badge === "New Launch"
-                            ? "#E8F5E9"
-                            : product.badge === "Trending"
-                              ? "#E3F2FD"
-                              : product.badge === "Limited Stock"
-                                ? "#FFF8E1"
-                                : product.badge === "Out of Stock"
-                                  ? "#FBE9E7"
-                                  : product.badge === "Sold Out"
-                                    ? "#F3E5F5"
-                                    : darkMode
-                                      ? "#3B3B3B"
-                                      : "#EEEEEE",
-
-                      color:
-                        product.badge === "Best Seller"
-                          ? "#EF6C00"
-                          : product.badge === "New Launch"
-                            ? "#2E7D32"
-                            : product.badge === "Trending"
-                              ? "#1565C0"
-                              : product.badge === "Limited Stock"
-                                ? "#F9A825"
-                                : product.badge === "Out of Stock"
-                                  ? "#D84315"
-                                  : product.badge === "Sold Out"
-                                    ? "#7B1FA2"
-                                    : darkMode
-                                      ? "#fff"
-                                      : "#555",
-
                       fontWeight: 600,
                     }}
-                  />
-                </TableCell>
-
-                <TableCell>
-                  <Chip
-                    label={product.status}
-                    color={product.status === "Active" ? "success" : "default"}
-                    size="small"
-                  />
-                </TableCell>
-
-                <TableCell align="center">
-                  <IconButton
-                    onClick={(e) => handleMenu(e, product)}
-                    sx={{
-                      color: darkMode ? "#fff" : "#555",
-                    }}
                   >
-                    <MoreHorizOutlinedIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))
+                    {product.productName}
+                  </TableCell>
+
+                  {/* Category */}
+
+                  <TableCell>
+                    {categoryName}
+                  </TableCell>
+
+                  {/* Price */}
+
+                  <TableCell>
+                    {variant?.discountPrice &&
+                    Number(variant.discountPrice) > 0 ? (
+                      <>
+                        <Typography
+                          component="span"
+                          sx={{
+                            textDecoration: "line-through",
+                            color: "gray",
+                            mr: 1,
+                          }}
+                        >
+                          ₹{variant.price}
+                        </Typography>
+
+                        <Typography
+                          component="span"
+                          color="error"
+                        >
+                          ₹{variant.discountPrice}
+                        </Typography>
+                      </>
+                    ) : (
+                      <>₹{variant?.price || 0}</>
+                    )}
+                  </TableCell>
+
+                  {/* Stock */}
+
+                  <TableCell>
+                    {variant?.stock || 0}
+                  </TableCell>
+
+                  {/* Badge */}
+
+                  <TableCell>
+                    <Chip
+                      label={product.badge || "None"}
+                      size="small"
+                      sx={{
+                        bgcolor:
+                          product.badge === "Best Seller"
+                            ? "#FFF4E5"
+                            : product.badge === "New Launch"
+                              ? "#E8F5E9"
+                              : product.badge === "Trending"
+                                ? "#E3F2FD"
+                                : product.badge === "Limited Stock"
+                                  ? "#FFF8E1"
+                                  : product.badge === "Out of Stock"
+                                    ? "#FBE9E7"
+                                    : product.badge === "Sold Out"
+                                      ? "#F3E5F5"
+                                      : darkMode
+                                        ? "#3B3B3B"
+                                        : "#EEEEEE",
+
+                        color:
+                          product.badge === "Best Seller"
+                            ? "#EF6C00"
+                            : product.badge === "New Launch"
+                              ? "#2E7D32"
+                              : product.badge === "Trending"
+                                ? "#1565C0"
+                                : product.badge === "Limited Stock"
+                                  ? "#F9A825"
+                                  : product.badge === "Out of Stock"
+                                    ? "#D84315"
+                                    : product.badge === "Sold Out"
+                                      ? "#7B1FA2"
+                                      : darkMode
+                                        ? "#fff"
+                                        : "#555",
+
+                        fontWeight: 600,
+                      }}
+                    />
+                  </TableCell>
+
+                  {/* Status */}
+
+                  <TableCell>
+                    <Chip
+                      label={product.status}
+                      color={
+                        product.status === "Active"
+                          ? "success"
+                          : "default"
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+
+                  {/* Actions */}
+
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={(e) =>
+                        handleMenu(e, product)
+                      }
+                      sx={{
+                        color: darkMode ? "#fff" : "#555",
+                      }}
+                    >
+                      <MoreHorizOutlinedIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
+
+      {/* Action Menu */}
 
       <Menu
         anchorEl={anchorEl}
@@ -314,46 +322,47 @@ const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
             width: 190,
             borderRadius: 2,
             mt: 1,
-            backgroundColor: darkMode ? "#2A2A2A" : "#fff",
-
+            backgroundColor: darkMode
+              ? "#2A2A2A"
+              : "#fff",
             color: darkMode ? "#fff" : "#222",
           },
         }}
       >
+        {/* View */}
+
         <MenuItem
           onClick={() => {
             setSelectedProduct(selectedRow);
             handleClose();
           }}
         >
-          <ListItemIcon
-            sx={{
-              color: "inherit",
-            }}
-          >
+          <ListItemIcon sx={{ color: "inherit" }}>
             <VisibilityOutlinedIcon fontSize="small" />
           </ListItemIcon>
 
           <ListItemText>View</ListItemText>
         </MenuItem>
 
+        {/* Edit */}
+
         <MenuItem
           onClick={() => {
-            navigate(`/admin/products/edit/${selectedRow.id}`);
+            navigate(
+              `/admin/products/edit/${selectedRow?._id}`,
+            );
 
             handleClose();
           }}
         >
-          <ListItemIcon
-            sx={{
-              color: "inherit",
-            }}
-          >
+          <ListItemIcon sx={{ color: "inherit" }}>
             <EditOutlinedIcon fontSize="small" />
           </ListItemIcon>
 
           <ListItemText>Edit</ListItemText>
         </MenuItem>
+
+        {/* Delete */}
 
         <MenuItem
           onClick={() => {
@@ -364,11 +373,7 @@ const ProductTable = ({ products = [], setSelectedProduct, onDelete }) => {
             color: "#E53935",
           }}
         >
-          <ListItemIcon
-            sx={{
-              color: "#E53935",
-            }}
-          >
+          <ListItemIcon sx={{ color: "#E53935" }}>
             <DeleteOutlineOutlinedIcon fontSize="small" />
           </ListItemIcon>
 

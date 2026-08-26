@@ -10,6 +10,7 @@ import EditProfile from "../components/EditProfile";
 import ChangePassword from "../components/ChangePassword";
 
 import { useThemeContext } from "../context/ThemeContext";
+import api from "../../api/adminApi";
 
 const Profile = () => {
   const { darkMode } = useThemeContext();
@@ -18,8 +19,19 @@ const Profile = () => {
   const [openEdit, setOpenEdit] = useState(false);
 
   useEffect(() => {
-    const storedAdmin = JSON.parse(localStorage.getItem("admin"));
-    setAdmin(storedAdmin);
+    const fetchAdmin = async () => {
+      try {
+        const response = await api.get("/admin/me");
+
+        if (response.data.status === "success") {
+          setAdmin(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin profile:", error);
+      }
+    };
+
+    fetchAdmin();
   }, []);
 
   return (
@@ -29,10 +41,8 @@ const Profile = () => {
         minHeight: "100vh",
       }}
     >
-      {/* Sidebar */}
       <AdminSidebar />
 
-      {/* Main Content */}
       <Box
         sx={{
           flex: 1,
@@ -67,7 +77,10 @@ const Profile = () => {
           >
             <AccountInfo admin={admin} />
 
-            <ChangePassword admin={admin} onUpdated={setAdmin} />
+            <ChangePassword
+              admin={admin}
+              onUpdated={setAdmin}
+            />
           </Box>
         </Box>
       </Box>

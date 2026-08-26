@@ -5,6 +5,7 @@ import AdminLogin from "../auth/AdminLogin";
 import AdminProtectedRoute from "../auth/AdminProtectedRoute";
 
 import Dashboard from "../admin/pages/Dashboard";
+import HomePageSettings from "../admin/pages/HomePageSettings";
 
 import Categories from "../admin/pages/Categories";
 import AddCategory from "../admin/pages/AddCategory";
@@ -19,11 +20,16 @@ import Customers from "../admin/pages/Customers";
 import Profile from "../admin/pages/Profile";
 import Reviews from "../admin/pages/Reviews";
 
+import Coupon from "../admin/pages/Coupon";
+
 const AdminRoute = () => {
   return (
     <Routes>
       {/* Login */}
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin/login"
+        element={<AdminLogin />}
+      />
 
       {/* Dashboard */}
       <Route
@@ -31,6 +37,16 @@ const AdminRoute = () => {
         element={
           <AdminProtectedRoute>
             <Dashboard />
+          </AdminProtectedRoute>
+        }
+      />
+
+      {/* Home Page Settings */}
+      <Route
+        path="/admin/home-page"
+        element={
+          <AdminProtectedRoute>
+            <HomePageSettings />
           </AdminProtectedRoute>
         }
       />
@@ -136,6 +152,16 @@ const AdminRoute = () => {
         element={
           <AdminProtectedRoute>
             <Reviews />
+          </AdminProtectedRoute>
+        }
+      />
+
+      {/* Coupons */}
+      <Route
+        path="/admin/coupons"
+        element={
+          <AdminProtectedRoute>
+            <Coupon />
           </AdminProtectedRoute>
         }
       />

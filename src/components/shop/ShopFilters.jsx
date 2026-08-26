@@ -41,19 +41,28 @@ const selectStyle = {
 };
 
 const ShopFilters = ({
+  brand,
+  setBrand,
+  brands,
+
   skinType,
   setSkinType,
   skinTypes,
+
   concern,
   setConcern,
   concerns,
-  ingredient,
-  setIngredient,
-  ingredients,
+
+  benefit,
+  setBenefit,
+  benefits,
+
   price,
   setPrice,
+
   sortBy,
   setSortBy,
+
   clearFilters,
 }) => {
   return (
@@ -71,7 +80,8 @@ const ShopFilters = ({
 
         borderRadius: "26px",
 
-        boxShadow: "0 20px 50px rgba(30,47,43,.08),0 6px 18px rgba(0,0,0,.04)",
+        boxShadow:
+          "0 20px 50px rgba(30,47,43,.08),0 6px 18px rgba(0,0,0,.04)",
 
         position: "relative",
         zIndex: 20,
@@ -122,6 +132,29 @@ const ShopFilters = ({
             Filters
           </Button>
 
+          {/* Brand */}
+          <FormControl
+            size="small"
+            sx={{
+              ...selectStyle,
+              width: 112,
+            }}
+          >
+            <Select
+              displayEmpty
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+            >
+              <MenuItem value="">Brand</MenuItem>
+
+              {brands?.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           {/* Skin Type */}
           <FormControl size="small" sx={selectStyle}>
             <Select
@@ -149,21 +182,23 @@ const ShopFilters = ({
               <MenuItem value="">Price</MenuItem>
               <MenuItem value="0-500">₹0 - ₹500</MenuItem>
               <MenuItem value="500-1000">₹500 - ₹1000</MenuItem>
-              <MenuItem value="1000-2000">₹1000 - ₹2000</MenuItem>
+              <MenuItem value="1000-2000">
+                ₹1000 - ₹2000
+              </MenuItem>
               <MenuItem value="2000+">₹2000+</MenuItem>
             </Select>
           </FormControl>
 
-          {/* Ingredients */}
+          {/* Benefits */}
           <FormControl size="small" sx={selectStyle}>
             <Select
               displayEmpty
-              value={ingredient}
-              onChange={(e) => setIngredient(e.target.value)}
+              value={benefit}
+              onChange={(e) => setBenefit(e.target.value)}
             >
-              <MenuItem value="">Ingredients</MenuItem>
+              <MenuItem value="">Benefits</MenuItem>
 
-              {ingredients?.map((item) => (
+              {benefits?.map((item) => (
                 <MenuItem key={item} value={item}>
                   {item}
                 </MenuItem>
@@ -220,12 +255,23 @@ const ShopFilters = ({
               width: 160,
             }}
           >
-            <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <MenuItem value="latest">Popularity</MenuItem>
-              <MenuItem value="priceLow">Price : Low to High</MenuItem>
-              <MenuItem value="priceHigh">Price : High to Low</MenuItem>
-              <MenuItem value="rating">Highest Rated</MenuItem>
-              <MenuItem value="nameAZ">Name : A-Z</MenuItem>
+              <MenuItem value="priceLow">
+                Price : Low to High
+              </MenuItem>
+              <MenuItem value="priceHigh">
+                Price : High to Low
+              </MenuItem>
+              <MenuItem value="rating">
+                Highest Rated
+              </MenuItem>
+              <MenuItem value="nameAZ">
+                Name : A-Z
+              </MenuItem>
             </Select>
           </FormControl>
 

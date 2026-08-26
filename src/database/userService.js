@@ -1,85 +1,170 @@
-import dbPromise from "./db";
+import api from "../api/axios";
+import adminApi from "../api/adminApi";
 
 // ===============================
-// Get All Users
+// Get All Users - ADMIN
 // ===============================
+
 export const getUsers = async () => {
-  const db = await dbPromise;
-  return await db.getAll("users");
+  try {
+    const response = await adminApi.get("/users");
+
+    return response.data.data || [];
+  } catch (error) {
+    console.error(
+      "Error fetching users:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 // ===============================
-// Get User By ID
+// Get User By ID - ADMIN
 // ===============================
+
 export const getUserById = async (id) => {
-  const db = await dbPromise;
-  return await db.get("users", id);
+  try {
+    const response = await adminApi.get(`/users/get/${id}`);
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error fetching user:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 // ===============================
-// Get All Customers
+// Get All Customers - ADMIN
 // ===============================
+
 export const getCustomers = async () => {
-  const db = await dbPromise;
+  try {
+    const response = await adminApi.get("/users");
 
-  const users = await db.getAll("users");
+    return response.data.data || [];
+  } catch (error) {
+    console.error(
+      "Error fetching customers:",
+      error.response?.data || error.message
+    );
 
-  return users.filter((user) => user.role === "customer");
+    throw error;
+  }
 };
 
 // ===============================
-// Add User
+// Add User / Register - CUSTOMER
 // ===============================
-export const addUser = async (user) => {
-  const db = await dbPromise;
-  await db.put("users", user);
+
+export const addUser = async (userData) => {
+  try {
+    const response = await api.post(
+      "/users/add",
+      userData
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error adding user:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 // ===============================
-// Update User
+// Update User - ADMIN
 // ===============================
-export const updateUser = async (user) => {
-  const db = await dbPromise;
-  await db.put("users", user);
+
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await adminApi.put(
+      `/users/update/${id}`,
+      userData
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error updating user:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 // ===============================
-// Update Customer Status
+// Update Customer Status - ADMIN
 // ===============================
-export const updateCustomerStatus = async (id, status) => {
-  const db = await dbPromise;
 
-  const customer = await db.get("users", id);
+export const updateCustomerStatus = async (
+  id,
+  status
+) => {
+  try {
+    const response = await adminApi.put(
+      `/users/update/${id}`,
+      { status }
+    );
 
-  if (!customer) return;
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error updating customer status:",
+      error.response?.data || error.message
+    );
 
-  customer.status = status;
-
-  await db.put("users", customer);
-
-  return customer;
+    throw error;
+  }
 };
 
 // ===============================
-// Delete User / Customer
+// Delete User - ADMIN
 // ===============================
+
 export const deleteUser = async (id) => {
-  const db = await dbPromise;
-  await db.delete("users", id);
+  try {
+    const response = await adminApi.delete(
+      `/users/delete/${id}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error deleting user:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 // ===============================
-// Delete Customer
+// Delete Customer - ADMIN
 // ===============================
+
 export const deleteCustomer = async (id) => {
-  const db = await dbPromise;
-  await db.delete("users", id);
-};
+  try {
+    const response = await adminApi.delete(
+      `/users/delete/${id}`
+    );
 
-// ===============================
-// Clear All Users
-// ===============================
-export const clearUsers = async () => {
-  const db = await dbPromise;
-  await db.clear("users");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error deleting customer:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };

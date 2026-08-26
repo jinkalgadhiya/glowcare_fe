@@ -9,25 +9,27 @@ import {
   Box,
 } from "@mui/material";
 
-import { deleteCustomer } from "../../database/userService";
+import api from "../../api/axios";
 import { useThemeContext } from "../context/ThemeContext";
 
-const DeleteCustomer = ({
-  open,
-  onClose,
-  customer,
-  onDelete,
-}) => {
+const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
   const { darkMode } = useThemeContext();
 
   const handleDelete = async () => {
     if (!customer) return;
 
-    await deleteCustomer(customer.id);
+    try {
+      const response = await api.delete(`/users/delete/${customer._id}`);
 
-    onDelete?.(customer.id);
+      if (response.data.status === "success") {
+        onDelete?.(customer._id);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Delete customer error:", error);
 
-    onClose();
+      alert(error.response?.data?.message || "Failed to delete customer");
+    }
   };
 
   return (

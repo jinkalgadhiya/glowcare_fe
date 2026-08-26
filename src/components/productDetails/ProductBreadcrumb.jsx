@@ -5,6 +5,36 @@ import { useNavigate } from "react-router-dom";
 const ProductBreadcrumb = ({ product }) => {
   const navigate = useNavigate();
 
+  // =====================================================
+  // CATEGORY
+  // =====================================================
+
+  const mainCategory = product?.category?.mainCategory || "";
+
+  const subCategory = product?.category?.subCategory || "";
+
+  const categoryName = subCategory
+    ? subCategory
+    : mainCategory || "Shop";
+
+  // =====================================================
+  // PRODUCT NAME
+  // =====================================================
+
+  const productName =
+    product?.productName ||
+    product?.name ||
+    "Product";
+
+  // =====================================================
+  // SHOP CATEGORY URL
+  // =====================================================
+
+  const categorySlug = categoryName
+    .toLowerCase()
+    .replace(/&/g, "")
+    .replace(/\s+/g, "-");
+
   return (
     <Breadcrumbs
       separator={
@@ -24,6 +54,8 @@ const ProductBreadcrumb = ({ product }) => {
         },
       }}
     >
+      {/* HOME */}
+
       <Link
         underline="hover"
         onClick={() => navigate("/")}
@@ -39,6 +71,8 @@ const ProductBreadcrumb = ({ product }) => {
       >
         Home
       </Link>
+
+      {/* SHOP */}
 
       <Link
         underline="hover"
@@ -56,15 +90,12 @@ const ProductBreadcrumb = ({ product }) => {
         Shop
       </Link>
 
+      {/* CATEGORY */}
+
       <Link
         underline="hover"
         onClick={() =>
-          navigate(
-            `/shop/${product.category
-              ?.toLowerCase()
-              .replace(/&/g, "")
-              .replace(/\s+/g, "-")}`,
-          )
+          navigate(`/shop/${categorySlug}`)
         }
         sx={{
           cursor: "pointer",
@@ -77,8 +108,10 @@ const ProductBreadcrumb = ({ product }) => {
           },
         }}
       >
-        {product.category}
+        {categoryName}
       </Link>
+
+      {/* PRODUCT */}
 
       <Typography
         sx={{
@@ -87,7 +120,7 @@ const ProductBreadcrumb = ({ product }) => {
           fontSize: 15,
         }}
       >
-        {product.name}
+        {productName}
       </Typography>
     </Breadcrumbs>
   );

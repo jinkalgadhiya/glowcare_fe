@@ -27,9 +27,6 @@ const ViewCustomer = ({ customer, onClose }) => {
       case "Inactive":
         return "warning";
 
-      case "Blocked":
-        return "error";
-
       default:
         return "default";
     }
@@ -198,7 +195,7 @@ const ViewCustomer = ({ customer, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {customer.phone || "-"}
+              {customer.contactNumber || "-"}
             </Typography>
           </Box>
 
@@ -218,9 +215,9 @@ const ViewCustomer = ({ customer, onClose }) => {
                 color: darkMode ? "#fff" : "#222",
               }}
             >
-              {customer.joinedDate
-                ? new Date(customer.joinedDate).toLocaleDateString()
-                : "-"}
+              {customer.createdAt
+  ? new Date(customer.createdAt).toLocaleDateString()
+  : "-"}
             </Typography>
           </Box>
         </Stack>
@@ -255,14 +252,6 @@ const ViewCustomer = ({ customer, onClose }) => {
             }}
           >
             Total Spent : ₹{customer.totalSpent || 0}
-          </Typography>
-
-          <Typography
-            sx={{
-              color: darkMode ? "#fff" : "#222",
-            }}
-          >
-            Role : {customer.role}
           </Typography>
         </Stack>
 

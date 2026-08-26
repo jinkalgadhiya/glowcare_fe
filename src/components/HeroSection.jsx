@@ -1,33 +1,102 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, IconButton, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-import Banner1 from "../assets/Banner-1.webp";
-import Banner2 from "../assets/Banner-2.webp";
-import Banner3 from "../assets/Banner-3.webp";
-
-const images = [Banner1, Banner2, Banner3];
+import { getHomePageSettings } from "../database/homePageService";
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   const [currentImage, setCurrentImage] = useState(0);
+  const [heroSlides, setHeroSlides] = useState([]);
 
   useEffect(() => {
+    const loadHeroSettings = async () => {
+      try {
+        const savedSettings = await getHomePageSettings();
+
+        if (savedSettings) {
+          const { id, updatedAt, ...homePageSettings } = savedSettings;
+
+          const mergedSettings =
+            mergeHomePageSettings(homePageSettings);
+
+          setHeroSlides(mergedSettings.hero.slides || []);
+        } else {
+          const defaults = getDefaultHomePageSettings();
+
+          setHeroSlides(defaults.hero.slides || []);
+        }
+      } catch (error) {
+        console.error("Error loading hero settings:", error);
+
+        const defaults = getDefaultHomePageSettings();
+
+        setHeroSlides(defaults.hero.slides || []);
+      }
+    };
+
+    loadHeroSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!heroSlides.length) return;
+
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
+      setCurrentImage(
+        (prev) => (prev + 1) % heroSlides.length,
+      );
     }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [heroSlides]);
 
   const nextSlide = () => {
-    setCurrentImage((prev) => (prev + 1) % images.length);
+    setCurrentImage(
+      (prev) => (prev + 1) % heroSlides.length,
+    );
   };
 
   const prevSlide = () => {
-    setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentImage((prev) =>
+      prev === 0 ? heroSlides.length - 1 : prev - 1,
+    );
+  };
+
+  if (!heroSlides.length) return null;
+
+  const currentSlide = heroSlides[currentImage];
+
+  const getContentPosition = () => {
+    switch (currentSlide.contentPosition) {
+      case "left":
+        return {
+          left: "8%",
+          textAlign: "left",
+        };
+
+      case "right":
+        return {
+          right: "8%",
+          textAlign: "right",
+        };
+
+      default:
+        return {
+          left: "50%",
+          transform:
+            "translate(-50%, -50%)",
+          textAlign: "center",
+        };
+    }
   };
 
   return (
@@ -35,7 +104,7 @@ const HeroSection = () => {
       sx={{
         width: "100%",
         height: "95vh",
-        backgroundImage: `url(${images[currentImage]})`,
+        backgroundImage: `url(${currentSlide.image})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -51,111 +120,66 @@ const HeroSection = () => {
         }}
       />
 
-      {/* Shop Now Button */}
-      {currentImage === 0 && (
-        <Box
+      {/* Dynamic Content */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "45%",
+          color: "white",
+          maxWidth: "600px",
+          zIndex: 2,
+          ...getContentPosition(),
+        }}
+      >
+        <Typography
+          variant="h2"
+          fontWeight="bold"
           sx={{
-            position: "absolute",
-            right: "10%",
-            top: "45%",
-            transform: "translateY(-50%)",
-            color: "white",
-            textAlign: "center",
+            mb: 2,
+            whiteSpace: "pre-line",
           }}
         >
-          <Typography
-            variant="h2"
-            fontWeight="bold"
-            sx={{
-              mb: 2,
-            }}
-          >
-            Calm
-          </Typography>
+          {currentSlide.title}
+        </Typography>
 
-          <Typography
-            sx={{
-              mb: 4,
-              fontSize: "24px",
-              fontStyle: "italic",
-              opacity: 0.9,
-            }}
-          >
-            your skin's new normal
-          </Typography>
-
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "white",
-              color: "black",
-              borderRadius: "30px",
-              px: 4,
-              py: 1.5,
-              fontWeight: "bold",
-              boxShadow: 3,
-
-              "&:hover": {
-                backgroundColor: "#f5f5f5",
-              },
-            }}
-          >
-            Shop Now
-          </Button>
-        </Box>
-      )}
-      {currentImage === 2 && (
-        <Box
+        <Typography
           sx={{
-            position: "absolute",
-            left: "8%",
-            top: "45%",
-            transform: "translateY(-50%)",
-            color: "white",
+            mb: 4,
+            fontSize: {
+              xs: "16px",
+              md: "20px",
+            },
+            opacity: 0.9,
+            whiteSpace: "pre-line",
           }}
         >
-          <Typography
-            variant="h2"
-            fontWeight="bold"
-            sx={{
-              mb: 2,
-            }}
-          >
-            Luxury
-            <br />
-            Fragrances
-          </Typography>
+          {currentSlide.subtitle}
+        </Typography>
 
-          <Typography
-            sx={{
-              mb: 4,
-              fontSize: "18px",
-              opacity: 0.9,
-            }}
-          >
-            Discover scents that leave
-            <br />a lasting impression.
-          </Typography>
+        <Button
+          variant="contained"
+          onClick={() =>
+            navigate(
+              currentSlide.buttonLink || "/shop",
+            )
+          }
+          sx={{
+            backgroundColor: "white",
+            color: "black",
+            borderRadius: "30px",
+            px: 4,
+            py: 1.5,
+            fontWeight: "bold",
+            boxShadow: 3,
 
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "white",
-              color: "black",
-              borderRadius: "30px",
-              px: 4,
-              py: 1.5,
-              fontWeight: "bold",
-
-              "&:hover": {
-                backgroundColor: "#f5f5f5",
-              },
-            }}
-          >
-            Explore Collection
-          </Button>
-        </Box>
-      )}
+            "&:hover": {
+              backgroundColor: "#f5f5f5",
+            },
+          }}
+        >
+          {currentSlide.buttonLabel}
+        </Button>
+      </Box>
 
       {/* Left Arrow */}
       <IconButton
@@ -166,6 +190,7 @@ const HeroSection = () => {
           top: "50%",
           transform: "translateY(-50%)",
           color: "white",
+          zIndex: 2,
         }}
       >
         <ArrowBackIosNewIcon />
@@ -180,6 +205,7 @@ const HeroSection = () => {
           top: "50%",
           transform: "translateY(-50%)",
           color: "white",
+          zIndex: 2,
         }}
       >
         <ArrowForwardIosIcon />
@@ -194,17 +220,24 @@ const HeroSection = () => {
           transform: "translateX(-50%)",
           display: "flex",
           gap: 1,
+          zIndex: 2,
         }}
       >
-        {images.map((_, index) => (
+        {heroSlides.map((_, index) => (
           <Box
             key={index}
+            onClick={() =>
+              setCurrentImage(index)
+            }
             sx={{
               width: 10,
               height: 10,
               borderRadius: "50%",
+              cursor: "pointer",
               bgcolor:
-                currentImage === index ? "white" : "rgba(255,255,255,.5)",
+                currentImage === index
+                  ? "white"
+                  : "rgba(255,255,255,.5)",
             }}
           />
         ))}
@@ -222,6 +255,7 @@ const HeroSection = () => {
           alignItems: "center",
           color: "white",
           opacity: 0.8,
+          zIndex: 2,
         }}
       >
         <Typography
@@ -243,15 +277,15 @@ const HeroSection = () => {
 
         <style>
           {`
-      @keyframes bounce {
-        0%,100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(8px);
-        }
-      }
-    `}
+            @keyframes bounce {
+              0%,100% {
+                transform: translateY(0);
+              }
+              50% {
+                transform: translateY(8px);
+              }
+            }
+          `}
         </style>
       </Box>
     </Box>

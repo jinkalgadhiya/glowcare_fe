@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -7,9 +7,39 @@ import {
   Button,
 } from "@mui/material";
 
-import NewsletterBottle from "../assets/newsletter-bottle.png";
+import { getHomePageSettings } from "../database/homePageService";
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
 
 const Newsletter = () => {
+  const [newsletter, setNewsletter] = useState(
+    getDefaultHomePageSettings().newsletter
+  );
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await getHomePageSettings();
+
+        if (savedSettings) {
+          const mergedSettings =
+            mergeHomePageSettings(savedSettings);
+
+          setNewsletter(mergedSettings.newsletter);
+        }
+      } catch (error) {
+        console.error(
+          "Error loading newsletter settings:",
+          error
+        );
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -19,11 +49,7 @@ const Newsletter = () => {
         px: { xs: 3, md: 8 },
       }}
     >
-      <Grid
-        container
-        spacing={8}
-        alignItems="center"
-      >
+      <Grid container spacing={8} alignItems="center">
         {/* Left Side */}
 
         <Grid
@@ -43,7 +69,7 @@ const Newsletter = () => {
               mb: 2,
             }}
           >
-            EXCLUSIVE COMMUNITY
+            {newsletter.eyebrow}
           </Typography>
 
           <Typography
@@ -56,11 +82,10 @@ const Newsletter = () => {
               color: "#1E2F2B",
               lineHeight: 1.1,
               mb: 3,
+              whiteSpace: "pre-line",
             }}
           >
-            Join The
-            <br />
-            Glow Circle
+            {newsletter.title}
           </Typography>
 
           <Typography
@@ -72,10 +97,7 @@ const Newsletter = () => {
               mb: 5,
             }}
           >
-            Become a part of our GlowCare family and receive
-            exclusive product launches, skincare tips,
-            member-only offers, and expert beauty advice
-            delivered straight to your inbox.
+            {newsletter.description}
           </Typography>
 
           <Box
@@ -90,7 +112,7 @@ const Newsletter = () => {
           >
             <TextField
               fullWidth
-              placeholder="Enter your email address"
+              placeholder={newsletter.placeholder}
               variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-root": {
@@ -130,7 +152,7 @@ const Newsletter = () => {
                 },
               }}
             >
-              Subscribe
+              {newsletter.buttonLabel}
             </Button>
           </Box>
 
@@ -141,10 +163,11 @@ const Newsletter = () => {
               fontSize: 14,
             }}
           >
-            ✨ Join 15,000+ skincare lovers already in the Glow Circle.
+            {newsletter.note}
           </Typography>
         </Grid>
-                {/* Right Side */}
+
+        {/* Right Side */}
 
         <Grid
           item
@@ -167,8 +190,6 @@ const Newsletter = () => {
               alignItems: "center",
             }}
           >
-            {/* Main Glow */}
-
             <Box
               sx={{
                 position: "absolute",
@@ -181,8 +202,6 @@ const Newsletter = () => {
               }}
             />
 
-            {/* Decorative Circle */}
-
             <Box
               sx={{
                 position: "absolute",
@@ -192,8 +211,6 @@ const Newsletter = () => {
                 borderRadius: "50%",
               }}
             />
-
-            {/* Decorative Circle */}
 
             <Box
               sx={{
@@ -205,11 +222,9 @@ const Newsletter = () => {
               }}
             />
 
-            {/* Floating Bottle */}
-
             <Box
               component="img"
-              src={NewsletterBottle}
+              src={newsletter.image}
               alt="Newsletter"
               sx={{
                 width: {
@@ -218,7 +233,6 @@ const Newsletter = () => {
                 },
 
                 position: "relative",
-
                 zIndex: 2,
 
                 filter:
@@ -226,7 +240,8 @@ const Newsletter = () => {
 
                 transition: ".5s",
 
-                animation: "floatingBottle 5s ease-in-out infinite",
+                animation:
+                  "floatingBottle 5s ease-in-out infinite",
 
                 "&:hover": {
                   transform: "scale(1.05)",
@@ -247,8 +262,6 @@ const Newsletter = () => {
                 },
               }}
             />
-
-            {/* Small Floating Dots */}
 
             <Box
               sx={{

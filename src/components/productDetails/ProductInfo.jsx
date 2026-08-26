@@ -28,12 +28,19 @@ import {
   removeFromWishlist,
 } from "../../redux/wishlist/wishlistSlice";
 
+import {
+  addToWishlistDB,
+  removeFromWishlistDB,
+} from "../../database/wishlistService";
+
 const ProductInfo = ({ product }) => {
   const dispatch = useDispatch();
 
   const wishlistItems = useSelector((state) => state.wishlist.items);
 
-  const isWishlisted = wishlistItems.some((item) => item.id === product.id);
+  const productId = product?._id || product?.id;
+
+  const isWishlisted = wishlistItems.some((item) => item.id === productId);
 
   const [selectedVariant, setSelectedVariant] = useState(
     product?.variants?.[0],
@@ -56,11 +63,49 @@ const ProductInfo = ({ product }) => {
     ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
     : 0;
 
-  const handleWishlist = () => {
-    if (isWishlisted) {
-      dispatch(removeFromWishlist(product.id));
-    } else {
-      dispatch(addToWishlist(product));
+  const handleWishlist = async () => {
+    if (!productId) {
+      console.error("Product ID not found:", product);
+      return;
+    }
+
+    try {
+      // ==========================================
+      // REMOVE FROM WISHLIST
+      // ==========================================
+
+      if (isWishlisted) {
+        await removeFromWishlistDB(productId);
+
+        dispatch(removeFromWishlist(productId));
+
+        console.log("❤️ Product removed from wishlist");
+
+        return;
+      }
+
+      // ==========================================
+      // ADD TO WISHLIST
+      // ==========================================
+
+      const wishlistProduct = {
+        ...product,
+        id: productId,
+        name: product.productName,
+      };
+
+      // Save to MongoDB first
+      await addToWishlistDB(productId);
+
+      // Then update Redux
+      dispatch(addToWishlist(wishlistProduct));
+
+      console.log("❤️ Product added to wishlist");
+    } catch (error) {
+      console.error(
+        "Wishlist operation failed:",
+        error.response?.data || error.message,
+      );
     }
   };
 
@@ -89,7 +134,7 @@ const ProductInfo = ({ product }) => {
           mb: 3,
         }}
       >
-        {product.name}
+        {product.productName}
       </Typography>
 
       {/* Rating */}
@@ -163,18 +208,54 @@ const ProductInfo = ({ product }) => {
 
       {/* Description */}
 
-      <Typography
+      {/* Description */}
+
+      <Box
         sx={{
-          color: "#6E6E6E",
-          fontSize: 16,
-          lineHeight: 1.7,
           maxWidth: 460,
           mb: 4,
           mt: -1,
         }}
       >
-        Description: <br /> {product.description}
-      </Typography>
+        <Typography
+          sx={{
+            color: "#6E6E6E",
+            fontSize: 16,
+            lineHeight: 1.7,
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              color: "#1E2F2B",
+              fontWeight: 600,
+            }}
+          >
+            Description:
+          </Box>{" "}
+          {product.description}
+        </Typography>
+
+        <Typography
+          component="span"
+          onClick={() => setShowDescription(true)}
+          sx={{
+            color: "#A86C45",
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
+            "&:hover": {
+              textDecoration: "underline",
+            },
+          }}
+        >
+          ...More
+        </Typography>
+      </Box>
 
       {/* Price */}
 
@@ -285,23 +366,27 @@ const ProductInfo = ({ product }) => {
       <Stack direction="row" spacing={2} mb={5}>
         {product.variants.map((variant) => (
           <Box
-            key={variant.id}
+            key={variant._id}
             onClick={() => setSelectedVariant(variant)}
             sx={{
               width: 92,
               height: 44,
               borderRadius: 5,
               cursor: "pointer",
+
               border:
-                selectedVariant.id === variant.id
+                selectedVariant?._id === variant._id
                   ? "2px solid #C79A72"
                   : "1px solid #ECE6DD",
 
-              bgcolor: selectedVariant.id === variant.id ? "#FBF5EF" : "#fff",
+              bgcolor:
+                selectedVariant?._id === variant._id ? "#FBF5EF" : "#fff",
+
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
+
               transition: ".3s",
 
               "&:hover": {

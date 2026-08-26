@@ -13,7 +13,6 @@ import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 import { useThemeContext } from "../context/ThemeContext";
@@ -132,7 +131,7 @@ const AccountInfo = ({ admin }) => {
             </Typography>
 
             <Chip
-              label={admin.role}
+              label="Admin"
               color="success"
               sx={{
                 mt: 1,
@@ -160,7 +159,7 @@ const AccountInfo = ({ admin }) => {
                 fontSize: 14,
               }}
             >
-              {admin.phone}
+              {admin.contactNumber}
             </Typography>
           </Box>
         </Stack>
@@ -177,14 +176,7 @@ const AccountInfo = ({ admin }) => {
           <InfoRow
             icon={<PhoneOutlinedIcon />}
             label="Phone Number"
-            value={admin.phone}
-            darkMode={darkMode}
-          />
-
-          <InfoRow
-            icon={<AdminPanelSettingsOutlinedIcon />}
-            label="Role"
-            value={admin.role}
+            value={admin.contactNumber}
             darkMode={darkMode}
           />
 
@@ -192,8 +184,8 @@ const AccountInfo = ({ admin }) => {
             icon={<CalendarTodayOutlinedIcon />}
             label="Joined Date"
             value={
-              admin.joinedDate
-                ? new Date(admin.joinedDate).toLocaleDateString("en-GB", {
+              admin.createdAt
+                ? new Date(admin.createdAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",

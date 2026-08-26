@@ -1,47 +1,128 @@
-import dbPromise from "./db";
+import api from "../api/axios";
+import adminApi from "../api/adminApi";
 
-// Get all orders
-export const getOrders = async () => {
-  const db = await dbPromise;
-  return await db.getAll("orders");
-};
+// ======================================================
+// CREATE ORDER - CUSTOMER
+// ======================================================
 
-// Get one order
-export const getOrderById = async (id) => {
-  const db = await dbPromise;
-  return await db.get("orders", id);
-};
-
-// Create new order
 export const createOrder = async (orderData) => {
-  const db = await dbPromise;
+  try {
+    const response = await api.post("/orders", orderData);
 
-  const order = {
-    id: `GC-${Date.now()}`,
-    orderDate: new Date().toISOString(),
-    status: "Pending",
-    ...orderData,
-  };
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error creating order:",
+      error.response?.data || error.message
+    );
 
-  await db.put("orders", order);
-
-  return order;
+    throw error;
+  }
 };
 
-// Update order
-export const updateOrder = async (order) => {
-  const db = await dbPromise;
-  await db.put("orders", order);
+// ======================================================
+// GET MY ORDERS - CUSTOMER
+// ======================================================
+
+export const getMyOrders = async () => {
+  try {
+    const response = await api.get("/orders/my-orders");
+
+    return response.data.data || [];
+  } catch (error) {
+    console.error(
+      "Error fetching my orders:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
-// Delete order
+// ======================================================
+// GET ALL ORDERS - ADMIN
+// ======================================================
+
+export const getOrders = async () => {
+  try {
+    const response = await adminApi.get("/orders");
+
+    return response.data.data || [];
+  } catch (error) {
+    console.error(
+      "Error fetching admin orders:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// ======================================================
+// GET SINGLE ORDER - ADMIN
+// ======================================================
+
+export const getOrderById = async (id) => {
+  try {
+    const response = await adminApi.get(`/orders/${id}`);
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error fetching admin order:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// ======================================================
+// UPDATE ORDER STATUS - ADMIN
+// ======================================================
+
+export const updateOrderStatus = async (
+  id,
+  status,
+  paymentStatus
+) => {
+  try {
+    const response = await adminApi.put(
+      `/orders/${id}/status`,
+      {
+        status,
+        paymentStatus,
+      }
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error updating order status:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// ======================================================
+// DELETE ORDER - ADMIN
+// ======================================================
+
 export const deleteOrder = async (id) => {
-  const db = await dbPromise;
-  await db.delete("orders", id);
-};
+  try {
+    const response = await adminApi.delete(
+      `/orders/${id}`
+    );
 
-// Clear all orders
-export const clearOrders = async () => {
-  const db = await dbPromise;
-  await db.clear("orders");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error deleting order:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };

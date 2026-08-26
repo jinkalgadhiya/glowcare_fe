@@ -9,9 +9,9 @@ import {
   Avatar,
 } from "@mui/material";
 
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
 import { useThemeContext } from "../context/ThemeContext";
 
@@ -20,12 +20,23 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
 
   if (!product) return null;
 
+  /* ---------------- CATEGORY NAME ---------------- */
+
+  const categoryName = product.category
+    ? product.category.subCategory
+      ? `${product.category.mainCategory} → ${product.category.subCategory}`
+      : product.category.mainCategory || "-"
+    : "-";
+
+  /* ---------------- FIRST VARIANT ---------------- */
+
+  const firstVariant = product.variants?.[0];
+
   return (
     <Box
       sx={{
         width: 380,
         height: "100vh",
-        p: 4,
         backgroundColor: darkMode ? "#252525" : "#fff",
         overflowY: "auto",
       }}
@@ -67,12 +78,12 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
 
       <Box
         sx={{
-          flex: 1,
-          overflowY: "auto",
           p: 3,
         }}
       >
         <Stack spacing={3} alignItems="center">
+          {/* Product Image */}
+
           <Avatar
             src={product.image}
             variant="rounded"
@@ -83,15 +94,32 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
             }}
           />
 
+          {/* Product Name */}
+
           <Typography
             variant="h5"
             sx={{
               fontWeight: 700,
               color: darkMode ? "#fff" : "#222",
+              textAlign: "center",
             }}
           >
-            {product.name}
+            {product.productName}
           </Typography>
+
+          {/* Badge */}
+
+          {product.badge && product.badge !== "None" && (
+            <Chip
+              label={product.badge}
+              size="small"
+              sx={{
+                fontWeight: 600,
+              }}
+            />
+          )}
+
+          {/* Status */}
 
           <Chip
             label={product.status}
@@ -129,7 +157,7 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: darkMode ? "#fff" : "#222",
                 }}
               >
-                {product.category}
+                {categoryName}
               </Typography>
             </Box>
 
@@ -152,7 +180,7 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: "#2E7D32",
                 }}
               >
-                ₹{product.variants?.[0]?.price || 0}
+                ₹{firstVariant?.price || 0}
               </Typography>
             </Box>
 
@@ -175,7 +203,7 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: "#E67E22",
                 }}
               >
-                ₹{product.variants[0].discountPrice}
+                ₹{firstVariant?.discountPrice || 0}
               </Typography>
             </Box>
 
@@ -198,7 +226,7 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: darkMode ? "#fff" : "#222",
                 }}
               >
-                {product.variants?.[0]?.stock || 0}
+                {firstVariant?.stock || 0}
               </Typography>
             </Box>
 
@@ -221,7 +249,7 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: darkMode ? "#fff" : "#222",
                 }}
               >
-                {product.variants?.[0]?.sku || "-"}
+                {firstVariant?.sku || "-"}
               </Typography>
             </Box>
 
@@ -244,7 +272,232 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: darkMode ? "#fff" : "#222",
                 }}
               >
-                {product.description}
+                {product.description || "-"}
+              </Typography>
+            </Box>
+
+            {/* Key Ingredients */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Key Ingredients
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  lineHeight: 1.8,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.keyIngredients || "-"}
+              </Typography>
+            </Box>
+
+            {/* Texture */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Texture
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontWeight: 600,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.texture || "-"}
+              </Typography>
+            </Box>
+
+            {/* Fragrance */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Fragrance
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontWeight: 600,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.fragrance || "-"}
+              </Typography>
+            </Box>
+
+            {/* pH */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                pH Value
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontWeight: 600,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.phValue || "-"}
+              </Typography>
+            </Box>
+
+            {/* Shelf Life */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Shelf Life
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontWeight: 600,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.shelfLife || "-"}
+              </Typography>
+            </Box>
+
+            {/* Suitable For */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Suitable For
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={1}
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ mt: 1 }}
+              >
+                {product.suitableFor?.length ? (
+                  product.suitableFor.map((item) => (
+                    <Chip key={item} label={item} size="small" />
+                  ))
+                ) : (
+                  <Typography>-</Typography>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Skin Concerns */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Skin Concerns
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={1}
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ mt: 1 }}
+              >
+                {product.skinConcerns?.length ? (
+                  product.skinConcerns.map((item) => (
+                    <Chip key={item} label={item} size="small" />
+                  ))
+                ) : (
+                  <Typography>-</Typography>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Benefits */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Benefits
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={1}
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ mt: 1 }}
+              >
+                {product.benefits?.length ? (
+                  product.benefits.map((item) => (
+                    <Chip key={item} label={item} size="small" />
+                  ))
+                ) : (
+                  <Typography>-</Typography>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Caution */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: darkMode ? "#AFAFAF" : "#777",
+                }}
+              >
+                Caution
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  lineHeight: 1.8,
+                  color: darkMode ? "#fff" : "#222",
+                }}
+              >
+                {product.caution || "-"}
               </Typography>
             </Box>
 
@@ -266,38 +519,85 @@ const ViewProduct = ({ product, onClose, onEdit, onDelete }) => {
                   color: darkMode ? "#fff" : "#222",
                 }}
               >
-                {product.createdAt}
+                {product.createdAt
+                  ? new Date(product.createdAt).toLocaleString()
+                  : "-"}
               </Typography>
             </Box>
           </Stack>
+
+          {/* Actions */}
 
           <Stack
             direction="row"
             spacing={2}
             sx={{
-              mt: 5,
+              mt: 3,
+              width: "100%",
             }}
           >
             <Button
               fullWidth
-              variant="contained"
+              variant="outlined"
+              onClick={onEdit}
+              startIcon={<EditOutlinedIcon />}
               sx={{
-                mt: 6,
-                bgcolor: "#B89478",
+                height: 44,
+                borderColor: "#B89478",
+                color: "#B89478",
                 textTransform: "none",
                 borderRadius: 2,
-                boxShadow: "none",
 
                 "&:hover": {
-                  bgcolor: "#A88366",
-                  boxShadow: "none",
+                  borderColor: "#A88366",
+                  backgroundColor: "rgba(184,148,120,.08)",
                 },
               }}
-              onClick={onClose}
             >
-              Back
+              Edit
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={onDelete}
+              startIcon={<DeleteOutlineOutlinedIcon />}
+              sx={{
+                height: 44,
+                borderColor: "#E53935",
+                color: "#E53935",
+                textTransform: "none",
+                borderRadius: 2,
+
+                "&:hover": {
+                  borderColor: "#C62828",
+                  backgroundColor: "rgba(229,57,53,.08)",
+                },
+              }}
+            >
+              Delete
             </Button>
           </Stack>
+
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={onClose}
+            sx={{
+              height: 44,
+              bgcolor: "#B89478",
+              textTransform: "none",
+              borderRadius: 2,
+              boxShadow: "none",
+
+              "&:hover": {
+                bgcolor: "#A88366",
+                boxShadow: "none",
+              },
+            }}
+          >
+            Back
+          </Button>
         </Stack>
       </Box>
     </Box>

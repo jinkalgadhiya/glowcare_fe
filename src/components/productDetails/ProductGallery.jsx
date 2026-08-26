@@ -251,12 +251,12 @@ const ProductGallery = ({ product }) => {
       {images.length > 1 && (
         <Box
           sx={{
-            mt: 3,
+            mt: 2.5,
+            width: "90%",
+            ml: "100px",
 
             display: "flex",
-
             justifyContent: "center",
-
             alignItems: "center",
 
             gap: 2,
@@ -270,61 +270,58 @@ const ProductGallery = ({ product }) => {
               onClick={() => setSelectedIndex(index)}
               sx={{
                 width: {
-                  xs: 70,
-                  sm: 82,
-                  md: 95,
+                  xs: 85,
+                  sm: 110,
+                  md: 125,
                 },
 
                 height: {
-                  xs: 70,
-                  sm: 82,
-                  md: 95,
+                  xs: 85,
+                  sm: 110,
+                  md: 125,
                 },
 
                 borderRadius: 3,
-
                 overflow: "hidden",
-
                 cursor: "pointer",
 
-                bgcolor: "#FAF7F2",
+                backgroundColor: "#FAF7F2",
 
                 border:
                   selectedIndex === index
                     ? "2px solid #B78962"
                     : "1px solid #E8DED3",
 
-                transition: ".35s",
-
                 boxShadow:
                   selectedIndex === index
-                    ? "0 10px 25px rgba(183,137,98,.20)"
-                    : "0 3px 10px rgba(0,0,0,.04)",
+                    ? "0 8px 22px rgba(183,137,98,.22)"
+                    : "0 4px 14px rgba(0,0,0,.06)",
+
+                transition:
+                  "transform .25s ease, box-shadow .25s ease, border-color .25s ease",
 
                 "&:hover": {
                   transform: "translateY(-5px)",
-
                   borderColor: "#B78962",
-
-                  boxShadow: "0 12px 25px rgba(183,137,98,.22)",
+                  boxShadow: "0 12px 25px rgba(183,137,98,.20)",
                 },
               }}
             >
               <Box
                 component="img"
                 src={image}
-                alt={`${product.name}-${index}`}
+                alt={`${product.productName}-${index}`}
+                draggable={false}
                 sx={{
                   width: "100%",
-
                   height: "100%",
-
                   objectFit: "cover",
+                  display: "block",
 
-                  transition: ".35s",
+                  transition: "transform .3s ease",
 
                   "&:hover": {
-                    transform: "scale(1.08)",
+                    transform: "scale(1.05)",
                   },
                 }}
               />
