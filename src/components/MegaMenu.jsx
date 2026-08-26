@@ -15,36 +15,63 @@ const MegaMenu = ({ type }) => {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const data = (await getCategories()) || [];
+      try {
+        const data = (await getCategories()) || [];
 
-      const activeCategories = data.filter(
-        (item) => item.status === "Active" && item.menuType === type,
-      );
+        const activeCategories = data.filter(
+          (item) =>
+            item.status === "Active" &&
+            item.menuType?.trim().toLowerCase() === type?.trim().toLowerCase(),
+        );
 
-      setCategories(activeCategories);
+        setCategories(activeCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        setCategories([]);
+      }
     };
 
     loadCategories();
   }, [type]);
 
+  // ===============================
+  // Main Categories
+  // ===============================
+
   const mainCategories = categories.filter(
     (item) => item.categoryType === "main",
   );
+
+  // ===============================
+  // Sub Categories
+  // ===============================
 
   const subCategories = categories.filter(
     (item) => item.categoryType === "sub",
   );
 
+  // ===============================
+  // Group Sub Categories
+  // ===============================
+
   const groupedCategories = mainCategories.reduce((acc, main) => {
-    acc[main.mainCategory] = subCategories.filter(
-      (sub) => sub.mainCategory === main.mainCategory,
+    const mainName = main.mainCategory;
+
+    acc[mainName] = subCategories.filter(
+      (sub) =>
+        sub.mainCategory?.trim().toLowerCase() ===
+        mainName?.trim().toLowerCase(),
     );
 
     return acc;
   }, {});
 
+  // ===============================
+  // Menu Images
+  // ===============================
+
   let menuImage = SkincareImg;
-  const bannerTitle = type.charAt(0).toUpperCase() + type.slice(1);
+  let bannerTitle = type?.charAt(0).toUpperCase() + type?.slice(1);
 
   if (type === "haircare") {
     menuImage = HaircareImg;
@@ -95,7 +122,7 @@ const MegaMenu = ({ type }) => {
               <Stack spacing={2}>
                 {items.map((item) => (
                   <Typography
-                    key={item.id}
+                    key={item._id}
                     onClick={() =>
                       navigate(
                         `/shop/${encodeURIComponent(

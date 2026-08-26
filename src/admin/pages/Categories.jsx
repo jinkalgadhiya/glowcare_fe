@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Box, Drawer } from "@mui/material";
+import { Box, Drawer, Pagination } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
@@ -8,38 +9,45 @@ import CategoryTable from "../components/CategoryTable";
 import CategoryFilter from "../components/CategoryFilter";
 import ViewCategory from "../components/ViewCategory";
 import DeleteCategory from "../components/DeleteCategory";
+
 import { getCategories } from "../../database/categoryService";
-import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
-import { useNavigate } from "react-router-dom";
-import { Pagination } from "@mui/material";
 
 const Categories = () => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
 
-  /* Search */
+  // ===============================
+  // Search
+  // ===============================
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [page, setPage] = useState(1);
+  // ===============================
+  // Pagination
+  // ===============================
 
+  const [page, setPage] = useState(1);
   const rowsPerPage = 20;
 
-  /* Categories */
+  // ===============================
+  // Categories
+  // ===============================
 
   const [categories, setCategories] = useState([]);
 
-  /* Drawers */
+  // ===============================
+  // Drawers / Dialogs
+  // ===============================
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
-
-  /* Filter Drawer */
-
   const [filterOpen, setFilterOpen] = useState(false);
 
-  /* Filter States */
+  // ===============================
+  // Filters
+  // ===============================
+
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
   const [menuFilter, setMenuFilter] = useState("All");
@@ -48,14 +56,26 @@ const Categories = () => {
   const [categoryTypeFilter, setCategoryTypeFilter] = useState("All");
   const [descriptionFilter, setDescriptionFilter] = useState("");
 
+  // ===============================
+  // Load Categories
+  // ===============================
+
   useEffect(() => {
-    const loadData = async () => {
-      const categoryData = await getCategories();
-      setCategories(categoryData);
+    const loadCategories = async () => {
+      try {
+        const categoryList = await getCategories();
+        setCategories(categoryList || []);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
     };
 
-    loadData();
+    loadCategories();
   }, []);
+
+  // ===============================
+  // Reset Pagination
+  // ===============================
 
   useEffect(() => {
     setPage(1);
@@ -70,86 +90,79 @@ const Categories = () => {
     sortBy,
   ]);
 
-  /* Combined Search + Filter */
+  // ===============================
+  // Search + Filter + Sort
+  // ===============================
 
   const filteredCategories = useMemo(() => {
     let filtered = [...categories];
 
-    /* Search */
-
+    // Search
     if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+
       filtered = filtered.filter((category) =>
-        `${category.menuType}
-         ${category.categoryType}
-         ${category.mainCategory}
-         ${category.subCategory}`
+        `
+          ${category.menuType || ""}
+          ${category.categoryType || ""}
+          ${category.mainCategory || ""}
+          ${category.subCategory || ""}
+        `
           .toLowerCase()
-          .includes(searchTerm.toLowerCase()),
+          .includes(search),
       );
     }
 
-    /* Status */
-
+    // Status
     if (statusFilter !== "All") {
       filtered = filtered.filter(
         (category) => category.status === statusFilter,
       );
     }
 
+    // Menu Type
     if (menuFilter !== "All") {
       filtered = filtered.filter(
         (category) => category.menuType === menuFilter,
       );
     }
 
+    // Category Type
     if (categoryTypeFilter !== "All") {
       filtered = filtered.filter(
         (category) => category.categoryType === categoryTypeFilter,
       );
     }
 
+    // Main Category
     if (mainCategoryFilter.trim()) {
+      const search = mainCategoryFilter.toLowerCase();
+
       filtered = filtered.filter((category) =>
-        category.mainCategory
-          ?.toLowerCase()
-          .includes(mainCategoryFilter.toLowerCase()),
+        category.mainCategory?.toLowerCase().includes(search),
       );
     }
 
+    // Sub Category
     if (subCategoryFilter.trim()) {
+      const search = subCategoryFilter.toLowerCase();
+
       filtered = filtered.filter((category) =>
-        category.subCategory
-          ?.toLowerCase()
-          .includes(subCategoryFilter.toLowerCase()),
+        category.subCategory?.toLowerCase().includes(search),
       );
     }
 
+    // Description
     if (descriptionFilter.trim()) {
+      const search = descriptionFilter.toLowerCase();
+
       filtered = filtered.filter((category) =>
-        category.description
-          ?.toLowerCase()
-          .includes(descriptionFilter.toLowerCase()),
+        category.description?.toLowerCase().includes(search),
       );
     }
 
-    /* Sorting */
-
+    // Sorting
     switch (sortBy) {
-      case "A-Z":
-        filtered.sort((a, b) =>
-          (a.subCategory || a.mainCategory || "").localeCompare(
-            b.subCategory || b.mainCategory || "",
-          ),
-        );
-        break;
-
-      case "Z-A":
-        filtered.sort((a, b) =>
-          (b.subCategory || b.mainCategory || "").localeCompare(
-            a.subCategory || a.mainCategory || "",
-          ),
-        );
-        break;
       case "A-Z":
         filtered.sort((a, b) =>
           (a.subCategory || a.mainCategory || "").localeCompare(
@@ -195,10 +208,17 @@ const Categories = () => {
     sortBy,
   ]);
 
+  // ===============================
+  // Pagination
+  // ===============================
+
   const paginatedCategories = filteredCategories.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage,
   );
+
+  const totalPages = Math.ceil(filteredCategories.length / rowsPerPage);
+
   return (
     <Box
       sx={{
@@ -227,11 +247,15 @@ const Categories = () => {
             pt: "90px",
           }}
         >
+          {/* Header */}
+
           <CategoryHeader
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onOpenFilter={() => setFilterOpen(true)}
           />
+
+          {/* Table */}
 
           <CategoryTable
             categories={paginatedCategories}
@@ -242,34 +266,40 @@ const Categories = () => {
             }}
           />
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mt: 3,
-          }}
-        >
-          <Pagination
-            page={page}
-            onChange={(e, value) => setPage(value)}
-            count={Math.ceil(filteredCategories.length / rowsPerPage)}
+
+        {/* Pagination */}
+
+        {totalPages > 0 && (
+          <Box
             sx={{
-              mb: 6,
-              "& .MuiPaginationItem-root": {
-                color: darkMode ? "#fff" : "#555",
-              },
-
-              "& .Mui-selected": {
-                backgroundColor: "#B89478 !important",
-                color: "#fff",
-              },
-
-              "& .Mui-selected:hover": {
-                backgroundColor: "#A88366 !important",
-              },
+              display: "flex",
+              justifyContent: "center",
+              mt: 3,
             }}
-          />
-        </Box>
+          >
+            <Pagination
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              count={totalPages}
+              sx={{
+                mb: 6,
+
+                "& .MuiPaginationItem-root": {
+                  color: darkMode ? "#fff" : "#555",
+                },
+
+                "& .Mui-selected": {
+                  backgroundColor: "#B89478 !important",
+                  color: "#fff",
+                },
+
+                "& .Mui-selected:hover": {
+                  backgroundColor: "#A88366 !important",
+                },
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
       {/* Filter Drawer */}
@@ -302,7 +332,7 @@ const Categories = () => {
         }}
       />
 
-      {/* View Drawer */}
+      {/* View Category Drawer */}
 
       <Drawer
         anchor="right"
@@ -321,7 +351,7 @@ const Categories = () => {
           darkMode={darkMode}
           onClose={() => setSelectedCategory(null)}
           onEdit={() =>
-            navigate(`/admin/categories/edit/${selectedCategory.id}`)
+            navigate(`/admin/categories/edit/${selectedCategory._id}`)
           }
           onDelete={() => setOpenDelete(true)}
         />

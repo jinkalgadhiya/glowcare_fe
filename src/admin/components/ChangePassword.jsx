@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Paper,
   Typography,
-  TextField,
   Button,
   Box,
   Divider,
@@ -14,8 +13,11 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import { updateAdmin } from "../../database/adminService";
+
 import { useThemeContext } from "../context/ThemeContext";
+import api from "../../api/axios";
+
+import CustomTextField from "../../components/common/CustomTextField";
 
 const ChangePassword = ({ admin }) => {
   const { darkMode } = useThemeContext();
@@ -31,8 +33,13 @@ const ChangePassword = ({ admin }) => {
   const handleUpdatePassword = async () => {
     if (!admin) return;
 
-    if (currentPassword !== admin.password) {
-      alert("Current password is incorrect.");
+    if (!currentPassword.trim()) {
+      alert("Please enter your current password.");
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      alert("Please enter your new password.");
       return;
     }
 
@@ -41,23 +48,24 @@ const ChangePassword = ({ admin }) => {
       return;
     }
 
-    const updatedAdmin = {
-      ...admin,
-      password: newPassword,
-    };
+    try {
+      const response = await api.put("/admin/change-password", {
+        currentPassword,
+        newPassword,
+      });
 
-    await updateAdmin(updatedAdmin);
+      if (response.data.status === "success") {
+        alert("Password updated successfully.");
 
-    localStorage.setItem(
-  "admin",
-  JSON.stringify(updatedAdmin)
-);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error) {
+      console.error("Change admin password error:", error);
 
-    alert("Password updated successfully.");
-
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+      alert(error.response?.data?.message || "Failed to update password");
+    }
   };
 
   return (
@@ -128,6 +136,8 @@ const ChangePassword = ({ admin }) => {
       <Divider />
 
       <Box sx={{ p: 3 }}>
+        {/* Current Password */}
+
         <Box sx={{ mb: 2.5 }}>
           <Typography
             sx={{
@@ -140,7 +150,7 @@ const ChangePassword = ({ admin }) => {
             Current Password
           </Typography>
 
-          <TextField
+          <CustomTextField
             fullWidth
             placeholder="Enter current password"
             type={showCurrent ? "text" : "password"}
@@ -168,13 +178,16 @@ const ChangePassword = ({ admin }) => {
                 fontSize: 15,
                 color: "#a7a7a7",
               },
-               "& .MuiInputAdornment-root svg": {
+
+              "& .MuiInputAdornment-root svg": {
                 fontSize: 20,
                 color: "#8A8A8A",
               },
             }}
           />
         </Box>
+
+        {/* New Password */}
 
         <Box sx={{ mb: 2.5 }}>
           <Typography
@@ -188,7 +201,7 @@ const ChangePassword = ({ admin }) => {
             New Password
           </Typography>
 
-          <TextField
+          <CustomTextField
             fullWidth
             placeholder="Enter new password"
             type={showNew ? "text" : "password"}
@@ -225,6 +238,8 @@ const ChangePassword = ({ admin }) => {
           />
         </Box>
 
+        {/* Confirm New Password */}
+
         <Box sx={{ mb: 3 }}>
           <Typography
             sx={{
@@ -237,7 +252,7 @@ const ChangePassword = ({ admin }) => {
             Confirm New Password
           </Typography>
 
-          <TextField
+          <CustomTextField
             fullWidth
             placeholder="Confirm new password"
             type={showConfirm ? "text" : "password"}

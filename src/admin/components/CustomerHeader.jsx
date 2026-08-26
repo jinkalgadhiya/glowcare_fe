@@ -147,25 +147,23 @@ const CustomerHeader = ({
         {/* Buttons */}
 
         <Stack direction="row" spacing={2}>
-          <Button
-            variant="contained"
-            disableElevation
+          <Box
             sx={{
               minWidth: 190,
               height: 46,
+              px: 2.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               bgcolor: "#B89478",
-              textTransform: "none",
               fontSize: 15,
               fontWeight: 600,
               borderRadius: 2,
-
-              "&:hover": {
-                bgcolor: "#A88366",
-              },
+              color: "#fff",
             }}
           >
             Total Customers : {totalCustomers}
-          </Button>
+          </Box>
 
           <Button
             variant="outlined"

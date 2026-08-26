@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -7,92 +7,406 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
+
 import { getProducts } from "../database/productService";
+
+import {
+  getCartItems,
+  saveCartItem,
+} from "../database/cartService";
+
+import {
+  getWishlist,
+  addToWishlistDB,
+  removeFromWishlistDB,
+} from "../database/wishlistService";
+
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import RemoveOutlinedIcon from "@mui/icons-material/RemoveOutlined";
+
 import { useDispatch, useSelector } from "react-redux";
+
+import {
+  addToCart,
+  loadCart,
+} from "../redux/cart/cartSlice";
+
 import {
   addToWishlist,
   removeFromWishlist,
+  loadWishlist,
 } from "../redux/wishlist/wishlistSlice";
-import { addToCart } from "../redux/cart/cartSlice";
 
 const FeaturedProduct = () => {
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showFullDescription, setShowFullDescription] =
+    useState(false);
+
   const [products, setProducts] = useState([]);
 
-  const loadProducts = async () => {
-    try {
-      const data = await getProducts();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error loading featured products:", error);
-    }
-  };
+  const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
+  const [cartLoading, setCartLoading] = useState(false);
 
-  const featuredProducts = products.filter(
-    (product) => product.status === "Active" && product.featured,
-  );
+  const [wishlistLoading, setWishlistLoading] =
+    useState(false);
 
   const dispatch = useDispatch();
 
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  // ======================================================
+  // REDUX
+  // ======================================================
+
+  const wishlistItems = useSelector(
+    (state) => state.wishlist?.items || [],
+  );
+
+  // ======================================================
+  // LOAD PRODUCTS
+  // ======================================================
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await getProducts();
+
+        setProducts(
+          Array.isArray(data) ? data : [],
+        );
+      } catch (error) {
+        console.error(
+          "Error loading featured products:",
+          error,
+        );
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // ======================================================
+  // LOAD CART FROM BACKEND
+  // ======================================================
+
+  useEffect(() => {
+    const loadBackendCart = async () => {
+      try {
+        const data = await getCartItems();
+
+        dispatch(loadCart(data));
+      } catch (error) {
+        console.error(
+          "Failed to load cart from backend:",
+          error.response?.data || error.message,
+        );
+      }
+    };
+
+    loadBackendCart();
+  }, [dispatch]);
+
+  // ======================================================
+  // LOAD WISHLIST FROM BACKEND
+  // ======================================================
+
+  useEffect(() => {
+    const loadBackendWishlist = async () => {
+      try {
+        const data = await getWishlist();
+
+        if (Array.isArray(data)) {
+          dispatch(loadWishlist(data));
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load wishlist from backend:",
+          error.response?.data || error.message,
+        );
+      }
+    };
+
+    loadBackendWishlist();
+  }, [dispatch]);
+
+  // ======================================================
+  // FEATURED PRODUCT
+  // ======================================================
+
+  const featuredProducts = products.filter(
+    (product) =>
+      product.status === "Active" &&
+      product.featured === true,
+  );
 
   const featuredProduct =
     featuredProducts.length > 0
-      ? featuredProducts[featuredProducts.length - 1]
+      ? featuredProducts[
+          featuredProducts.length - 1
+        ]
       : null;
 
-  if (!featuredProduct) return null;
+  if (!featuredProduct) {
+    return null;
+  }
 
-  const firstVariant = featuredProduct?.variants?.[0];
+  // ======================================================
+  // PRODUCT ID
+  // ======================================================
 
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        productId: featuredProduct.id,
-        variantId: firstVariant.id,
-        name: featuredProduct.name,
-        image: featuredProduct.image,
-        size: firstVariant.size,
-        price: firstVariant.discountPrice || firstVariant.price,
-        quantity: 1,
-      }),
+  const productId =
+    featuredProduct._id ||
+    featuredProduct.id ||
+    featuredProduct.productId;
+
+  // ======================================================
+  // VARIANT
+  // ======================================================
+
+  const firstVariant =
+    featuredProduct?.variants?.[0];
+
+  if (!firstVariant) {
+    return null;
+  }
+
+  const variantId =
+    firstVariant._id ||
+    firstVariant.id ||
+    firstVariant.variantId ||
+    firstVariant.size;
+
+  // ======================================================
+  // PRICE
+  // ======================================================
+
+  const sellingPrice =
+    Number(firstVariant.discountPrice) ||
+    Number(firstVariant.price) ||
+    0;
+
+  const originalPrice =
+    Number(firstVariant.price) || 0;
+
+  // ======================================================
+  // WISHLIST CHECK
+  // ======================================================
+
+  const isWishlisted = wishlistItems.some(
+    (item) =>
+      String(item.id || item.productId) ===
+      String(productId),
+  );
+
+  // ======================================================
+  // ADD TO CART
+  // ======================================================
+
+  const handleAddToCart = async () => {
+    if (!productId || !variantId) {
+      console.error(
+        "Missing product/variant ID:",
+        {
+          productId,
+          variantId,
+        },
+      );
+
+      alert(
+        "Unable to add this product to cart.",
+      );
+
+      return;
+    }
+
+    try {
+      setCartLoading(true);
+
+      const cartItem = {
+        productId,
+        variantId,
+
+        name:
+          featuredProduct.productName || "",
+
+        image:
+          featuredProduct.image || "",
+
+        category:
+          featuredProduct.category?.subCategory ||
+          featuredProduct.category?.mainCategory ||
+          "",
+
+        description:
+          featuredProduct.description || "",
+
+        size:
+          firstVariant.size || "",
+
+        price: sellingPrice,
+
+        originalPrice,
+
+        quantity,
+      };
+
+      // ==================================================
+      // UPDATE REDUX
+      // ==================================================
+
+      dispatch(addToCart(cartItem));
+
+      // ==================================================
+      // SAVE DIRECTLY TO BACKEND
+      // ==================================================
+
+      await saveCartItem(cartItem);
+
+      console.log(
+        "Product successfully added to cart",
+      );
+
+      setQuantity(1);
+    } catch (error) {
+      console.error(
+        "Failed to add product to cart:",
+        error.response?.data || error.message,
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to add product to cart.",
+      );
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  // ======================================================
+  // WISHLIST
+  // ======================================================
+
+  const handleWishlist = async () => {
+    if (!productId) {
+      console.error(
+        "Missing product ID:",
+        featuredProduct,
+      );
+
+      alert("Unable to update wishlist.");
+
+      return;
+    }
+
+    try {
+      setWishlistLoading(true);
+
+      // ==================================================
+      // REMOVE
+      // ==================================================
+
+      if (isWishlisted) {
+        await removeFromWishlistDB(productId);
+
+        dispatch(
+          removeFromWishlist(productId),
+        );
+
+        console.log(
+          "Product removed from wishlist",
+        );
+
+        return;
+      }
+
+      // ==================================================
+      // ADD TO BACKEND
+      // ==================================================
+
+      await addToWishlistDB(
+        productId,
+        variantId,
+      );
+
+      // ==================================================
+      // ADD TO REDUX
+      // ==================================================
+
+      dispatch(
+        addToWishlist({
+          id: productId,
+
+          productId,
+
+          name:
+            featuredProduct.productName || "",
+
+          image:
+            featuredProduct.image || "",
+
+          category:
+            featuredProduct.category?.subCategory ||
+            featuredProduct.category?.mainCategory ||
+            "",
+
+          description:
+            featuredProduct.description || "",
+
+          badge:
+            featuredProduct.badge || "None",
+
+          variants:
+            featuredProduct.variants || [],
+
+          price: sellingPrice,
+
+          originalPrice,
+        }),
+      );
+
+      console.log(
+        "Product added to wishlist",
+      );
+    } catch (error) {
+      console.error(
+        "Wishlist operation failed:",
+        error.response?.data ||
+          error.message,
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to update wishlist.",
+      );
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  // ======================================================
+  // QUANTITY
+  // ======================================================
+
+  const handleDecrease = () => {
+    setQuantity((prev) =>
+      Math.max(1, prev - 1),
     );
   };
 
-  const isWishlisted = wishlistItems.some(
-    (item) => item.id === featuredProduct.id,
-  );
+  const handleIncrease = () => {
+    const stock =
+      Number(firstVariant.stock) || 0;
 
-  const handleWishlist = () => {
-    if (!featuredProduct || !firstVariant) return;
-
-    if (isWishlisted) {
-      dispatch(removeFromWishlist(featuredProduct.id));
-    } else {
-      dispatch(
-        addToWishlist({
-          id: featuredProduct.id,
-          name: featuredProduct.name,
-          image: featuredProduct.image,
-          category: featuredProduct.category,
-          description: featuredProduct.description,
-          badge: featuredProduct.badge,
-
-          variants: featuredProduct.variants,
-
-          price: firstVariant.discountPrice || firstVariant.price,
-        }),
+    if (stock > 0) {
+      setQuantity((prev) =>
+        Math.min(stock, prev + 1),
       );
     }
   };
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <Box
@@ -106,7 +420,7 @@ const FeaturedProduct = () => {
         },
       }}
     >
-      {/* Heading */}
+      {/* HEADING */}
 
       <Box
         sx={{
@@ -139,10 +453,14 @@ const FeaturedProduct = () => {
         </Typography>
       </Box>
 
-      {/* Product Section */}
+      {/* PRODUCT */}
 
-      <Grid container spacing={6} alignItems="center">
-        {/* Left Side */}
+      <Grid
+        container
+        spacing={6}
+        alignItems="center"
+      >
+        {/* LEFT SIDE */}
 
         <Grid item xs={12} md={6}>
           <Box
@@ -151,13 +469,11 @@ const FeaturedProduct = () => {
               justifyContent: "center",
             }}
           >
-            {/* Product Card */}
-
             <Box
               sx={{
                 width: "700px",
-                maxWidth: 720,
-                height: 620,
+                maxWidth: "720px",
+                height: "620px",
                 backgroundColor: "#F3F4EE",
                 border: "1px solid #E7E3DC",
                 display: "flex",
@@ -168,27 +484,16 @@ const FeaturedProduct = () => {
                 mt: "40px",
               }}
             >
-              {/* Soft Background Circle */}
-
-              {/* <Box
-                sx={{
-                  position: "absolute",
-                  width: 600,
-                  height: 560,
-                  borderRadius: "50%",
-                  backgroundColor: "#ECEEE7",
-                }}
-              /> */}
-
-              {/* Product Image */}
-
               <Box
                 component="img"
                 src={featuredProduct.image}
-                alt={featuredProduct.name}
+                alt={
+                  featuredProduct.productName ||
+                  "Featured Product"
+                }
                 sx={{
                   width: "650px",
-                  // maxHeight: 500,
+                  maxWidth: "90%",
                   objectFit: "contain",
                   position: "relative",
                   zIndex: 2,
@@ -200,48 +505,56 @@ const FeaturedProduct = () => {
                 }}
               />
 
-              {/* Best Seller Badge */}
+              {/* BADGE */}
 
-              {featuredProduct.badge && featuredProduct.badge !== "None" && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 20,
-                    right: 20,
-                    backgroundColor:
-                      featuredProduct.badge === "Best Seller"
-                        ? "#1E2F2B"
-                        : featuredProduct.badge === "New Launch"
-                          ? "#2E7D32"
-                          : featuredProduct.badge === "Trending"
-                            ? "#E67E22"
-                            : featuredProduct.badge === "Limited Stock"
-                              ? "#D97706"
-                              : featuredProduct.badge === "Out of Stock"
-                                ? "#C62828"
-                                : featuredProduct.badge === "Sold Out"
-                                  ? "#616161"
-                                  : "#1E2F2B",
+              {featuredProduct.badge &&
+                featuredProduct.badge !== "None" && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 20,
+                      right: 20,
 
-                    color: "#fff",
-                    px: 2,
-                    py: 0.7,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: 1,
-                    borderRadius: "4px",
-                    textTransform: "uppercase",
-                    zIndex: 3,
-                  }}
-                >
-                  {featuredProduct.badge}
-                </Box>
-              )}
+                      backgroundColor:
+                        featuredProduct.badge ===
+                        "Best Seller"
+                          ? "#1E2F2B"
+                          : featuredProduct.badge ===
+                              "New Launch"
+                            ? "#2E7D32"
+                            : featuredProduct.badge ===
+                                "Trending"
+                              ? "#E67E22"
+                              : featuredProduct.badge ===
+                                  "Limited Stock"
+                                ? "#D97706"
+                                : featuredProduct.badge ===
+                                    "Out of Stock"
+                                  ? "#C62828"
+                                  : featuredProduct.badge ===
+                                      "Sold Out"
+                                    ? "#616161"
+                                    : "#1E2F2B",
+
+                      color: "#fff",
+                      px: 2,
+                      py: 0.7,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: 1,
+                      borderRadius: "4px",
+                      textTransform: "uppercase",
+                      zIndex: 3,
+                    }}
+                  >
+                    {featuredProduct.badge}
+                  </Box>
+                )}
             </Box>
           </Box>
         </Grid>
 
-        {/* Right Side */}
+        {/* RIGHT SIDE */}
 
         <Grid
           item
@@ -255,25 +568,34 @@ const FeaturedProduct = () => {
           <Box
             sx={{
               width: "550px",
-              pl: { xs: 0, md: 3 },
-              pr: { xs: 0, md: 1 },
+              pl: {
+                xs: 0,
+                md: 3,
+              },
+              pr: {
+                xs: 0,
+                md: 1,
+              },
             }}
           >
-            {/* Product Name */}
+            {/* PRODUCT NAME */}
 
             <Typography
               sx={{
-                fontSize: { xs: 30, md: 34 },
+                fontSize: {
+                  xs: 30,
+                  md: 34,
+                },
                 fontWeight: 500,
                 color: "#1E2F2B",
                 lineHeight: 1.2,
                 mb: 0.8,
               }}
             >
-              {featuredProduct.name}
+              {featuredProduct.productName}
             </Typography>
 
-            {/* Category */}
+            {/* CATEGORY */}
 
             <Box
               sx={{
@@ -290,7 +612,11 @@ const FeaturedProduct = () => {
                   color: "#666",
                 }}
               >
-                {featuredProduct.category}
+                {featuredProduct.category
+                  ?.subCategory ||
+                  featuredProduct.category
+                    ?.mainCategory ||
+                  "Category"}
               </Typography>
 
               <Typography
@@ -299,8 +625,10 @@ const FeaturedProduct = () => {
                   color: "#666",
                 }}
               >
-                Size :{" "}
-                <strong>{featuredProduct.variants?.[0]?.size || 0}</strong>
+                Size:{" "}
+                <strong>
+                  {firstVariant.size || "-"}
+                </strong>
               </Typography>
 
               <Typography
@@ -318,11 +646,12 @@ const FeaturedProduct = () => {
                   color: "#666",
                 }}
               >
-                4.8
+                {featuredProduct.rating ||
+                  "4.8"}
               </Typography>
             </Box>
 
-            {/* Price */}
+            {/* PRICE */}
 
             <Box
               sx={{
@@ -332,35 +661,37 @@ const FeaturedProduct = () => {
                 mb: 0.5,
               }}
             >
-              {/* Discount Price / Selling Price */}
-
               <Typography
                 sx={{
-                  fontSize: { xs: 34, md: 40 },
+                  fontSize: {
+                    xs: 34,
+                    md: 40,
+                  },
                   fontWeight: 600,
                   color: "#1E2F2B",
                 }}
               >
-                ₹
-                {featuredProduct.variants?.[0]?.discountPrice ||
-                  featuredProduct.variants?.[0]?.price ||
-                  0}
+                ₹{sellingPrice}
               </Typography>
 
-              {/* Original Price */}
-
-              {featuredProduct.variants?.[0]?.discountPrice && (
+              {firstVariant.discountPrice && (
                 <Typography
                   sx={{
-                    fontSize: { xs: 18, md: 20 },
+                    fontSize: {
+                      xs: 18,
+                      md: 20,
+                    },
                     fontWeight: 500,
                     color: "#9A9A9A",
-                    textDecoration: "line-through",
-                    textDecorationColor: "#c45252",
-                    textDecorationThickness: "2px",
+                    textDecoration:
+                      "line-through",
+                    textDecorationColor:
+                      "#c45252",
+                    textDecorationThickness:
+                      "2px",
                   }}
                 >
-                  ₹{featuredProduct.variants?.[0]?.price}
+                  ₹{originalPrice}
                 </Typography>
               )}
             </Box>
@@ -375,7 +706,7 @@ const FeaturedProduct = () => {
               Inclusive of all taxes
             </Typography>
 
-            {/* Purchased */}
+            {/* PURCHASED */}
 
             <Box
               sx={{
@@ -394,11 +725,12 @@ const FeaturedProduct = () => {
                   color: "#4A6950",
                 }}
               >
-                ❤ 89 people purchased this product
+                ❤ 89 people purchased this
+                product
               </Typography>
             </Box>
 
-            {/* Description */}
+            {/* DESCRIPTION */}
 
             <Typography
               sx={{
@@ -417,22 +749,28 @@ const FeaturedProduct = () => {
                   fontSize: 14,
                   color: "#666",
                   lineHeight: 1.8,
-
                   overflow: "hidden",
-
                   display: "-webkit-box",
-
-                  WebkitLineClamp: showFullDescription ? "unset" : 3,
-
-                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp:
+                    showFullDescription
+                      ? "unset"
+                      : 3,
+                  WebkitBoxOrient:
+                    "vertical",
                 }}
               >
-                {featuredProduct.description}
+                {featuredProduct.description ||
+                  "No description available."}
               </Typography>
 
-              {featuredProduct.description?.length > 120 && (
+              {featuredProduct.description
+                ?.length > 120 && (
                 <Typography
-                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  onClick={() =>
+                    setShowFullDescription(
+                      !showFullDescription,
+                    )
+                  }
                   sx={{
                     mt: 1,
                     display: "inline-block",
@@ -442,18 +780,21 @@ const FeaturedProduct = () => {
                     fontSize: 14,
 
                     "&:hover": {
-                      textDecoration: "underline",
+                      textDecoration:
+                        "underline",
                     },
                   }}
                 >
-                  {showFullDescription ? "Read Less" : "Read More"}
+                  {showFullDescription
+                    ? "Read Less"
+                    : "Read More"}
                 </Typography>
               )}
             </Box>
 
             <Divider sx={{ mb: 2 }} />
 
-            {/* Ingredients */}
+            {/* KEY INGREDIENTS */}
 
             <Typography
               sx={{
@@ -474,16 +815,18 @@ const FeaturedProduct = () => {
                 mb: 3,
               }}
             >
-              {featuredProduct.keyIngredients || "No key ingredients available"}
+              {featuredProduct.keyIngredients ||
+                "No key ingredients available"}
             </Typography>
 
-            {/* Quantity */}
+            {/* QUANTITY */}
 
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent:
+                  "space-between",
                 mb: 3,
               }}
             >
@@ -495,7 +838,10 @@ const FeaturedProduct = () => {
                   borderRadius: "30px",
                 }}
               >
-                <IconButton>
+                <IconButton
+                  onClick={handleDecrease}
+                  disabled={quantity <= 1}
+                >
                   <RemoveOutlinedIcon />
                 </IconButton>
 
@@ -505,10 +851,17 @@ const FeaturedProduct = () => {
                     textAlign: "center",
                   }}
                 >
-                  1
+                  {quantity}
                 </Typography>
 
-                <IconButton>
+                <IconButton
+                  onClick={handleIncrease}
+                  disabled={
+                    Number(
+                      firstVariant.stock,
+                    ) <= 0
+                  }
+                >
                   <AddOutlinedIcon />
                 </IconButton>
               </Box>
@@ -519,15 +872,18 @@ const FeaturedProduct = () => {
                   color: "#666",
                 }}
               >
-                Stock :{" "}
-                <strong>{featuredProduct.variants?.[0]?.stock || 0}</strong>
+                Stock:{" "}
+                <strong>
+                  {firstVariant.stock || 0}
+                </strong>
               </Typography>
             </Box>
 
-            {/* Buttons */}
+            {/* ADD TO CART */}
 
             <Button
               onClick={handleAddToCart}
+              disabled={cartLoading}
               fullWidth
               variant="contained"
               sx={{
@@ -545,11 +901,16 @@ const FeaturedProduct = () => {
                 },
               }}
             >
-              Add To Cart
+              {cartLoading
+                ? "Adding..."
+                : "Add To Cart"}
             </Button>
+
+            {/* WISHLIST */}
 
             <Button
               onClick={handleWishlist}
+              disabled={wishlistLoading}
               fullWidth
               variant="outlined"
               startIcon={
@@ -569,10 +930,15 @@ const FeaturedProduct = () => {
 
                 "&:hover": {
                   borderColor: "#1E2F2B",
+                  backgroundColor: "#F8F6F2",
                 },
               }}
             >
-              {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+              {wishlistLoading
+                ? "Updating..."
+                : isWishlisted
+                  ? "Remove from Wishlist"
+                  : "Add to Wishlist"}
             </Button>
           </Box>
         </Grid>

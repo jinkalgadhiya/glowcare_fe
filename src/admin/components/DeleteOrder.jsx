@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,26 +9,52 @@ import {
   Box,
 } from "@mui/material";
 
-import { deleteOrder } from "../../database/orderService";
 import { useThemeContext } from "../context/ThemeContext";
+import api from "../../api/axios";
 
 const DeleteOrder = ({ open, onClose, order, onDelete }) => {
   const { darkMode } = useThemeContext();
 
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async () => {
     if (!order) return;
 
-    await deleteOrder(order.id);
+    const orderId = order._id || order.id;
 
-    onDelete?.(order.id);
+    if (!orderId) {
+      console.error("Order ID not found");
+      return;
+    }
 
-    onClose();
+    try {
+      setDeleting(true);
+
+      // Delete order from MongoDB
+      await api.delete(`/orders/${orderId}`);
+
+      // Remove order from Admin UI
+      onDelete?.(orderId);
+
+      onClose();
+    } catch (error) {
+      console.error("Delete order error:", error);
+
+      console.error(
+        error.response?.data?.message ||
+          "Failed to delete order"
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
+
+  const orderId = order?._id || order?.id;
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={deleting ? undefined : onClose}
       fullWidth
       maxWidth="xs"
       sx={{
@@ -39,6 +65,8 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
         },
       }}
     >
+      {/* ================= HEADER ================= */}
+
       <DialogTitle sx={{ pb: 1 }}>
         <Typography
           variant="h6"
@@ -61,6 +89,8 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
         </Typography>
       </DialogTitle>
 
+      {/* ================= CONTENT ================= */}
+
       <DialogContent sx={{ pt: "12px !important" }}>
         <Box
           sx={{
@@ -71,6 +101,8 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
             borderColor: darkMode ? "#444" : "#E5E5E5",
           }}
         >
+          {/* Order ID */}
+
           <Typography
             sx={{
               fontSize: 13,
@@ -85,10 +117,13 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
               mt: 0.5,
               fontWeight: 600,
               color: darkMode ? "#fff" : "#222",
+              wordBreak: "break-all",
             }}
           >
-            {order?.id}
+            {orderId || "N/A"}
           </Typography>
+
+          {/* Customer */}
 
           <Typography
             sx={{
@@ -107,7 +142,7 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
               color: darkMode ? "#fff" : "#222",
             }}
           >
-            {order?.customer?.fullName}
+            {order?.customer?.fullName || "N/A"}
           </Typography>
         </Box>
 
@@ -122,6 +157,8 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
         </Typography>
       </DialogContent>
 
+      {/* ================= ACTIONS ================= */}
+
       <DialogActions
         sx={{
           px: 3,
@@ -133,6 +170,7 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
         <Button
           variant="outlined"
           onClick={onClose}
+          disabled={deleting}
           sx={{
             textTransform: "none",
             borderRadius: 2,
@@ -151,6 +189,7 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
         <Button
           variant="contained"
           onClick={handleDelete}
+          disabled={deleting}
           sx={{
             bgcolor: "#D32F2F",
             textTransform: "none",
@@ -163,7 +202,7 @@ const DeleteOrder = ({ open, onClose, order, onDelete }) => {
             },
           }}
         >
-          Delete
+          {deleting ? "Deleting..." : "Delete"}
         </Button>
       </DialogActions>
     </Dialog>

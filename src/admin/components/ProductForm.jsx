@@ -88,12 +88,16 @@ const ProductForm = ({
     try {
       const data = await getCategories();
 
-      // Optional: show only active categories
-      const activeCategories = data.filter(
-        (category) => category.status === "Active",
+      // Show only active subcategories.
+      // Main categories have an empty subCategory field, so they are excluded.
+      const activeSubCategories = data.filter(
+        (item) =>
+          item.status === "Active" &&
+          item.subCategory &&
+          item.subCategory.trim() !== "",
       );
 
-      setCategories(activeCategories);
+      setCategories(activeSubCategories);
     } catch (error) {
       console.error("Error loading categories:", error);
     }
@@ -241,23 +245,18 @@ const ProductForm = ({
     );
   };
 
+  const handleGalleryUrlChange = (index, value) => {
+    const updated = [...galleryImages];
+    updated[index] = value;
+    setGalleryImages(updated);
+  };
+
   const handleCheckboxChange = (value, selectedItems, setSelectedItems) => {
     if (selectedItems.includes(value)) {
       setSelectedItems(selectedItems.filter((item) => item !== value));
     } else {
       setSelectedItems([...selectedItems, value]);
     }
-  };
-
-  const handleGalleryImages = (e) => {
-    const files = Array.from(e.target.files);
-
-    if (files.length > 3) {
-      alert("Maximum 3 gallery images allowed.");
-      return;
-    }
-
-    setGalleryImages(files);
   };
 
   return (
@@ -285,8 +284,8 @@ const ProductForm = ({
         sx={inputStyle}
       >
         {categories.map((item) => (
-          <MenuItem key={item.id} value={item.name}>
-            {item.name}
+          <MenuItem key={item._id} value={item._id}>
+            {item.mainCategory} → {item.subCategory}
           </MenuItem>
         ))}
       </TextField>
@@ -295,9 +294,11 @@ const ProductForm = ({
 
       <TextField
         select
-        label="Product Badge"
+        label="Product Badge *"
         value={badge}
         onChange={(e) => setBadge(e.target.value)}
+        error={Boolean(errors.badge)}
+        helperText={errors.badge}
         sx={inputStyle}
       >
         {badgeOptions.map((item) => (
@@ -355,6 +356,8 @@ const ProductForm = ({
               select
               label="Size / Volume"
               value={variant.size}
+              error={Boolean(errors[`size${index}`])}
+              helperText={errors[`size${index}`]}
               onChange={(e) =>
                 handleVariantChange(variant.id, "size", e.target.value)
               }
@@ -371,6 +374,8 @@ const ProductForm = ({
               label="Price"
               type="number"
               value={variant.price}
+              error={Boolean(errors[`price${index}`])}
+              helperText={errors[`price${index}`]}
               onChange={(e) =>
                 handleVariantChange(variant.id, "price", e.target.value)
               }
@@ -391,6 +396,8 @@ const ProductForm = ({
               label="Stock"
               type="number"
               value={variant.stock}
+              error={Boolean(errors[`stock${index}`])}
+              helperText={errors[`stock${index}`]}
               onChange={(e) =>
                 handleVariantChange(variant.id, "stock", e.target.value)
               }
@@ -400,6 +407,8 @@ const ProductForm = ({
             <TextField
               label="SKU"
               value={variant.sku}
+              error={Boolean(errors[`sku${index}`])}
+              helperText={errors[`sku${index}`]}
               onChange={(e) =>
                 handleVariantChange(variant.id, "sku", e.target.value)
               }
@@ -428,9 +437,11 @@ const ProductForm = ({
 
       <TextField
         select
-        label="Status"
+        label="Status *"
         value={status}
         onChange={(e) => setStatus(e.target.value)}
+        error={Boolean(errors.status)}
+        helperText={errors.status}
         sx={inputStyle}
       >
         <MenuItem value="Active">Active</MenuItem>
@@ -453,22 +464,26 @@ const ProductForm = ({
       {/* Key Ingredients */}
 
       <TextField
-        label="Key Ingredients"
+        label="Key Ingredients *"
         multiline
         rows={4}
         value={keyIngredients}
         onChange={(e) => setKeyIngredients(e.target.value)}
+        error={Boolean(errors.keyIngredients)}
+        helperText={errors.keyIngredients}
         sx={inputStyle}
       />
 
       {/* How To Use */}
 
       <TextField
-        label="How To Use"
+        label="How To Use *"
         multiline
         rows={4}
         value={howToUse}
         onChange={(e) => setHowToUse(e.target.value)}
+        error={Boolean(errors.howToUse)}
+        helperText={errors.howToUse}
         sx={inputStyle}
       />
 
@@ -491,9 +506,11 @@ const ProductForm = ({
 
         <TextField
           select
-          label="Texture"
+          label="Texture *"
           value={texture}
           onChange={(e) => setTexture(e.target.value)}
+          error={Boolean(errors.texture)}
+          helperText={errors.texture}
           sx={inputStyle}
         >
           {textureOptions.map((item) => (
@@ -507,9 +524,11 @@ const ProductForm = ({
 
         <TextField
           select
-          label="Fragrance"
+          label="Fragrance *"
           value={fragrance}
           onChange={(e) => setFragrance(e.target.value)}
+          error={Boolean(errors.fragrance)}
+          helperText={errors.fragrance}
           sx={inputStyle}
         >
           {fragranceOptions.map((item) => (
@@ -522,10 +541,12 @@ const ProductForm = ({
         {/* pH */}
 
         <TextField
-          label="pH Value"
+          label="pH Value *"
           placeholder="Example: 5.5"
           value={phValue}
           onChange={(e) => setPhValue(e.target.value)}
+          error={Boolean(errors.phValue)}
+          helperText={errors.phValue}
           sx={inputStyle}
         />
 
@@ -533,9 +554,11 @@ const ProductForm = ({
 
         <TextField
           select
-          label="Shelf Life"
+          label="Shelf Life *"
           value={shelfLife}
           onChange={(e) => setShelfLife(e.target.value)}
+          error={Boolean(errors.shelfLife)}
+          helperText={errors.shelfLife}
           sx={inputStyle}
         >
           {shelfLifeOptions.map((item) => (
@@ -575,6 +598,11 @@ const ProductForm = ({
               />
             ))}
           </FormGroup>
+          {errors.suitableFor && (
+            <Typography color="error" fontSize={12}>
+              {errors.suitableFor}
+            </Typography>
+          )}
         </Box>
 
         {/* Skin Concerns */}
@@ -607,6 +635,11 @@ const ProductForm = ({
               />
             ))}
           </FormGroup>
+          {errors.skinConcerns && (
+            <Typography color="error" fontSize={12}>
+              {errors.skinConcerns}
+            </Typography>
+          )}
         </Box>
 
         {/* Benefits */}
@@ -639,17 +672,24 @@ const ProductForm = ({
               />
             ))}
           </FormGroup>
+          {errors.benefits && (
+            <Typography color="error" fontSize={12}>
+              {errors.benefits}
+            </Typography>
+          )}
         </Box>
 
         {/* Caution */}
 
         <TextField
-          label="Caution"
+          label="Caution *"
           multiline
           rows={4}
           value={caution}
           onChange={(e) => setCaution(e.target.value)}
           placeholder="For external use only. Patch test before use. Avoid contact with eyes."
+          error={Boolean(errors.caution)}
+          helperText={errors.caution}
           sx={inputStyle}
         />
       </Stack>
@@ -672,13 +712,30 @@ const ProductForm = ({
         </Typography>
 
         <TextField
-          type="file"
+          label="Main Product Image URL *"
           fullWidth
-          onChange={(e) => setImage(e.target.files[0])}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ accept: "image/*" }}
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          error={Boolean(errors.image)}
+          helperText={errors.image}
+          placeholder="https://example.com/product-image.jpg"
           sx={inputStyle}
         />
+
+        {image && (
+          <Box
+            component="img"
+            src={image}
+            alt="Product"
+            sx={{
+              mt: 2,
+              width: 150,
+              height: 150,
+              objectFit: "cover",
+              borderRadius: 2,
+            }}
+          />
+        )}
 
         {errors.image && (
           <Typography
@@ -706,56 +763,53 @@ const ProductForm = ({
           Gallery Images (Maximum 3)
         </Typography>
 
-        <Button
-          component="label"
-          variant="outlined"
-          sx={{
-            borderColor: "#B89478",
-            color: "#B89478",
-            textTransform: "none",
-            mb: 2,
-          }}
-        >
-          Upload Gallery Images
-          <input
-            hidden
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleGalleryImages}
+        {[0, 1, 2].map((index) => (
+          <TextField
+            key={index}
+            label={`Gallery Image URL ${index + 1}`}
+            fullWidth
+            value={galleryImages[index] || ""}
+            onChange={(e) => handleGalleryUrlChange(index, e.target.value)}
+            placeholder="https://example.com/image.jpg"
+            sx={{
+              ...inputStyle,
+              mb: 2,
+            }}
           />
-        </Button>
+        ))}
 
-        {/* Preview images here */}
         <Box
           sx={{
             display: "flex",
             gap: 2,
             flexWrap: "wrap",
+            mt: 2,
           }}
         >
-          {galleryImages.map((image, index) => (
-            <Box
-              key={index}
-              sx={{
-                width: 120,
-                height: 120,
-                position: "relative",
-              }}
-            >
-              <Box
-                component="img"
-                src={URL.createObjectURL(image)}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: 2,
-                }}
-              />
-            </Box>
-          ))}
+          {galleryImages.map(
+            (image, index) =>
+              image && (
+                <Box
+                  key={index}
+                  component="img"
+                  src={image}
+                  alt={`Gallery ${index + 1}`}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    objectFit: "cover",
+                    borderRadius: 2,
+                  }}
+                />
+              ),
+          )}
         </Box>
+
+        {errors.galleryImages && (
+          <Typography color="error" fontSize={12} sx={{ mt: 1 }}>
+            {errors.galleryImages}
+          </Typography>
+        )}
       </Box>
     </Stack>
   );

@@ -1,31 +1,40 @@
-import React from "react";
-import { Box, Typography, Grid, Stack } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography, Grid } from "@mui/material";
+import { Link } from "react-router-dom";
 
-import SkincareImg from "../assets/Category-Skincare.webp";
-import HaircareImg from "../assets/Category-Haircare.webp";
-import FragranceImg from "../assets/Category-Fragrance.webp";
-import AccessoriesImg from "../assets/Category-Accessories.webp";
-
-const categories = [
-  {
-    title: "Skin Care",
-    image: SkincareImg,
-  },
-  {
-    title: "Hair Care",
-    image: HaircareImg,
-  },
-  {
-    title: "Fragrances",
-    image: FragranceImg,
-  },
-  {
-    title: "Accessories",
-    image: AccessoriesImg,
-  },
-];
+import { getHomePageSettings } from "../database/homePageService";
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
 
 const ShopByCategory = () => {
+  const [categorySettings, setCategorySettings] = useState(
+    getDefaultHomePageSettings().categories,
+  );
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await getHomePageSettings();
+
+        if (savedSettings) {
+          const mergedSettings =
+            mergeHomePageSettings(savedSettings);
+
+          setCategorySettings(mergedSettings.categories);
+        }
+      } catch (error) {
+        console.error(
+          "Error loading category settings:",
+          error,
+        );
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -35,7 +44,6 @@ const ShopByCategory = () => {
         px: { xs: 3, md: 8 },
       }}
     >
-      {/* Heading */}
       {/* Heading */}
       <Box
         sx={{
@@ -56,7 +64,7 @@ const ShopByCategory = () => {
             mb: 1,
           }}
         >
-          SHOP BY CATEGORIES
+          {categorySettings.eyebrow}
         </Typography>
 
         <Typography
@@ -66,83 +74,90 @@ const ShopByCategory = () => {
             color: "#1e2f2b",
           }}
         >
-          Popular Categories
+          {categorySettings.heading}
         </Typography>
       </Box>
 
       {/* Categories */}
       <Grid container spacing={4} justifyContent="center">
-        {categories.map((category) => (
+        {categorySettings.items?.map((category) => (
           <Grid
-            key={category.title}
+            key={category.id}
             size={{ xs: 12, sm: 6, md: 3 }}
             sx={{
               display: "flex",
               justifyContent: "center",
             }}
           >
-            <Box
-              sx={{
-                textAlign: "center",
-                cursor: "pointer",
+            <Link
+              to={category.link || "/shop"}
+              style={{
+                textDecoration: "none",
               }}
             >
-              {/* Image */}
               <Box
                 sx={{
-                  width: 220,
-                  height: 300,
-                  borderRadius: "120px",
-                  overflow: "hidden",
-                  mx: "auto",
+                  textAlign: "center",
+                  cursor: "pointer",
                 }}
               >
+                {/* Image */}
                 <Box
-                  component="img"
-                  src={category.image}
-                  alt={category.title}
                   sx={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transition: "0.5s",
+                    width: 220,
+                    height: 300,
+                    borderRadius: "120px",
+                    overflow: "hidden",
+                    mx: "auto",
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={category.image}
+                    alt={category.title}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transition: "0.5s",
+
+                      "&:hover": {
+                        transform: "scale(1.08)",
+                      },
+                    }}
+                  />
+                </Box>
+
+                {/* Category Title */}
+                <Typography
+                  sx={{
+                    mt: 3,
+                    fontSize: "20px",
+                    fontWeight: 600,
+                    color: "#1e2f2b",
+                  }}
+                >
+                  {category.title}
+                </Typography>
+
+                {/* Explore */}
+                <Typography
+                  sx={{
+                    mt: 1,
+                    fontSize: "13px",
+                    letterSpacing: "2px",
+                    color: "#777",
+                    transition: ".3s",
 
                     "&:hover": {
-                      transform: "scale(1.08)",
+                      color: "#1e2f2b",
                     },
                   }}
-                />
+                >
+                  EXPLORE →
+                </Typography>
               </Box>
-
-              {/* Title */}
-              <Typography
-                sx={{
-                  mt: 3,
-                  fontSize: "20px",
-                  fontWeight: 600,
-                  color: "#1e2f2b",
-                }}
-              >
-                {category.title}
-              </Typography>
-
-              {/* Explore */}
-              <Typography
-                sx={{
-                  mt: 1,
-                  fontSize: "13px",
-                  letterSpacing: "2px",
-                  color: "#777",
-                  transition: ".3s",
-
-                  "&:hover": {
-                    color: "#1e2f2b",
-                  },
-                }}
-              >
-                EXPLORE → 
-              </Typography>
-            </Box>
+            </Link>
           </Grid>
         ))}
       </Grid>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Drawer,
   Box,
@@ -13,6 +13,7 @@ import {
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
+import { getCategories } from "../../database/categoryService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const ProductFilter = ({
@@ -38,7 +39,32 @@ const ProductFilter = ({
 }) => {
   const { darkMode } = useThemeContext();
 
-  const categories = JSON.parse(localStorage.getItem("categories")) || [];
+  const [categories, setCategories] = useState([]);
+
+  /* ---------------- LOAD CATEGORIES ---------------- */
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+
+        // Only active subcategories
+        const activeSubCategories = data.filter(
+          (item) =>
+            item.status === "Active" &&
+            item.categoryType === "sub" &&
+            item.subCategory &&
+            item.subCategory.trim() !== "",
+        );
+
+        setCategories(activeSubCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const badgeOptions = [
     "All",
@@ -49,6 +75,14 @@ const ProductFilter = ({
     "Out of Stock",
     "Sold Out",
   ];
+
+  const radioStyle = {
+    color: "#B89478",
+
+    "&.Mui-checked": {
+      color: "#B89478",
+    },
+  };
 
   return (
     <Drawer
@@ -150,17 +184,7 @@ const ProductFilter = ({
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
                 color: darkMode ? "#E5E5E5" : "#555",
@@ -196,17 +220,7 @@ const ProductFilter = ({
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
                 color: darkMode ? "#E5E5E5" : "#555",
@@ -221,6 +235,7 @@ const ProductFilter = ({
             my: 3,
           }}
         />
+
         {/* Category */}
 
         <Typography
@@ -237,41 +252,25 @@ const ProductFilter = ({
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
+          {/* All */}
+
           <FormControlLabel
             value="All"
-            control={
-              <Radio
-                sx={{
-                  color: "#B89478",
-
-                  "&.Mui-checked": {
-                    color: "#B89478",
-                  },
-                }}
-              />
-            }
+            control={<Radio sx={radioStyle} />}
             label="All Categories"
             sx={{
               color: darkMode ? "#E5E5E5" : "#555",
             }}
           />
 
+          {/* MongoDB Categories */}
+
           {categories.map((category) => (
             <FormControlLabel
-              key={category.id}
-              value={category.name}
-              control={
-                <Radio
-                  sx={{
-                    color: "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
-              label={category.name}
+              key={category._id}
+              value={category._id}
+              control={<Radio sx={radioStyle} />}
+              label={`${category.mainCategory} → ${category.subCategory}`}
               sx={{
                 color: darkMode ? "#E5E5E5" : "#555",
               }}
@@ -306,17 +305,7 @@ const ProductFilter = ({
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
                 color: darkMode ? "#E5E5E5" : "#555",
@@ -356,17 +345,7 @@ const ProductFilter = ({
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
                 color: darkMode ? "#E5E5E5" : "#555",
@@ -383,6 +362,7 @@ const ProductFilter = ({
             my: 3,
           }}
         />
+
         {/* Bottom Buttons */}
 
         <Box

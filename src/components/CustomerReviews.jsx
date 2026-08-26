@@ -1,10 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 
-import reviews from "../data/Reviews";
 import ReviewCard from "./ReviewCard";
 
+import { getHomePageSettings } from "../database/homePageService";
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
+
 const CustomerReviews = () => {
+  const [reviewsData, setReviewsData] = useState(
+    getDefaultHomePageSettings().reviews
+  );
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const settings = await getHomePageSettings();
+
+        const mergedSettings = mergeHomePageSettings(settings);
+
+        setReviewsData(mergedSettings.reviews);
+      } catch (error) {
+        console.error("Failed to load reviews:", error);
+      }
+    };
+
+    loadReviews();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -33,7 +58,7 @@ const CustomerReviews = () => {
             mb: 1,
           }}
         >
-          CUSTOMER REVIEWS
+          {reviewsData.eyebrow}
         </Typography>
 
         <Typography
@@ -47,7 +72,7 @@ const CustomerReviews = () => {
             mb: 2,
           }}
         >
-          Loved By Thousands
+          {reviewsData.heading}
         </Typography>
 
         <Typography
@@ -59,8 +84,7 @@ const CustomerReviews = () => {
             fontSize: 16,
           }}
         >
-          Hear what our customers have to say about their GlowCare experience
-          and discover why thousands trust our skincare products every day.
+          {reviewsData.description}
         </Typography>
       </Box>
 
@@ -89,11 +113,11 @@ const CustomerReviews = () => {
           },
         }}
       >
-        {reviews.map((review) => (
+        {reviewsData.items?.map((review) => (
           <Box
             key={review.id}
             sx={{
-              flex: "0 0 calc((100% - 36px) / 4)", // 4 cards per view
+              flex: "0 0 calc((100% - 36px) / 4)",
               scrollSnapAlign: "start",
             }}
           >

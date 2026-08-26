@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -6,30 +6,39 @@ import {
   Chip,
 } from "@mui/material";
 
-import WhyImage from "../assets/why-choose-us.jpg";
-
-const features = [
-  {
-    id: "01",
-    title: "Clean Ingredients",
-    description:
-      "Made with carefully selected ingredients that nourish and protect your skin without harsh chemicals.",
-  },
-  {
-    id: "02",
-    title: "Dermatologist Tested",
-    description:
-      "Every formula is tested for safety and designed to suit all skin types for everyday use.",
-  },
-  {
-    id: "03",
-    title: "Cruelty Free",
-    description:
-      "We never test on animals and believe skincare should be kind to both people and nature.",
-  },
-];
+import { getHomePageSettings } from "../database/homePageService";
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
 
 const WhyChooseUs = () => {
+  const [whyChoose, setWhyChoose] = useState(
+    getDefaultHomePageSettings().whyChoose,
+  );
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await getHomePageSettings();
+
+        if (savedSettings) {
+          const mergedSettings =
+            mergeHomePageSettings(savedSettings);
+
+          setWhyChoose(mergedSettings.whyChoose);
+        }
+      } catch (error) {
+        console.error(
+          "Error loading Why Choose settings:",
+          error,
+        );
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -45,7 +54,8 @@ const WhyChooseUs = () => {
         container
         spacing={12}
         alignItems="center"
-      >        {/* Left Side */}
+      >
+        {/* Left Side */}
 
         <Grid
           item
@@ -58,7 +68,7 @@ const WhyChooseUs = () => {
           {/* Small Badge */}
 
           <Chip
-            label="WHY GLOWCARE"
+            label={whyChoose.eyebrow}
             sx={{
               backgroundColor: "#FFFFFF",
               color: "#1E2F2B",
@@ -83,11 +93,10 @@ const WhyChooseUs = () => {
               color: "#1E2F2B",
               lineHeight: 1.1,
               mb: 3,
+              whiteSpace: "pre-line",
             }}
           >
-            Your Skin Deserves
-            <br />
-            The Best Care.
+            {whyChoose.title}
           </Typography>
 
           {/* Description */}
@@ -101,16 +110,14 @@ const WhyChooseUs = () => {
               mb: 7,
             }}
           >
-            Discover premium skincare crafted with carefully selected
-            ingredients, backed by science, and designed to bring healthy,
-            radiant skin every day.
+            {whyChoose.description}
           </Typography>
 
           {/* Features */}
 
-          {features.map((item) => (
+          {whyChoose.features?.map((item, index) => (
             <Box
-              key={item.id}
+              key={index}
               sx={{
                 display: "flex",
                 alignItems: "flex-start",
@@ -159,7 +166,8 @@ const WhyChooseUs = () => {
             </Box>
           ))}
         </Grid>
-                {/* Right Side */}
+
+        {/* Right Side */}
 
         <Grid
           item
@@ -184,7 +192,7 @@ const WhyChooseUs = () => {
 
             <Box
               component="img"
-              src={WhyImage}
+              src={whyChoose.image}
               alt="Why Choose GlowCare"
               sx={{
                 width: "100%",
@@ -194,7 +202,7 @@ const WhyChooseUs = () => {
               }}
             />
 
-            {/* Floating Card */}
+            {/* Floating Trust Card */}
 
             <Box
               sx={{
@@ -215,8 +223,6 @@ const WhyChooseUs = () => {
                 boxShadow: "0 15px 40px rgba(0,0,0,.12)",
               }}
             >
-              {/* Icon */}
-
               <Box
                 sx={{
                   width: 48,
@@ -237,8 +243,6 @@ const WhyChooseUs = () => {
                 ★
               </Box>
 
-              {/* Text */}
-
               <Box>
                 <Typography
                   sx={{
@@ -247,7 +251,7 @@ const WhyChooseUs = () => {
                     fontSize: 16,
                   }}
                 >
-                  Trusted By 10,000+
+                  {whyChoose.trustTitle}
                 </Typography>
 
                 <Typography
@@ -256,7 +260,7 @@ const WhyChooseUs = () => {
                     fontSize: 14,
                   }}
                 >
-                  Happy GlowCare Customers
+                  {whyChoose.trustSubtitle}
                 </Typography>
               </Box>
             </Box>
@@ -292,10 +296,8 @@ const WhyChooseUs = () => {
                 LEARN MORE →
               </Typography>
             </Box>
-
           </Box>
         </Grid>
-
       </Grid>
     </Box>
   );

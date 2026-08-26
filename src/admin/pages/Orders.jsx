@@ -10,45 +10,123 @@ import OrderTable from "../components/OrderTable";
 import OrderFilter from "../components/OrderFilter";
 import ViewOrder from "../components/ViewOrder";
 
-import { getOrders } from "../../database/orderService";
+import {
+  getOrders,
+  updateOrderStatus,
+  deleteOrder,
+} from "../../database/orderService";
+
 import { useThemeContext } from "../context/ThemeContext";
 
 const Orders = () => {
   const { darkMode } = useThemeContext();
 
-  /* ---------------- Orders ---------------- */
+  // ======================================================
+  // ORDERS
+  // ======================================================
 
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+
+      const data = await getOrders();
+
+      setOrders(data || []);
+    } catch (error) {
+      console.error("Failed to load orders:", error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadOrders = async () => {
-      const data = await getOrders();
-      setOrders(data);
-    };
-
     loadOrders();
   }, []);
 
-  /* ---------------- Search ---------------- */
+  // ======================================================
+  // SEARCH
+  // ======================================================
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  /* ---------------- Filter Drawer ---------------- */
+  // ======================================================
+  // FILTER DRAWER
+  // ======================================================
 
   const [openFilter, setOpenFilter] = useState(false);
 
-  /* ---------------- View Drawer ---------------- */
+  // ======================================================
+  // VIEW ORDER
+  // ======================================================
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openView, setOpenView] = useState(false);
 
-  /* ---------------- Update Status Dialog ---------------- */
+  // ======================================================
+  // UPDATE STATUS
+  // ======================================================
 
   const [openStatus, setOpenStatus] = useState(false);
 
-  /* ---------------- Delete Dialog ---------------- */
+  // ======================================================
+  // DELETE ORDER
+  // ======================================================
 
   const [openDelete, setOpenDelete] = useState(false);
+
+  // ======================================================
+  // HANDLE STATUS UPDATE
+  // ======================================================
+
+  const handleStatusUpdated = async (updatedData) => {
+    try {
+      const updatedOrder = await updateOrderStatus(
+        selectedOrder._id || selectedOrder.id,
+        updatedData.status,
+        updatedData.paymentStatus,
+      );
+
+      setOrders((prev) =>
+        prev.map((order) => {
+          const orderId = order._id || order.id;
+          const updatedId = updatedOrder._id || updatedOrder.id;
+
+          return orderId === updatedId ? updatedOrder : order;
+        }),
+      );
+
+      setSelectedOrder(updatedOrder);
+      setOpenStatus(false);
+    } catch (error) {
+      console.error("Failed to update order:", error);
+    }
+  };
+
+  // ======================================================
+  // HANDLE DELETE
+  // ======================================================
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteOrder(id);
+
+      setOrders((prev) =>
+        prev.filter((order) => {
+          const orderId = order._id || order.id;
+          return orderId !== id;
+        }),
+      );
+
+      setSelectedOrder(null);
+      setOpenDelete(false);
+    } catch (error) {
+      console.error("Failed to delete order:", error);
+    }
+  };
 
   return (
     <Box
@@ -57,17 +135,22 @@ const Orders = () => {
         minHeight: "100vh",
       }}
     >
-      {/* Sidebar */}
+      {/* ==================================================
+          SIDEBAR
+      ================================================== */}
 
       <AdminSidebar />
 
-      {/* Main Content */}
+      {/* ==================================================
+          MAIN CONTENT
+      ================================================== */}
 
       <Box
         sx={{
           flex: 1,
           ml: "300px",
           backgroundColor: darkMode ? "#181818" : "#F7F5F2",
+          minHeight: "100vh",
         }}
       >
         <AdminNavbar />
@@ -85,22 +168,43 @@ const Orders = () => {
             onOpenFilter={() => setOpenFilter(true)}
           />
 
-          <OrderTable
-            orders={orders}
-            searchTerm={searchTerm}
-            setSelectedOrder={setSelectedOrder}
-            setOpenView={setOpenView}
-            setOpenStatus={setOpenStatus}
-            setOpenDelete={setOpenDelete}
-          />
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: 300,
+                color: darkMode ? "#fff" : "#555",
+              }}
+            >
+              Loading orders...
+            </Box>
+          ) : (
+            <OrderTable
+              orders={orders}
+              searchTerm={searchTerm}
+              setSelectedOrder={setSelectedOrder}
+              setOpenView={setOpenView}
+              setOpenStatus={setOpenStatus}
+              setOpenDelete={setOpenDelete}
+            />
+          )}
         </Box>
       </Box>
 
-      {/* Filter Drawer */}
+      {/* ==================================================
+          FILTER
+      ================================================== */}
 
-      <OrderFilter open={openFilter} onClose={() => setOpenFilter(false)} />
+      <OrderFilter
+        open={openFilter}
+        onClose={() => setOpenFilter(false)}
+      />
 
-      {/* View Order Drawer */}
+      {/* ==================================================
+          VIEW ORDER
+      ================================================== */}
 
       <Drawer
         anchor="right"
@@ -114,29 +218,32 @@ const Orders = () => {
           },
         }}
       >
-        <ViewOrder order={selectedOrder} onClose={() => setOpenView(false)} />
+        <ViewOrder
+          order={selectedOrder}
+          onClose={() => setOpenView(false)}
+        />
       </Drawer>
+
+      {/* ==================================================
+          UPDATE ORDER STATUS
+      ================================================== */}
 
       <UpdateOrderStatus
         open={openStatus}
         onClose={() => setOpenStatus(false)}
         order={selectedOrder}
-        onStatusUpdated={(updatedOrder) => {
-          setOrders((prev) =>
-            prev.map((order) =>
-              order.id === updatedOrder.id ? updatedOrder : order,
-            ),
-          );
-        }}
+        onStatusUpdated={handleStatusUpdated}
       />
+
+      {/* ==================================================
+          DELETE ORDER
+      ================================================== */}
 
       <DeleteOrder
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         order={selectedOrder}
-        onDelete={(id) => {
-          setOrders((prev) => prev.filter((order) => order.id !== id));
-        }}
+        onDelete={handleDelete}
       />
     </Box>
   );

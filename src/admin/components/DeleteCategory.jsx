@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,22 +10,32 @@ import {
   Stack,
   Box,
 } from "@mui/material";
-
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+
 import { deleteCategory } from "../../database/categoryService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const DeleteCategory = ({ open, onClose, category, setCategories }) => {
   const { darkMode } = useThemeContext();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!category) return;
+    if (!category || isDeleting) return;
 
-    await deleteCategory(category.id);
+    try {
+      setIsDeleting(true);
 
-    setCategories((prev) => prev.filter((item) => item.id !== category.id));
+      // Pass the complete category object for cascade deletion
+      await deleteCategory(category._id);
 
-    onClose();
+      setCategories((prev) => prev.filter((item) => item._id !== category._id));
+
+      onClose();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!category) return null;
@@ -33,7 +43,7 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={isDeleting ? undefined : onClose}
       maxWidth="sm"
       fullWidth
       PaperProps={{
@@ -113,7 +123,8 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
             color: darkMode ? "#BDBDBD" : "#777",
           }}
         >
-          This action cannot be undone.
+          This action will also delete all related subcategories and products.
+          It cannot be undone.
         </Typography>
 
         <Box
@@ -141,18 +152,14 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
             <Box>
               <Typography
                 fontSize={13}
-                sx={{
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
+                sx={{ color: darkMode ? "#AFAFAF" : "#777" }}
               >
                 Menu Type
               </Typography>
 
               <Typography
                 fontWeight={600}
-                sx={{
-                  color: darkMode ? "#FFFFFF" : "#222",
-                }}
+                sx={{ color: darkMode ? "#FFFFFF" : "#222" }}
               >
                 {category.menuType}
               </Typography>
@@ -161,18 +168,14 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
             <Box>
               <Typography
                 fontSize={13}
-                sx={{
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
+                sx={{ color: darkMode ? "#AFAFAF" : "#777" }}
               >
                 Main Category
               </Typography>
 
               <Typography
                 fontWeight={600}
-                sx={{
-                  color: darkMode ? "#FFFFFF" : "#222",
-                }}
+                sx={{ color: darkMode ? "#FFFFFF" : "#222" }}
               >
                 {category.mainCategory}
               </Typography>
@@ -181,72 +184,62 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
             <Box>
               <Typography
                 fontSize={13}
-                sx={{
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
+                sx={{ color: darkMode ? "#AFAFAF" : "#777" }}
               >
                 Sub Category
               </Typography>
 
               <Typography
                 fontWeight={600}
-                sx={{
-                  color: darkMode ? "#FFFFFF" : "#222",
-                }}
+                sx={{ color: darkMode ? "#FFFFFF" : "#222" }}
               >
-                {category.subCategory}
+                {category.subCategory || "-"}
               </Typography>
             </Box>
 
             <Box>
               <Typography
                 fontSize={13}
-                sx={{
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
+                sx={{ color: darkMode ? "#AFAFAF" : "#777" }}
               >
                 Subtitle
               </Typography>
 
-              <Typography
-                sx={{
-                  color: darkMode ? "#FFFFFF" : "#222",
-                }}
-              >
-                {category.subtitle}
+              <Typography sx={{ color: darkMode ? "#FFFFFF" : "#222" }}>
+                {category.subtitle || "-"}
               </Typography>
             </Box>
+
+            {category.bannerImage && (
+              <Box>
+                <Typography
+                  fontSize={13}
+                  sx={{
+                    mb: 1,
+                    color: darkMode ? "#AFAFAF" : "#777",
+                  }}
+                >
+                  Banner Image
+                </Typography>
+
+                <Box
+                  component="img"
+                  src={category.bannerImage}
+                  alt={category.subCategory || category.mainCategory}
+                  sx={{
+                    width: "100%",
+                    height: 120,
+                    objectFit: "cover",
+                    borderRadius: 2,
+                  }}
+                />
+              </Box>
+            )}
 
             <Box>
               <Typography
                 fontSize={13}
-                sx={{
-                  mb: 1,
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
-              >
-                Banner Image
-              </Typography>
-
-              <Box
-                component="img"
-                src={category.bannerImage}
-                alt={category.subCategory}
-                sx={{
-                  width: "100%",
-                  height: 120,
-                  objectFit: "cover",
-                  borderRadius: 2,
-                }}
-              />
-            </Box>
-
-            <Box>
-              <Typography
-                fontSize={13}
-                sx={{
-                  color: darkMode ? "#AFAFAF" : "#777",
-                }}
+                sx={{ color: darkMode ? "#AFAFAF" : "#777" }}
               >
                 Status
               </Typography>
@@ -281,6 +274,7 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
         <Button
           variant="outlined"
           onClick={onClose}
+          disabled={isDeleting}
           sx={{
             minWidth: 120,
             textTransform: "none",
@@ -303,6 +297,7 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
           variant="contained"
           color="error"
           onClick={handleDelete}
+          disabled={isDeleting}
           sx={{
             minWidth: 140,
             textTransform: "none",
@@ -314,7 +309,7 @@ const DeleteCategory = ({ open, onClose, category, setCategories }) => {
             },
           }}
         >
-          Delete Category
+          {isDeleting ? "Deleting..." : "Delete Category"}
         </Button>
       </DialogActions>
     </Dialog>

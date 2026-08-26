@@ -20,13 +20,13 @@ import {
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useThemeContext } from "../context/ThemeContext";
 
 const OrderTable = ({
-  orders,
-  searchTerm,
+  orders = [],
+  searchTerm = "",
   setSelectedOrder,
   setOpenView,
   setOpenStatus,
@@ -39,6 +39,10 @@ const OrderTable = ({
 
   const open = Boolean(anchorEl);
 
+  // ======================================================
+  // MENU
+  // ======================================================
+
   const handleMenu = (event, order) => {
     setAnchorEl(event.currentTarget);
     setSelectedRow(order);
@@ -48,30 +52,96 @@ const OrderTable = ({
     setAnchorEl(null);
   };
 
+  // ======================================================
+  // HELPERS
+  // ======================================================
+
+  const getOrderId = (order) => {
+    return order?._id || order?.id || "";
+  };
+
+  const getCustomerName = (order) => {
+    return (
+      order?.customer?.fullName ||
+      order?.customerName ||
+      order?.user?.fullName ||
+      "Guest"
+    );
+  };
+
+  const getCustomerEmail = (order) => {
+    return (
+      order?.customer?.email ||
+      order?.customerEmail ||
+      order?.user?.email ||
+      "-"
+    );
+  };
+
+  const getTotal = (order) => {
+    return (
+      order?.pricing?.total ??
+      order?.totalAmount ??
+      order?.total ??
+      0
+    );
+  };
+
+  const getPaymentMethod = (order) => {
+    return (
+      order?.paymentMethod ||
+      order?.payment?.method ||
+      "COD"
+    );
+  };
+
+  const getOrderDate = (order) => {
+    return (
+      order?.orderDate ||
+      order?.createdAt ||
+      null
+    );
+  };
+
+  // ======================================================
+  // SEARCH
+  // ======================================================
+
   const filteredOrders = orders.filter((order) => {
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.toLowerCase().trim();
+
+    if (!search) return true;
+
+    const orderId = getOrderId(order).toLowerCase();
+    const customerName = getCustomerName(order).toLowerCase();
+    const customerEmail = getCustomerEmail(order).toLowerCase();
 
     return (
-      order.id.toLowerCase().includes(search) ||
-      order.customer.fullName.toLowerCase().includes(search)
+      orderId.includes(search) ||
+      customerName.includes(search) ||
+      customerEmail.includes(search)
     );
   });
 
+  // ======================================================
+  // STATUS COLOR
+  // ======================================================
+
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Pending":
+    switch (status?.toLowerCase()) {
+      case "pending":
         return "warning";
 
-      case "Processing":
+      case "processing":
         return "info";
 
-      case "Shipped":
+      case "shipped":
         return "secondary";
 
-      case "Delivered":
+      case "delivered":
         return "success";
 
-      case "Cancelled":
+      case "cancelled":
         return "error";
 
       default:
@@ -92,7 +162,9 @@ const OrderTable = ({
       }}
     >
       <Table>
-        {/* Table Head */}
+        {/* ==================================================
+            TABLE HEAD
+        ================================================== */}
 
         <TableHead>
           <TableRow
@@ -124,7 +196,9 @@ const OrderTable = ({
           </TableRow>
         </TableHead>
 
-        {/* Table Body */}
+        {/* ==================================================
+            TABLE BODY
+        ================================================== */}
 
         <TableBody>
           {filteredOrders.length === 0 ? (
@@ -141,100 +215,137 @@ const OrderTable = ({
               </TableCell>
             </TableRow>
           ) : (
-            filteredOrders.map((order) => (
-              <TableRow
-                hover
-                key={order.id}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: darkMode ? "#2F2F2F" : "#FAFAFA",
-                  },
-                }}
-              >
-                <TableCell
+            filteredOrders.map((order) => {
+              const orderId = getOrderId(order);
+              const customerName = getCustomerName(order);
+              const customerEmail = getCustomerEmail(order);
+              const total = getTotal(order);
+              const paymentMethod = getPaymentMethod(order);
+              const orderDate = getOrderDate(order);
+
+              return (
+                <TableRow
+                  hover
+                  key={orderId}
                   sx={{
-                    color: darkMode ? "#fff" : "#777",
+                    "&:hover": {
+                      backgroundColor: darkMode
+                        ? "#2F2F2F"
+                        : "#FAFAFA",
+                    },
                   }}
                 >
-                  {order.id}
-                </TableCell>
+                  {/* Order ID */}
 
-                <TableCell>
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                        color: darkMode ? "#fff" : "#222",
-                      }}
-                    >
-                      {order.customer.fullName}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: darkMode ? "#B5B5B5" : "#777",
-                      }}
-                    >
-                      {order.customer.email}
-                    </Typography>
-                  </Box>
-                </TableCell>
-
-                <TableCell
-                  sx={{
-                    color: darkMode ? "#fff" : "#222",
-                  }}
-                >
-                  ₹{order.pricing.total}
-                </TableCell>
-
-                <TableCell
-                  sx={{
-                    color: darkMode ? "#fff" : "#222",
-                  }}
-                >
-                  {order.paymentMethod}
-                </TableCell>
-
-                <TableCell
-                  sx={{
-                    color: darkMode ? "#fff" : "#222",
-                  }}
-                >
-                  <Chip
-                    label={order.status}
-                    color={getStatusColor(order.status)}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell
-                  sx={{
-                    color: darkMode ? "#fff" : "#222",
-                  }}
-                >
-                  {new Date(order.orderDate).toLocaleDateString()}
-                </TableCell>
-
-                <TableCell align="center">
-                  <IconButton
-                    onClick={(e) => handleMenu(e, order)}
+                  <TableCell
                     sx={{
-                      color: darkMode ? "#F5F5F5" : "#444",
-
-                      "&:hover": {
-                        bgcolor: darkMode ? "#383838" : "#F2F2F2",
-                      },
+                      color: darkMode ? "#fff" : "#777",
+                      fontWeight: 600,
                     }}
                   >
-                    <MoreHorizOutlinedIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))
+                    #{String(orderId).slice(-6)}
+                  </TableCell>
+
+                  {/* Customer */}
+
+                  <TableCell>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontWeight: 600,
+                          color: darkMode ? "#fff" : "#222",
+                        }}
+                      >
+                        {customerName}
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: darkMode ? "#B5B5B5" : "#777",
+                        }}
+                      >
+                        {customerEmail}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* Total */}
+
+                  <TableCell
+                    sx={{
+                      color: darkMode ? "#fff" : "#222",
+                      fontWeight: 600,
+                    }}
+                  >
+                    ₹{Number(total).toLocaleString("en-IN")}
+                  </TableCell>
+
+                  {/* Payment */}
+
+                  <TableCell
+                    sx={{
+                      color: darkMode ? "#fff" : "#222",
+                    }}
+                  >
+                    {paymentMethod}
+                  </TableCell>
+
+                  {/* Status */}
+
+                  <TableCell>
+                    <Chip
+                      label={order?.status || "Pending"}
+                      color={getStatusColor(order?.status)}
+                      size="small"
+                    />
+                  </TableCell>
+
+                  {/* Date */}
+
+                  <TableCell
+                    sx={{
+                      color: darkMode ? "#fff" : "#222",
+                    }}
+                  >
+                    {orderDate
+                      ? new Date(
+                          orderDate,
+                        ).toLocaleDateString("en-IN")
+                      : "-"}
+                  </TableCell>
+
+                  {/* Action */}
+
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={(event) =>
+                        handleMenu(event, order)
+                      }
+                      sx={{
+                        color: darkMode ? "#F5F5F5" : "#444",
+
+                        "&:hover": {
+                          bgcolor: darkMode
+                            ? "#383838"
+                            : "#F2F2F2",
+                        },
+                      }}
+                    >
+                      <MoreHorizOutlinedIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
+
+      {/* ==================================================
+          ACTION MENU
+      ================================================== */}
+
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -258,6 +369,8 @@ const OrderTable = ({
           },
         }}
       >
+        {/* View */}
+
         <MenuItem
           onClick={() => {
             setSelectedOrder(selectedRow);
@@ -268,7 +381,9 @@ const OrderTable = ({
           <ListItemIcon>
             <VisibilityOutlinedIcon
               fontSize="small"
-              sx={{ color: darkMode ? "#fff" : "#555" }}
+              sx={{
+                color: darkMode ? "#fff" : "#555",
+              }}
             />
           </ListItemIcon>
 
@@ -283,6 +398,8 @@ const OrderTable = ({
           />
         </MenuItem>
 
+        {/* Update Status */}
+
         <MenuItem
           onClick={() => {
             setSelectedOrder(selectedRow);
@@ -291,7 +408,10 @@ const OrderTable = ({
           }}
         >
           <ListItemIcon>
-            <EditOutlinedIcon fontSize="small" sx={{ color: "#1976d2" }} />
+            <EditOutlinedIcon
+              fontSize="small"
+              sx={{ color: "#1976d2" }}
+            />
           </ListItemIcon>
 
           <ListItemText
@@ -305,6 +425,8 @@ const OrderTable = ({
           />
         </MenuItem>
 
+        {/* Delete */}
+
         <MenuItem
           onClick={() => {
             setSelectedOrder(selectedRow);
@@ -313,7 +435,7 @@ const OrderTable = ({
           }}
         >
           <ListItemIcon>
-            <DeleteOutlineOutlinedIcon
+            <DeleteIcon
               fontSize="small"
               sx={{ color: "#d32f2f" }}
             />

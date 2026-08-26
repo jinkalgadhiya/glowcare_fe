@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Box, Drawer } from "@mui/material";
+import { Box, Drawer, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
@@ -9,6 +9,7 @@ import ProductTable from "../components/ProductTable";
 import ProductFilter from "../components/ProductFilter";
 import ViewProduct from "../components/ViewProduct";
 import DeleteProduct from "../components/DeleteProduct";
+
 import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
 
@@ -16,24 +17,12 @@ const Products = () => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
 
-  /* ---------------- Products ---------------- */
+  /* ---------------- STATES ---------------- */
 
   const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-  const loadProducts = async () => {
-    const products = await getProducts();
-    setProducts(products);
-  };
-
-  loadProducts();
-}, []);
-
-  /* ---------------- Search ---------------- */
+  const [page, setPage] = useState(1);
 
   const [searchTerm, setSearchTerm] = useState("");
-
-  /* ---------------- Filter Drawer ---------------- */
 
   const [openFilter, setOpenFilter] = useState(false);
 
@@ -43,15 +32,41 @@ const Products = () => {
   const [stockFilter, setStockFilter] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
 
-  /* ---------------- View Drawer ---------------- */
-
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  /* ---------------- Delete Dialog ---------------- */
-
   const [openDelete, setOpenDelete] = useState(false);
 
-  /* ---------------- Reset Filters ---------------- */
+  const rowsPerPage = 20;
+
+  /* ---------------- LOAD PRODUCTS ---------------- */
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await getProducts();
+
+        setProducts(data || []);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  /* ---------------- RESET PAGE WHEN FILTER CHANGES ---------------- */
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    categoryFilter,
+    badgeFilter,
+    stockFilter,
+    sortBy,
+  ]);
+
+  /* ---------------- RESET FILTERS ---------------- */
 
   const handleReset = () => {
     setStatusFilter("All");
@@ -61,75 +76,116 @@ const Products = () => {
     setSortBy("Newest");
   };
 
-  /* ---------------- Search + Filter ---------------- */
+  /* ---------------- SEARCH + FILTER + SORT ---------------- */
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
-    /* Search */
+    /* ---------------- SEARCH ---------------- */
 
     if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+
+      filtered = filtered.filter((product) => {
+        const productName = product.productName || "";
+
+        const categoryName =
+          product.category?.mainCategory ||
+          product.category?.subCategory ||
+          "";
+
+        const badge = product.badge || "";
+        const status = product.status || "";
+
+        return `
+          ${productName}
+          ${categoryName}
+          ${badge}
+          ${status}
+        `
+          .toLowerCase()
+          .includes(search);
+      });
+    }
+
+    /* ---------------- STATUS FILTER ---------------- */
+
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(
+        (product) => product.status === statusFilter,
+      );
+    }
+
+    /* ---------------- CATEGORY FILTER ---------------- */
+
+    if (categoryFilter !== "All") {
+      filtered = filtered.filter((product) => {
+        const categoryId =
+          product.category?._id || product.category;
+
+        return String(categoryId) === String(categoryFilter);
+      });
+    }
+
+    /* ---------------- BADGE FILTER ---------------- */
+
+    if (badgeFilter !== "All") {
+      filtered = filtered.filter(
+        (product) => product.badge === badgeFilter,
+      );
+    }
+
+    /* ---------------- STOCK FILTER ---------------- */
+
+    if (stockFilter === "In Stock") {
       filtered = filtered.filter((product) =>
-        Object.values(product).some((value) =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase()),
+        product.variants?.some(
+          (variant) => Number(variant.stock) > 0,
         ),
       );
     }
 
-    /* Status */
-
-    if (statusFilter !== "All") {
-      filtered = filtered.filter((product) => product.status === statusFilter);
-    }
-
-    /* Category */
-
-    if (categoryFilter !== "All") {
-      filtered = filtered.filter(
-        (product) => product.category === categoryFilter,
+    if (stockFilter === "Out of Stock") {
+      filtered = filtered.filter((product) =>
+        product.variants?.every(
+          (variant) => Number(variant.stock) <= 0,
+        ),
       );
     }
 
-    /* Badge */
-
-    if (badgeFilter !== "All") {
-      filtered = filtered.filter((product) => product.badge === badgeFilter);
-    }
-
-    /* Stock */
-
-    if (stockFilter === "In Stock") {
-      filtered = filtered.filter((product) => Number(product.stock) > 0);
-    }
-
-    if (stockFilter === "Out of Stock") {
-      filtered = filtered.filter((product) => Number(product.stock) <= 0);
-    }
-    /* Sorting */
+    /* ---------------- SORTING ---------------- */
 
     switch (sortBy) {
       case "Newest":
-        filtered.sort((a, b) => b.createdAt - a.createdAt);
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0),
+        );
         break;
 
       case "Oldest":
-        filtered.sort((a, b) => a.createdAt - b.createdAt);
+        filtered.sort(
+          (a, b) =>
+            new Date(a.createdAt || 0) -
+            new Date(b.createdAt || 0),
+        );
         break;
 
       case "A-Z":
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        filtered.sort((a, b) =>
+          (a.productName || "").localeCompare(
+            b.productName || "",
+          ),
+        );
         break;
 
       case "Z-A":
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-
-      case "Price Low → High":
-        filtered.sort((a, b) => Number(a.price) - Number(b.price));
-        break;
-
-      case "Price High → Low":
-        filtered.sort((a, b) => Number(b.price) - Number(a.price));
+        filtered.sort((a, b) =>
+          (b.productName || "").localeCompare(
+            a.productName || "",
+          ),
+        );
         break;
 
       default:
@@ -146,6 +202,13 @@ const Products = () => {
     stockFilter,
     sortBy,
   ]);
+
+  /* ---------------- PAGINATION ---------------- */
+
+  const paginatedProducts = filteredProducts.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage,
+  );
 
   return (
     <Box
@@ -164,7 +227,9 @@ const Products = () => {
         sx={{
           flex: 1,
           ml: "300px",
-          backgroundColor: darkMode ? "#181818" : "#F7F5F2",
+          backgroundColor: darkMode
+            ? "#181818"
+            : "#F7F5F2",
         }}
       >
         <AdminNavbar />
@@ -182,11 +247,50 @@ const Products = () => {
           />
 
           <ProductTable
-            products={filteredProducts}
+            products={paginatedProducts}
             setSelectedProduct={setSelectedProduct}
             onDelete={(product) => {
               setSelectedProduct(product);
               setOpenDelete(true);
+            }}
+          />
+        </Box>
+
+        {/* Pagination */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 3,
+          }}
+        >
+          <Pagination
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            count={Math.max(
+              1,
+              Math.ceil(
+                filteredProducts.length / rowsPerPage,
+              ),
+            )}
+            sx={{
+              mb: 6,
+
+              "& .MuiPaginationItem-root": {
+                color: darkMode ? "#fff" : "#555",
+              },
+
+              "& .Mui-selected": {
+                backgroundColor:
+                  "#B89478 !important",
+                color: "#fff",
+              },
+
+              "& .Mui-selected:hover": {
+                backgroundColor:
+                  "#A88366 !important",
+              },
             }}
           />
         </Box>
@@ -219,21 +323,26 @@ const Products = () => {
         PaperProps={{
           sx: {
             width: 380,
-            backgroundColor: darkMode ? "#252525" : "#fff",
-            boxShadow: "-5px 0 25px rgba(0,0,0,.18)",
+            backgroundColor: darkMode
+              ? "#252525"
+              : "#fff",
+            boxShadow:
+              "-5px 0 25px rgba(0,0,0,.18)",
           },
         }}
       >
-        <ViewProduct
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onEdit={() => {
-            if (selectedProduct) {
-              navigate(`/admin/products/edit/${selectedProduct.id}`);
-            }
-          }}
-          onDelete={() => setOpenDelete(true)}
-        />
+        {selectedProduct && (
+          <ViewProduct
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            onEdit={() => {
+              navigate(
+                `/admin/products/edit/${selectedProduct._id}`,
+              );
+            }}
+            onDelete={() => setOpenDelete(true)}
+          />
+        )}
       </Drawer>
 
       {/* Delete Dialog */}

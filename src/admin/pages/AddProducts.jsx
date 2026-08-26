@@ -9,26 +9,27 @@ import {
   Stack,
   Button,
 } from "@mui/material";
+
 import {
-  addProduct,
+  createProduct,
   updateProduct,
   getProductById,
 } from "../../database/productService";
 
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useNavigate, useParams } from "react-router-dom";
-import imageCompression from "browser-image-compression";
+
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 import ProductForm from "../components/ProductForm";
 
+import { getCategories } from "../../database/categoryService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const AddProducts = () => {
   const { darkMode } = useThemeContext();
 
   const navigate = useNavigate();
-
   const { id } = useParams();
 
   const isEdit = Boolean(id);
@@ -36,11 +37,11 @@ const AddProducts = () => {
   /* ---------------- STATES ---------------- */
 
   const [errors, setErrors] = useState({});
+  const [productData, setProductData] = useState(null);
 
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [badge, setBadge] = useState("None");
-
   const [featured, setFeatured] = useState(false);
 
   const [variants, setVariants] = useState([
@@ -60,7 +61,6 @@ const AddProducts = () => {
   const [keyIngredients, setKeyIngredients] = useState("");
   const [howToUse, setHowToUse] = useState("");
 
-  // New Skincare Fields
   const [texture, setTexture] = useState("");
   const [fragrance, setFragrance] = useState("");
   const [phValue, setPhValue] = useState("");
@@ -72,7 +72,7 @@ const AddProducts = () => {
   const [caution, setCaution] = useState("");
 
   const [image, setImage] = useState("");
-  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([""]);
 
   /* ---------------- CLEAR FIELD ERROR ---------------- */
 
@@ -89,225 +89,255 @@ const AddProducts = () => {
     const loadProduct = async () => {
       if (!isEdit) return;
 
-      const product = await getProductById(id);
+      try {
+        const product = await getProductById(id);
 
-      if (!product) return;
+        if (!product) return;
 
-      setProductName(product.name || "");
-      setCategory(product.category || "");
-      setBadge(product.badge || "None");
-      setFeatured(product.featured || false);
+        setProductData(product);
 
-      setVariants(
-        product.variants || [
-          {
-            id: Date.now(),
-            size: "",
-            price: "",
-            discountPrice: "",
-            stock: "",
-            sku: "",
-          },
-        ],
-      );
+        setProductName(product.productName || "");
 
-      setStatus(product.status || "Active");
-      setDescription(product.description || "");
-      setKeyIngredients(product.keyIngredients || "");
-      setHowToUse(product.howToUse || "");
+        /*
+         * category is now a MongoDB ObjectId.
+         *
+         * Because getProductById() uses populate("category"),
+         * product.category can be an object.
+         */
+        setCategory(
+          typeof product.category === "object"
+            ? product.category?._id || ""
+            : product.category || "",
+        );
 
-      setTexture(product.texture || "");
-      setFragrance(product.fragrance || "");
-      setPhValue(product.phValue || "");
-      setShelfLife(product.shelfLife || "");
+        setBadge(product.badge || "None");
+        setFeatured(product.featured || false);
 
-      setSuitableFor(product.suitableFor || []);
-      setSkinConcerns(product.skinConcerns || []);
-      setBenefits(product.benefits || []);
-      setCaution(product.caution || "");
+        /*
+         * MongoDB variants use _id.
+         * ProductForm uses id for React/UI operations.
+         */
+        setVariants(
+          product.variants?.length
+            ? product.variants.map((variant) => ({
+                ...variant,
+                id: variant._id || Date.now() + Math.random(),
+              }))
+            : [
+                {
+                  id: Date.now(),
+                  size: "",
+                  price: "",
+                  discountPrice: "",
+                  stock: "",
+                  sku: "",
+                },
+              ],
+        );
 
-      setImage(product.image || "");
-      setGalleryImages(product.galleryImages || []);
+        setStatus(product.status || "Active");
+
+        setDescription(product.description || "");
+        setKeyIngredients(product.keyIngredients || "");
+        setHowToUse(product.howToUse || "");
+
+        setTexture(product.texture || "");
+        setFragrance(product.fragrance || "");
+        setPhValue(product.phValue || "");
+        setShelfLife(product.shelfLife || "");
+
+        setSuitableFor(product.suitableFor || []);
+        setSkinConcerns(product.skinConcerns || []);
+        setBenefits(product.benefits || []);
+        setCaution(product.caution || "");
+
+        setImage(product.image || "");
+
+        setGalleryImages(
+          product.galleryImages?.length ? product.galleryImages : [""],
+        );
+      } catch (error) {
+        console.error("Error loading product:", error);
+      }
     };
 
     loadProduct();
   }, [id, isEdit]);
-
-  /* ---------------- IMAGE ---------------- */
-
-  const convertImage = async (file) => {
-    if (!file) return "";
-
-    const options = {
-      maxSizeMB: 0.05, // 50 KB
-      maxWidthOrHeight: 800,
-      useWebWorker: true,
-    };
-
-    const compressedFile = await imageCompression(file, options);
-
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-
-      reader.readAsDataURL(compressedFile);
-
-      reader.onload = () => resolve(reader.result);
-    });
-  };
-
-  const convertGalleryImages = async (images) => {
-    const convertedImages = await Promise.all(
-      images.map(async (img) => {
-        if (img instanceof File) {
-          return await convertImage(img);
-        }
-        return img;
-      }),
-    );
-
-    return convertedImages;
-  };
 
   /* ---------------- SAVE PRODUCT ---------------- */
 
   const handleSaveProduct = async () => {
     const newErrors = {};
 
-    if (!productName.trim()) {
-      newErrors.productName = "Product name is required.";
-    }
+    try {
+      /* ---------------- LOAD CATEGORIES ---------------- */
 
-    if (!category) {
-      newErrors.category = "Please select a category.";
-    }
+      const categories = await getCategories();
 
-    if (badge === "None") {
-      newErrors.badge = "Please select a product badge.";
-    }
+      /*
+       * category now contains the MongoDB category _id.
+       */
+      const categoryExists = categories.some(
+        (item) =>
+          item._id === category &&
+          item.status === "Active" &&
+          item.categoryType === "sub",
+      );
 
-    if (variants.length === 0) {
-      newErrors.variants = "Please add at least one variant.";
-    }
+      /* ---------------- BASIC VALIDATION ---------------- */
 
-    variants.forEach((variant, index) => {
-      if (!variant.size) {
-        newErrors[`size${index}`] = "Select a size.";
+      if (!productName.trim()) {
+        newErrors.productName = "Product name is required.";
       }
 
-      if (!variant.price) {
-        newErrors[`price${index}`] = "Price is required.";
+      if (!category) {
+        newErrors.category = "Please select a category.";
+      } else if (!categoryExists) {
+        newErrors.category = "Selected category no longer exists.";
       }
 
-      if (
-        variant.discountPrice &&
-        Number(variant.discountPrice) >= Number(variant.price)
-      ) {
-        newErrors[`discountPrice${index}`] =
-          "Discount price must be less than price.";
+      if (badge === "None") {
+        newErrors.badge = "Please select a product badge.";
       }
 
-      if (!variant.stock) {
-        newErrors[`stock${index}`] = "Stock is required.";
+      /* ---------------- VARIANT VALIDATION ---------------- */
+
+      if (variants.length === 0) {
+        newErrors.variants = "Please add at least one variant.";
       }
 
-      if (!variant.sku.trim()) {
-        newErrors[`sku${index}`] = "SKU is required.";
-      }
-    });
+      variants.forEach((variant, index) => {
+        if (!variant.size) {
+          newErrors[`size${index}`] = "Select a size.";
+        }
 
-    if (!status) {
-      newErrors.status = "Please select product status.";
-    }
+        if (
+          variant.price === "" ||
+          variant.price === null ||
+          variant.price === undefined
+        ) {
+          newErrors[`price${index}`] = "Price is required.";
+        }
 
-    if (!description.trim()) {
-      newErrors.description = "Description is required.";
-    }
+        if (
+          variant.discountPrice !== "" &&
+          Number(variant.discountPrice) >= Number(variant.price)
+        ) {
+          newErrors[`discountPrice${index}`] =
+            "Discount price must be less than price.";
+        }
 
-    if (!isEdit && !image) {
-      newErrors.image = "Please upload a product image.";
-    }
+        if (
+          variant.stock === "" ||
+          variant.stock === null ||
+          variant.stock === undefined
+        ) {
+          newErrors[`stock${index}`] = "Stock is required.";
+        }
 
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
-    let imageUrl = image;
-
-    if (image instanceof File) {
-      imageUrl = await convertImage(image);
-    }
-
-    const galleryUrls = await convertGalleryImages(galleryImages);
-
-    /* ---------------- UPDATE PRODUCT ---------------- */
-
-    if (isEdit) {
-      await updateProduct({
-        id: id,
-
-        name: productName,
-
-        category,
-
-        badge,
-
-        featured,
-
-        variants,
-
-        description,
-
-        keyIngredients,
-
-        howToUse,
-
-        texture,
-
-        fragrance,
-
-        phValue,
-
-        shelfLife,
-
-        suitableFor,
-
-        skinConcerns,
-
-        benefits,
-
-        caution,
-
-        image: imageUrl,
-
-        galleryImages: galleryUrls,
-
-        status,
-
-        createdAt: Date.now(),
+        if (!variant.sku?.trim()) {
+          newErrors[`sku${index}`] = "SKU is required.";
+        }
       });
-    } else {
-      /* ---------------- ADD PRODUCT ---------------- */
 
-      const newProduct = {
-        id: crypto.randomUUID(),
+      /* ---------------- OTHER VALIDATION ---------------- */
 
-        name: productName,
+      if (!status) {
+        newErrors.status = "Please select product status.";
+      }
+
+      if (!description.trim()) {
+        newErrors.description = "Description is required.";
+      }
+
+      if (!image.trim()) {
+        newErrors.image = "Product image URL is required.";
+      }
+
+      if (!keyIngredients.trim()) {
+        newErrors.keyIngredients = "Key ingredients are required.";
+      }
+
+      if (!howToUse.trim()) {
+        newErrors.howToUse = "How to use is required.";
+      }
+
+      if (!texture.trim()) {
+        newErrors.texture = "Texture is required.";
+      }
+
+      if (!fragrance.trim()) {
+        newErrors.fragrance = "Fragrance is required.";
+      }
+
+      if (!phValue.trim()) {
+        newErrors.phValue = "pH value is required.";
+      }
+
+      if (!shelfLife.trim()) {
+        newErrors.shelfLife = "Shelf life is required.";
+      }
+
+      if (suitableFor.length === 0) {
+        newErrors.suitableFor = "Select at least one option.";
+      }
+
+      if (skinConcerns.length === 0) {
+        newErrors.skinConcerns = "Select at least one concern.";
+      }
+
+      if (benefits.length === 0) {
+        newErrors.benefits = "Select at least one benefit.";
+      }
+
+      if (!caution.trim()) {
+        newErrors.caution = "Caution is required.";
+      }
+
+      const validGalleryImages = galleryImages.filter((item) => item?.trim());
+
+      if (validGalleryImages.length === 0) {
+        newErrors.galleryImages = "Please add at least one gallery image.";
+      }
+
+      setErrors(newErrors);
+
+      if (Object.keys(newErrors).length > 0) {
+        return;
+      }
+
+      /* ---------------- PREPARE VARIANTS ---------------- */
+
+      /*
+       * Remove the frontend-only `id`.
+       *
+       * Keep MongoDB `_id` when editing existing variants.
+       */
+      const cleanedVariants = variants.map(({ id, ...variant }) => ({
+        ...variant,
+        price: Number(variant.price),
+        discountPrice:
+          variant.discountPrice === "" ? 0 : Number(variant.discountPrice),
+        stock: Number(variant.stock),
+      }));
+
+      /* ---------------- PRODUCT PAYLOAD ---------------- */
+
+      const productPayload = {
+        productName: productName.trim(),
 
         category,
 
         badge,
-
         featured,
 
-        variants,
+        variants: cleanedVariants,
 
-        description,
+        status,
 
-        keyIngredients,
-
-        howToUse,
+        description: description.trim(),
+        keyIngredients: keyIngredients.trim(),
+        howToUse: howToUse.trim(),
 
         texture,
         fragrance,
@@ -317,21 +347,33 @@ const AddProducts = () => {
         suitableFor,
         skinConcerns,
         benefits,
-        caution,
 
-        image: imageUrl,
+        caution: caution.trim(),
 
-        galleryImages: galleryUrls,
+        image: image.trim(),
 
-        status,
-
-        createdAt: Date.now(),
+        galleryImages: validGalleryImages,
       };
 
-      await addProduct(newProduct);
-    }
+      /* ---------------- CREATE / UPDATE ---------------- */
 
-    navigate("/admin/products");
+      if (isEdit) {
+        await updateProduct(id, productPayload);
+      } else {
+        await createProduct(productPayload);
+      }
+
+      navigate("/admin/products");
+    } catch (error) {
+      console.error("Error saving product:", error);
+
+      const message =
+        error.response?.data?.message || "Failed to save product.";
+
+      setErrors({
+        submit: message,
+      });
+    }
   };
 
   return (
@@ -486,6 +528,18 @@ const AddProducts = () => {
               caution={caution}
               setCaution={setCaution}
             />
+
+            {errors.submit && (
+              <Typography
+                color="error"
+                sx={{
+                  mt: 3,
+                }}
+              >
+                {errors.submit}
+              </Typography>
+            )}
+
             <Stack
               direction="row"
               justifyContent="flex-end"
