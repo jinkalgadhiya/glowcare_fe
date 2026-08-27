@@ -14,7 +14,7 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-import Logo from "../assets/logoDark.png";
+import Logo from "../assets/LogoDark.png";
 import OtpVerification from "./OTPVerification";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
