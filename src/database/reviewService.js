@@ -2,7 +2,7 @@
 // REVIEW API SERVICE
 // ======================================================
 
-const API_URL = "http://localhost:8080/api/reviews";
+const API_URL = "https://glowcare-be.onrender.com/api/reviews";
 
 const ADMIN_TOKEN_KEY = "adminToken";
 const CUSTOMER_TOKEN_KEY = "token";
