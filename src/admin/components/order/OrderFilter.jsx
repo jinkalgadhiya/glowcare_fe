@@ -12,15 +12,17 @@ import {
 } from "@mui/material";
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import { useThemeContext } from "../../context/ThemeContext";
 
-import { useThemeContext } from "../context/ThemeContext";
-
-const CustomerFilter = ({
+const OrderFilter = ({
   open,
   onClose,
 
   statusFilter,
   setStatusFilter,
+
+  paymentFilter,
+  setPaymentFilter,
 
   sortBy,
   setSortBy,
@@ -85,7 +87,7 @@ const CustomerFilter = ({
               color: darkMode ? "#fff" : "#1E2F2B",
             }}
           >
-            Filter Customers
+            Filter Orders
           </Typography>
 
           <IconButton
@@ -109,7 +111,7 @@ const CustomerFilter = ({
           }}
         />
 
-        {/* Customer Status */}
+        {/* Order Status */}
 
         <Typography
           sx={{
@@ -118,14 +120,21 @@ const CustomerFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Customer Status
+          Order Status
         </Typography>
 
         <RadioGroup
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          {["All", "Active", "Inactive"].map((item) => (
+          {[
+            "All",
+            "Pending",
+            "Processing",
+            "Shipped",
+            "Delivered",
+            "Cancelled",
+          ].map((item) => (
             <FormControlLabel
               key={item}
               value={item}
@@ -141,6 +150,56 @@ const CustomerFilter = ({
                 />
               }
               label={item}
+              sx={{
+                color: darkMode ? "#E0E0E0" : "#444",
+              }}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider
+          sx={{
+            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+            my: 3,
+          }}
+        />
+
+        {/* Payment Method */}
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Payment Method
+        </Typography>
+
+        <RadioGroup
+          value={paymentFilter}
+          onChange={(e) => setPaymentFilter(e.target.value)}
+        >
+          {["All", "COD", "Card", "UPI"].map((item) => (
+            <FormControlLabel
+              key={item}
+              value={item}
+              control={
+                <Radio
+                  sx={{
+                    color: darkMode ? "#888" : "#B89478",
+
+                    "&.Mui-checked": {
+                      color: "#B89478",
+                    },
+                  }}
+                />
+              }
+              label={
+                item === "COD"
+                  ? "Cash on Delivery"
+                  : item
+              }
               sx={{
                 color: darkMode ? "#E0E0E0" : "#444",
               }}
@@ -174,8 +233,8 @@ const CustomerFilter = ({
           {[
             "Newest",
             "Oldest",
-            "Name A → Z",
-            "Name Z → A",
+            "Amount Low → High",
+            "Amount High → Low",
           ].map((item) => (
             <FormControlLabel
               key={item}
@@ -263,4 +322,4 @@ const CustomerFilter = ({
   );
 };
 
-export default CustomerFilter;
+export default OrderFilter;

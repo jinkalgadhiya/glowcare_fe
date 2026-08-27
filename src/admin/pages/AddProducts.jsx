@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import ProductForm from "../components/ProductForm";
+import ProductForm from "../components/product/ProductForm";
 
 import { getCategories } from "../../database/categoryService";
 import { useThemeContext } from "../context/ThemeContext";

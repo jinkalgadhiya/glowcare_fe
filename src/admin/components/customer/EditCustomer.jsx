@@ -13,8 +13,8 @@ import {
   Box,
 } from "@mui/material";
 
-import api from "../../api/axios";
-import { useThemeContext } from "../context/ThemeContext";
+import api from "../../../api/axios";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const EditCustomer = ({ open, onClose, customer, onStatusUpdated }) => {
   const { darkMode } = useThemeContext();

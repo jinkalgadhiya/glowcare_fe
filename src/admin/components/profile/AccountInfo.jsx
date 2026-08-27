@@ -15,7 +15,7 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
-import { useThemeContext } from "../context/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const AccountInfo = ({ admin }) => {
   const { darkMode } = useThemeContext();

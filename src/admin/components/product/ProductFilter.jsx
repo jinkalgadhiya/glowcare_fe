@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Drawer,
   Box,
@@ -12,17 +12,25 @@ import {
 } from "@mui/material";
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { useThemeContext } from "../context/ThemeContext";
 
-const OrderFilter = ({
+import { getCategories } from "../../../database/categoryService";
+import { useThemeContext } from "../../context/ThemeContext";
+
+const ProductFilter = ({
   open,
   onClose,
 
   statusFilter,
   setStatusFilter,
 
-  paymentFilter,
-  setPaymentFilter,
+  badgeFilter,
+  setBadgeFilter,
+
+  categoryFilter,
+  setCategoryFilter,
+
+  stockFilter,
+  setStockFilter,
 
   sortBy,
   setSortBy,
@@ -30,6 +38,51 @@ const OrderFilter = ({
   onReset,
 }) => {
   const { darkMode } = useThemeContext();
+
+  const [categories, setCategories] = useState([]);
+
+  /* ---------------- LOAD CATEGORIES ---------------- */
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+
+        // Only active subcategories
+        const activeSubCategories = data.filter(
+          (item) =>
+            item.status === "Active" &&
+            item.categoryType === "sub" &&
+            item.subCategory &&
+            item.subCategory.trim() !== "",
+        );
+
+        setCategories(activeSubCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  const badgeOptions = [
+    "All",
+    "New Launch",
+    "Best Seller",
+    "Trending",
+    "Limited Stock",
+    "Out of Stock",
+    "Sold Out",
+  ];
+
+  const radioStyle = {
+    color: "#B89478",
+
+    "&.Mui-checked": {
+      color: "#B89478",
+    },
+  };
 
   return (
     <Drawer
@@ -41,7 +94,9 @@ const OrderFilter = ({
           width: 360,
           backgroundColor: darkMode ? "#1E1E1E" : "#fff",
           color: darkMode ? "#fff" : "#222",
+
           overflow: "hidden",
+
           display: "flex",
           flexDirection: "column",
         },
@@ -52,7 +107,9 @@ const OrderFilter = ({
           p: 3,
           height: "100vh",
           overflowY: "auto",
+
           backgroundColor: darkMode ? "#1E1E1E" : "#FFFFFF",
+
           display: "flex",
           flexDirection: "column",
 
@@ -83,21 +140,17 @@ const OrderFilter = ({
           <Typography
             sx={{
               fontSize: 24,
-              fontWeight: 600,
+              fontWeight: 700,
               color: darkMode ? "#fff" : "#1E2F2B",
             }}
           >
-            Filter Orders
+            Filter Products
           </Typography>
 
           <IconButton
             onClick={onClose}
             sx={{
-              color: darkMode ? "#fff" : "#555",
-
-              "&:hover": {
-                backgroundColor: darkMode ? "#383838" : "#F5F5F5",
-              },
+              color: darkMode ? "#fff" : "#222",
             }}
           >
             <CloseOutlinedIcon />
@@ -111,7 +164,7 @@ const OrderFilter = ({
           }}
         />
 
-        {/* Order Status */}
+        {/* Product Status */}
 
         <Typography
           sx={{
@@ -120,38 +173,21 @@ const OrderFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Order Status
+          Product Status
         </Typography>
 
         <RadioGroup
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          {[
-            "All",
-            "Pending",
-            "Processing",
-            "Shipped",
-            "Delivered",
-            "Cancelled",
-          ].map((item) => (
+          {["All", "Active", "Inactive"].map((item) => (
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
+                color: darkMode ? "#E5E5E5" : "#555",
               }}
             />
           ))}
@@ -164,7 +200,7 @@ const OrderFilter = ({
           }}
         />
 
-        {/* Payment Method */}
+        {/* Product Badge */}
 
         <Typography
           sx={{
@@ -173,35 +209,106 @@ const OrderFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Payment Method
+          Product Badge
         </Typography>
 
         <RadioGroup
-          value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value)}
+          value={badgeFilter}
+          onChange={(e) => setBadgeFilter(e.target.value)}
         >
-          {["All", "COD", "Card", "UPI"].map((item) => (
+          {badgeOptions.map((item) => (
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
-              label={
-                item === "COD"
-                  ? "Cash on Delivery"
-                  : item
-              }
+              control={<Radio sx={radioStyle} />}
+              label={item}
               sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
+                color: darkMode ? "#E5E5E5" : "#555",
+              }}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider
+          sx={{
+            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+            my: 3,
+          }}
+        />
+
+        {/* Category */}
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Category
+        </Typography>
+
+        <RadioGroup
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          {/* All */}
+
+          <FormControlLabel
+            value="All"
+            control={<Radio sx={radioStyle} />}
+            label="All Categories"
+            sx={{
+              color: darkMode ? "#E5E5E5" : "#555",
+            }}
+          />
+
+          {/* MongoDB Categories */}
+
+          {categories.map((category) => (
+            <FormControlLabel
+              key={category._id}
+              value={category._id}
+              control={<Radio sx={radioStyle} />}
+              label={`${category.mainCategory} → ${category.subCategory}`}
+              sx={{
+                color: darkMode ? "#E5E5E5" : "#555",
+              }}
+            />
+          ))}
+        </RadioGroup>
+
+        <Divider
+          sx={{
+            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+            my: 3,
+          }}
+        />
+
+        {/* Stock */}
+
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: darkMode ? "#fff" : "#222",
+          }}
+        >
+          Stock
+        </Typography>
+
+        <RadioGroup
+          value={stockFilter}
+          onChange={(e) => setStockFilter(e.target.value)}
+        >
+          {["All", "In Stock", "Low Stock", "Out of Stock"].map((item) => (
+            <FormControlLabel
+              key={item}
+              value={item}
+              control={<Radio sx={radioStyle} />}
+              label={item}
+              sx={{
+                color: darkMode ? "#E5E5E5" : "#555",
               }}
             />
           ))}
@@ -226,33 +333,22 @@ const OrderFilter = ({
           Sort By
         </Typography>
 
-        <RadioGroup
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
+        <RadioGroup value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {[
             "Newest",
             "Oldest",
-            "Amount Low → High",
-            "Amount High → Low",
+            "A-Z",
+            "Z-A",
+            "Price Low → High",
+            "Price High → Low",
           ].map((item) => (
             <FormControlLabel
               key={item}
               value={item}
-              control={
-                <Radio
-                  sx={{
-                    color: darkMode ? "#888" : "#B89478",
-
-                    "&.Mui-checked": {
-                      color: "#B89478",
-                    },
-                  }}
-                />
-              }
+              control={<Radio sx={radioStyle} />}
               label={item}
               sx={{
-                color: darkMode ? "#E0E0E0" : "#444",
+                color: darkMode ? "#E5E5E5" : "#555",
               }}
             />
           ))}
@@ -267,7 +363,7 @@ const OrderFilter = ({
           }}
         />
 
-        {/* Buttons */}
+        {/* Bottom Buttons */}
 
         <Box
           sx={{
@@ -285,12 +381,11 @@ const OrderFilter = ({
               color: "#B89478",
               textTransform: "none",
               fontWeight: 600,
+              borderRadius: 2,
 
               "&:hover": {
                 borderColor: "#A88366",
-                bgcolor: darkMode
-                  ? "rgba(184,148,120,.12)"
-                  : "rgba(184,148,120,.08)",
+                bgcolor: "rgba(184,148,120,.08)",
               },
             }}
           >
@@ -304,8 +399,10 @@ const OrderFilter = ({
             sx={{
               height: 48,
               bgcolor: "#B89478",
+              color: "#fff",
               textTransform: "none",
               fontWeight: 600,
+              borderRadius: 2,
               boxShadow: "none",
 
               "&:hover": {
@@ -322,4 +419,4 @@ const OrderFilter = ({
   );
 };
 
-export default OrderFilter;
+export default ProductFilter;

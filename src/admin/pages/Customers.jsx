@@ -4,12 +4,12 @@ import { Box, Drawer } from "@mui/material";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 
-import CustomerHeader from "../components/CustomerHeader";
-import CustomerFilter from "../components/CustomerFilter";
-import CustomerTable from "../components/CustomerTable";
-import ViewCustomer from "../components/ViewCustomer";
-import EditCustomer from "../components/EditCustomer";
-import DeleteCustomer from "../components/DeleteCustomer";
+import CustomerHeader from "../components/customer/CustomerHeader";
+import CustomerFilter from "../components/customer/CustomerFilter";
+import CustomerTable from "../components/customer/CustomerTable";
+import ViewCustomer from "../components/customer/ViewCustomer";
+import EditCustomer from "../components/customer/EditCustomer";
+import DeleteCustomer from "../components/customer/DeleteCustomer";
 
 import { getCustomers } from "../../database/userService";
 import { useThemeContext } from "../context/ThemeContext";

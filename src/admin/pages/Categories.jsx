@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import CategoryHeader from "../components/CategoryHeader";
-import CategoryTable from "../components/CategoryTable";
-import CategoryFilter from "../components/CategoryFilter";
-import ViewCategory from "../components/ViewCategory";
-import DeleteCategory from "../components/DeleteCategory";
+import CategoryHeader from "../components/category/CategoryHeader";
+import CategoryTable from "../components/category/CategoryTable";
+import CategoryFilter from "../components/category/CategoryFilter";
+import ViewCategory from "../components/category/ViewCategory";
+import DeleteCategory from "../components/category/DeleteCategory";
 
 import { getCategories } from "../../database/categoryService";
 import { useThemeContext } from "../context/ThemeContext";

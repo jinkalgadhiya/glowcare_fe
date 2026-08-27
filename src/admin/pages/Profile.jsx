@@ -4,10 +4,10 @@ import { Box, Dialog } from "@mui/material";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 
-import ProfileHeader from "../components/ProfileHeader";
-import AccountInfo from "../components/AccountInfo";
-import EditProfile from "../components/EditProfile";
-import ChangePassword from "../components/ChangePassword";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import AccountInfo from "../components/profile/AccountInfo";
+import EditProfile from "../components/profile/EditProfile";
+import ChangePassword from "../components/profile/ChangePassword";
 
 import { useThemeContext } from "../context/ThemeContext";
 import api from "../../api/adminApi";
