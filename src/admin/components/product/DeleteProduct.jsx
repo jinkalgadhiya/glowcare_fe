@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import { deleteProduct } from "../../database/productService";
-import { useThemeContext } from "../context/ThemeContext";
+import { deleteProduct } from "../../../database/productService";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const DeleteProduct = ({ open, onClose, product }) => {
   const { darkMode } = useThemeContext();

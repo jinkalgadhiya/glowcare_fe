@@ -16,10 +16,10 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
-import { useThemeContext } from "../context/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
-const OrderHeader = ({
-  totalOrders = 0,
+const CustomerHeader = ({
+  totalCustomers = 0,
   searchTerm,
   setSearchTerm,
   onOpenFilter,
@@ -65,7 +65,7 @@ const OrderHeader = ({
             fontSize: 14,
           }}
         >
-          Sales
+          Users
         </Link>
 
         <Typography
@@ -75,7 +75,7 @@ const OrderHeader = ({
             color: darkMode ? "#fff" : "#474040",
           }}
         >
-          Orders
+          Customers
         </Typography>
       </Breadcrumbs>
 
@@ -95,7 +95,7 @@ const OrderHeader = ({
         <TextField
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search orders..."
+          placeholder="Search customers..."
           size="small"
           sx={{
             width: {
@@ -121,6 +121,15 @@ const OrderHeader = ({
                 borderColor: "#B89478",
               },
             },
+
+            "& input": {
+              color: darkMode ? "#fff" : "#222",
+            },
+
+            "& input::placeholder": {
+              color: darkMode ? "#BDBDBD" : "#888",
+              opacity: 1,
+            },
           }}
           InputProps={{
             startAdornment: (
@@ -137,29 +146,24 @@ const OrderHeader = ({
 
         {/* Buttons */}
 
-        <Stack
-          direction="row"
-          spacing={2}
-        >
-          <Button
-            variant="contained"
-            disableElevation
+        <Stack direction="row" spacing={2}>
+          <Box
             sx={{
-              minWidth: 170,
+              minWidth: 190,
               height: 46,
+              px: 2.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               bgcolor: "#B89478",
-              textTransform: "none",
               fontSize: 15,
               fontWeight: 600,
               borderRadius: 2,
-
-              "&:hover": {
-                bgcolor: "#A88366",
-              },
+              color: "#fff",
             }}
           >
-            Total Orders : {totalOrders}
-          </Button>
+            Total Customers : {totalCustomers}
+          </Box>
 
           <Button
             variant="outlined"
@@ -188,4 +192,4 @@ const OrderHeader = ({
   );
 };
 
-export default OrderHeader;
+export default CustomerHeader;

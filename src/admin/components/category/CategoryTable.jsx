@@ -21,8 +21,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useNavigate } from "react-router-dom";
-import { getProducts } from "../../database/productService";
-import { useThemeContext } from "../context/ThemeContext";
+import { getProducts } from "../../../database/productService";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const CategoryTable = ({ categories, setSelectedCategory, onDelete }) => {
   const { darkMode } = useThemeContext();

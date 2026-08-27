@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 
-import { deleteCategory } from "../../database/categoryService";
-import { useThemeContext } from "../context/ThemeContext";
+import { deleteCategory } from "../../../database/categoryService";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const DeleteCategory = ({ open, onClose, category, setCategories }) => {
   const { darkMode } = useThemeContext();
