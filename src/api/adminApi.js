@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAdminToken } from "../auth/AdminAuthService";
 
 const adminApi = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "https://glowcare-be.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
