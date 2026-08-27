@@ -1,125 +1,224 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Box, Drawer } from "@mui/material";
+import { Box, Drawer, Pagination } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import CategoryHeader from "../components/CategoryHeader";
-import CategoryTable from "../components/CategoryTable";
-import CategoryFilter from "../components/CategoryFilter";
-import ViewCategory from "../components/ViewCategory";
-import DeleteCategory from "../components/DeleteCategory";
+import CategoryHeader from "../components/category/CategoryHeader";
+import CategoryTable from "../components/category/CategoryTable";
+import CategoryFilter from "../components/category/CategoryFilter";
+import ViewCategory from "../components/category/ViewCategory";
+import DeleteCategory from "../components/category/DeleteCategory";
+
 import { getCategories } from "../../database/categoryService";
-import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
-import { useNavigate } from "react-router-dom";
 
 const Categories = () => {
   const { darkMode } = useThemeContext();
   const navigate = useNavigate();
 
-  /* Search */
+  // ===============================
+  // Search
+  // ===============================
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  /* Categories */
+  // ===============================
+  // Pagination
+  // ===============================
+
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 20;
+
+  // ===============================
+  // Categories
+  // ===============================
 
   const [categories, setCategories] = useState([]);
 
-  /* Drawers */
+  // ===============================
+  // Drawers / Dialogs
+  // ===============================
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
-
-  /* Filter Drawer */
-
   const [filterOpen, setFilterOpen] = useState(false);
 
-  /* Filter States */
+  // ===============================
+  // Filters
+  // ===============================
 
   const [statusFilter, setStatusFilter] = useState("All");
-
   const [sortBy, setSortBy] = useState("Newest");
+  const [menuFilter, setMenuFilter] = useState("All");
+  const [mainCategoryFilter, setMainCategoryFilter] = useState("");
+  const [subCategoryFilter, setSubCategoryFilter] = useState("");
+  const [categoryTypeFilter, setCategoryTypeFilter] = useState("All");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
 
-  const [productFilter, setProductFilter] = useState("All");
-
-  const [products, setProducts] = useState([]);
+  // ===============================
+  // Load Categories
+  // ===============================
 
   useEffect(() => {
-  const loadData = async () => {
-    const categoryData = await getCategories();
-    const productData = await getProducts();
+    const loadCategories = async () => {
+      try {
+        const categoryList = await getCategories();
+        setCategories(categoryList || []);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
 
-    setCategories(categoryData);
-    setProducts(productData);
-  };
+    loadCategories();
+  }, []);
 
-  loadData();
-}, []);
+  // ===============================
+  // Reset Pagination
+  // ===============================
 
-  /* Combined Search + Filter */
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    menuFilter,
+    mainCategoryFilter,
+    subCategoryFilter,
+    categoryTypeFilter,
+    descriptionFilter,
+    sortBy,
+  ]);
+
+  // ===============================
+  // Search + Filter + Sort
+  // ===============================
 
   const filteredCategories = useMemo(() => {
     let filtered = [...categories];
 
-    /* Search */
-
+    // Search
     if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+
       filtered = filtered.filter((category) =>
-        Object.values(category).some((value) =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
+        `
+          ${category.menuType || ""}
+          ${category.categoryType || ""}
+          ${category.mainCategory || ""}
+          ${category.subCategory || ""}
+        `
+          .toLowerCase()
+          .includes(search),
       );
     }
 
-    /* Status */
-
+    // Status
     if (statusFilter !== "All") {
       filtered = filtered.filter(
         (category) => category.status === statusFilter,
       );
     }
 
-    /* Product Count */
-
-    if (productFilter !== "All") {
-      filtered = filtered.filter((category) => {
-        const count = products.filter(
-          (product) => product.category === category.name,
-        ).length;
-
-        if (productFilter === "Has Products") return count > 0;
-
-        if (productFilter === "Empty Categories") return count === 0;
-
-        return true;
-      });
+    // Menu Type
+    if (menuFilter !== "All") {
+      filtered = filtered.filter(
+        (category) => category.menuType === menuFilter,
+      );
     }
 
-    /* Sorting */
+    // Category Type
+    if (categoryTypeFilter !== "All") {
+      filtered = filtered.filter(
+        (category) => category.categoryType === categoryTypeFilter,
+      );
+    }
 
+    // Main Category
+    if (mainCategoryFilter.trim()) {
+      const search = mainCategoryFilter.toLowerCase();
+
+      filtered = filtered.filter((category) =>
+        category.mainCategory?.toLowerCase().includes(search),
+      );
+    }
+
+    // Sub Category
+    if (subCategoryFilter.trim()) {
+      const search = subCategoryFilter.toLowerCase();
+
+      filtered = filtered.filter((category) =>
+        category.subCategory?.toLowerCase().includes(search),
+      );
+    }
+
+    // Description
+    if (descriptionFilter.trim()) {
+      const search = descriptionFilter.toLowerCase();
+
+      filtered = filtered.filter((category) =>
+        category.description?.toLowerCase().includes(search),
+      );
+    }
+
+    // Sorting
     switch (sortBy) {
       case "A-Z":
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        filtered.sort((a, b) =>
+          (a.subCategory || a.mainCategory || "").localeCompare(
+            b.subCategory || b.mainCategory || "",
+          ),
+        );
         break;
 
       case "Z-A":
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        filtered.sort((a, b) =>
+          (b.subCategory || b.mainCategory || "").localeCompare(
+            a.subCategory || a.mainCategory || "",
+          ),
+        );
         break;
 
       case "Newest":
-  filtered.sort((a, b) => b.createdAt - a.createdAt);
-  break;
+        filtered.sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+        );
+        break;
 
-case "Oldest":
-  filtered.sort((a, b) => a.createdAt - b.createdAt);
-  break;
+      case "Oldest":
+        filtered.sort(
+          (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+        );
+        break;
 
       default:
         break;
     }
 
     return filtered;
-  }, [categories, searchTerm, statusFilter, sortBy, productFilter, products]);
+  }, [
+    categories,
+    searchTerm,
+    statusFilter,
+    menuFilter,
+    mainCategoryFilter,
+    subCategoryFilter,
+    categoryTypeFilter,
+    descriptionFilter,
+    sortBy,
+  ]);
+
+  // ===============================
+  // Pagination
+  // ===============================
+
+  const paginatedCategories = filteredCategories.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage,
+  );
+
+  const totalPages = Math.ceil(filteredCategories.length / rowsPerPage);
+
   return (
     <Box
       sx={{
@@ -148,15 +247,18 @@ case "Oldest":
             pt: "90px",
           }}
         >
+          {/* Header */}
+
           <CategoryHeader
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onOpenFilter={() => setFilterOpen(true)}
           />
 
+          {/* Table */}
+
           <CategoryTable
-            categories={filteredCategories}
-            setCategories={setCategories}
+            categories={paginatedCategories}
             setSelectedCategory={setSelectedCategory}
             onDelete={(category) => {
               setSelectedCategory(category);
@@ -164,6 +266,40 @@ case "Oldest":
             }}
           />
         </Box>
+
+        {/* Pagination */}
+
+        {totalPages > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mt: 3,
+            }}
+          >
+            <Pagination
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              count={totalPages}
+              sx={{
+                mb: 6,
+
+                "& .MuiPaginationItem-root": {
+                  color: darkMode ? "#fff" : "#555",
+                },
+
+                "& .Mui-selected": {
+                  backgroundColor: "#B89478 !important",
+                  color: "#fff",
+                },
+
+                "& .Mui-selected:hover": {
+                  backgroundColor: "#A88366 !important",
+                },
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
       {/* Filter Drawer */}
@@ -173,18 +309,30 @@ case "Oldest":
         onClose={() => setFilterOpen(false)}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        menuFilter={menuFilter}
+        setMenuFilter={setMenuFilter}
+        mainCategoryFilter={mainCategoryFilter}
+        setMainCategoryFilter={setMainCategoryFilter}
+        subCategoryFilter={subCategoryFilter}
+        setSubCategoryFilter={setSubCategoryFilter}
+        categoryTypeFilter={categoryTypeFilter}
+        setCategoryTypeFilter={setCategoryTypeFilter}
+        descriptionFilter={descriptionFilter}
+        setDescriptionFilter={setDescriptionFilter}
         sortBy={sortBy}
         setSortBy={setSortBy}
-        productFilter={productFilter}
-        setProductFilter={setProductFilter}
         onReset={() => {
           setStatusFilter("All");
+          setMenuFilter("All");
+          setMainCategoryFilter("");
+          setSubCategoryFilter("");
+          setCategoryTypeFilter("All");
+          setDescriptionFilter("");
           setSortBy("Newest");
-          setProductFilter("All");
         }}
       />
 
-      {/* View Drawer */}
+      {/* View Category Drawer */}
 
       <Drawer
         anchor="right"
@@ -203,7 +351,7 @@ case "Oldest":
           darkMode={darkMode}
           onClose={() => setSelectedCategory(null)}
           onEdit={() =>
-            navigate(`/admin/categories/edit/${selectedCategory.id}`)
+            navigate(`/admin/categories/edit/${selectedCategory._id}`)
           }
           onDelete={() => setOpenDelete(true)}
         />

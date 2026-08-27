@@ -1,35 +1,121 @@
-import dbPromise from "./db";
+import api from "../api/axios";
 
-// Get All Cart Items
+// ======================================================
+// GET MY CART
+// ======================================================
+
 export const getCartItems = async () => {
-  const db = await dbPromise;
-  return await db.getAll("cart");
+  try {
+    const response = await api.get("/cart");
+
+    return response.data.data?.items || [];
+  } catch (error) {
+    console.error(
+      "Error fetching cart:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 };
 
-// Add / Update Item
+// ======================================================
+// ADD ITEM TO CART
+// ======================================================
+
 export const saveCartItem = async (item) => {
-  const db = await dbPromise;
+  try {
+    const response = await api.post("/cart", {
+      productId: item.productId,
+      variantId: item.variantId,
+      name: item.name,
+      image: item.image,
+      category: item.category,
+      description: item.description,
+      size: item.size,
+      price: item.price,
+      originalPrice: item.originalPrice,
+      quantity: item.quantity,
+    });
 
-  await db.put("cart", {
-    ...item,
-    id: `${item.productId}-${item.variantId}`,
-  });
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error adding item to cart:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 };
 
-// Remove Item
-export const removeCartItem = async (productId, variantId) => {
-  const db = await dbPromise;
+// ======================================================
+// UPDATE CART ITEM QUANTITY
+// ======================================================
 
-  await db.delete("cart", `${productId}-${variantId}`);
+export const updateCartItem = async (
+  productId,
+  variantId,
+  quantity,
+) => {
+  try {
+    const response = await api.put(
+      `/cart/${productId}/${variantId}`,
+      {
+        quantity,
+      },
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error updating cart item:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 };
 
-// Clear Cart
+// ======================================================
+// REMOVE CART ITEM
+// ======================================================
+
+export const removeCartItem = async (
+  productId,
+  variantId,
+) => {
+  try {
+    const response = await api.delete(
+      `/cart/${productId}/${variantId}`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error removing cart item:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
+};
+
+// ======================================================
+// CLEAR CART
+// ======================================================
+
 export const clearCartItems = async () => {
-  const db = await dbPromise;
+  try {
+    const response = await api.delete("/cart");
 
-  const tx = db.transaction("cart", "readwrite");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error clearing cart:",
+      error.response?.data || error.message,
+    );
 
-  await tx.store.clear();
-
-  await tx.done;
+    throw error;
+  }
 };

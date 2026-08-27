@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Dialog,
-  TextField,
   Button,
   Grid,
   Box,
@@ -11,15 +10,20 @@ import {
   InputAdornment,
   Alert,
 } from "@mui/material";
+
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
 import Logo from "../assets/logoDark.png";
 import OtpVerification from "./OTPVerification";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Users } from "../data/Users";
-import { getUsers, updateUser } from "../database/userService";
 
-const ForgetPassword = ({ open, handleClose }) => {
+import api from "../api/axios";
+
+// Custom common input component
+import CustomTextField from "../components/common/CustomTextField";
+
+const ForgetPassword = ({ open, handleClose, type = "user" }) => {
   const [formData, setFormData] = useState({
     email: "",
     newPassword: "",
@@ -33,11 +37,19 @@ const ForgetPassword = ({ open, handleClose }) => {
   });
 
   const [isVerified, setIsVerified] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConPassword, setShowConPassword] = useState(false);
+
   const [openOtp, setOpenOtp] = useState(false);
+
   const [emailNotFound, setEmailNotFound] = useState("");
+
   const [openSuccess, setOpenSuccess] = useState(false);
+
+  // ======================================================
+  // VERIFY EMAIL
+  // ======================================================
 
   const handleVerifyEmail = async () => {
     setEmailNotFound("");
@@ -52,6 +64,7 @@ const ForgetPassword = ({ open, handleClose }) => {
         ...prev,
         email: "Please enter your email address",
       }));
+
       return;
     }
 
@@ -60,90 +73,104 @@ const ForgetPassword = ({ open, handleClose }) => {
         ...prev,
         email: "Please enter a valid email address",
       }));
+
       return;
     }
 
-    const registeredUsers = await getUsers();
+    try {
+      const response = await api.post("/send-otp", {
+        email: formData.email.trim(),
+        accountType: type,
+      });
 
-    // Check Static User
-    const staticUser = Users.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
+      if (response.data.status === "success") {
+        setOpenOtp(true);
+      }
+    } catch (error) {
+      console.error("Send OTP error:", error);
 
-    // Check Registered User
-    const registeredUser = registeredUsers.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
-
-    if (!staticUser && !registeredUser) {
-      setEmailNotFound("Email not found");
-      return;
+      setEmailNotFound(
+        error.response?.data?.message ||
+          "Unable to send OTP. Please try again.",
+      );
     }
-
-    setOpenOtp(true);
   };
 
+  // ======================================================
+  // RESET PASSWORD
+  // ======================================================
+
   const handleResetPassword = async () => {
-    setErrors({
-      ...errors,
+    setErrors((prev) => ({
+      ...prev,
       newPassword: "",
       confirmPassword: "",
-    });
+    }));
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&]).{8,}$/;
 
     if (!formData.newPassword.trim()) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         newPassword: "Please enter your password",
-      });
+      }));
+
       return;
     }
 
     if (!passwordRegex.test(formData.newPassword)) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         newPassword:
           "Password must contain uppercase, number and special character",
-      });
+      }));
+
       return;
     }
 
     if (!formData.confirmPassword.trim()) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         confirmPassword: "Please confirm your password",
-      });
+      }));
+
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setErrors({
-        ...errors,
+      setErrors((prev) => ({
+        ...prev,
         confirmPassword: "Passwords do not match",
-      });
+      }));
+
       return;
     }
 
-    // Registered Users
-    const users = await getUsers();
-
-    const registeredUser = users.find(
-      (user) =>
-        user.email.toLowerCase() === formData.email.trim().toLowerCase(),
-    );
-
-    if (registeredUser) {
-      await updateUser({
-        ...registeredUser,
-        password: formData.newPassword,
+    try {
+      const response = await api.post("/reset-password", {
+        email: formData.email.trim(),
+        newPassword: formData.newPassword,
+        accountType: type,
       });
-    }
 
-    setOpenSuccess(true);
+      if (response.data.status === "success") {
+        setOpenSuccess(true);
+      }
+    } catch (error) {
+      console.error("Reset password error:", error);
+
+      setErrors((prev) => ({
+        ...prev,
+        newPassword:
+          error.response?.data?.message ||
+          "Failed to reset password. Please try again.",
+      }));
+    }
   };
+
+  // ======================================================
+  // RESET DIALOG
+  // ======================================================
 
   const resetDialog = () => {
     setFormData({
@@ -159,9 +186,15 @@ const ForgetPassword = ({ open, handleClose }) => {
     });
 
     setIsVerified(false);
+    setOpenOtp(false);
+    setEmailNotFound("");
 
     handleClose();
   };
+
+  // ======================================================
+  // SUCCESS CLOSE
+  // ======================================================
 
   const handleSuccessClose = () => {
     setOpenSuccess(false);
@@ -170,8 +203,16 @@ const ForgetPassword = ({ open, handleClose }) => {
 
   return (
     <>
+      {/* ======================================================
+          FORGOT PASSWORD DIALOG
+      ====================================================== */}
+
       <Dialog open={open} onClose={resetDialog} fullWidth maxWidth="md">
         <Grid container sx={{ minHeight: "500px" }}>
+          {/* ======================================================
+              LEFT SIDE
+          ====================================================== */}
+
           <Grid
             size={5}
             sx={{
@@ -189,12 +230,18 @@ const ForgetPassword = ({ open, handleClose }) => {
                   width: 250,
                 }}
               />
+
               <Typography variant="h4" fontWeight="bold">
                 Welcome Back
               </Typography>
+
               <Typography color="text.secondary">Beauty Begins Here</Typography>
             </Box>
           </Grid>
+
+          {/* ======================================================
+              RIGHT SIDE
+          ====================================================== */}
 
           <Grid
             size={7}
@@ -205,6 +252,10 @@ const ForgetPassword = ({ open, handleClose }) => {
             }}
           >
             {!isVerified ? (
+              /* ======================================================
+                  VERIFY EMAIL
+              ====================================================== */
+
               <Stack
                 spacing={4}
                 sx={{
@@ -214,16 +265,22 @@ const ForgetPassword = ({ open, handleClose }) => {
                 <Typography variant="h4" fontWeight="bold">
                   Forgot Password
                 </Typography>
+
                 <Typography color="text.secondary">
                   Enter your registered email address and we'll help you reset
                   your password.
                 </Typography>
-                <TextField
-                  variant="standard"
+
+                {/* EMAIL - CUSTOM TEXT FIELD */}
+
+                <CustomTextField
                   label="Email Address"
                   value={formData.email}
                   onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
+                    setFormData({
+                      ...formData,
+                      email: e.target.value,
+                    })
                   }
                   error={errors.email !== ""}
                   helperText={errors.email}
@@ -232,13 +289,22 @@ const ForgetPassword = ({ open, handleClose }) => {
                 {emailNotFound && (
                   <Alert severity="error">{emailNotFound}</Alert>
                 )}
+
                 <Button
                   variant="contained"
                   size="large"
                   onClick={handleVerifyEmail}
+                  sx={{
+                    backgroundColor: "#ae7f45",
+
+                    "&:hover": {
+                      backgroundColor: "#966b38",
+                    },
+                  }}
                 >
                   Verify Email
                 </Button>
+
                 <Typography
                   variant="body2"
                   textAlign="center"
@@ -253,6 +319,10 @@ const ForgetPassword = ({ open, handleClose }) => {
                 </Typography>
               </Stack>
             ) : (
+              /* ======================================================
+                  RESET PASSWORD
+              ====================================================== */
+
               <Stack
                 spacing={4}
                 sx={{
@@ -267,8 +337,9 @@ const ForgetPassword = ({ open, handleClose }) => {
                   Enter your new password.
                 </Typography>
 
-                <TextField
-                  variant="standard"
+                {/* NEW PASSWORD - CUSTOM TEXT FIELD */}
+
+                <CustomTextField
                   label="New Password"
                   type={showPassword ? "text" : "password"}
                   value={formData.newPassword}
@@ -295,8 +366,9 @@ const ForgetPassword = ({ open, handleClose }) => {
                   }}
                 />
 
-                <TextField
-                  variant="standard"
+                {/* CONFIRM PASSWORD - CUSTOM TEXT FIELD */}
+
+                <CustomTextField
                   label="Confirm Password"
                   type={showConPassword ? "text" : "password"}
                   value={formData.confirmPassword}
@@ -331,6 +403,13 @@ const ForgetPassword = ({ open, handleClose }) => {
                   variant="contained"
                   size="large"
                   onClick={handleResetPassword}
+                  sx={{
+                    backgroundColor: "#ae7f45",
+
+                    "&:hover": {
+                      backgroundColor: "#966b38",
+                    },
+                  }}
                 >
                   Change Password
                 </Button>
@@ -352,14 +431,26 @@ const ForgetPassword = ({ open, handleClose }) => {
           </Grid>
         </Grid>
       </Dialog>
+
+      {/* ======================================================
+          OTP VERIFICATION
+      ====================================================== */}
+
       <OtpVerification
         open={openOtp}
         handleClose={() => setOpenOtp(false)}
+        email={formData.email}
+        type={type}
         onOtpVerified={() => {
           setIsVerified(true);
           setOpenOtp(false);
         }}
       />
+
+      {/* ======================================================
+          SUCCESS DIALOG
+      ====================================================== */}
+
       <Dialog
         open={openSuccess}
         onClose={handleSuccessClose}
@@ -375,9 +466,9 @@ const ForgetPassword = ({ open, handleClose }) => {
           }}
         >
           <CheckCircleIcon
-            color="primary"
             sx={{
               fontSize: 80,
+              color: "#ae7f45",
             }}
           />
 
@@ -396,6 +487,11 @@ const ForgetPassword = ({ open, handleClose }) => {
             onClick={handleSuccessClose}
             sx={{
               width: "100%",
+              backgroundColor: "#ae7f45",
+
+              "&:hover": {
+                backgroundColor: "#966b38",
+              },
             }}
           >
             Back to Login

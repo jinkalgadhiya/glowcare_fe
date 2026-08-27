@@ -3,7 +3,6 @@ import {
   Box,
   Paper,
   Typography,
-  TextField,
   Button,
   MenuItem,
   Stack,
@@ -11,11 +10,14 @@ import {
   Link,
   Divider,
 } from "@mui/material";
+
 import {
-  addCategory,
+  createCategory,
   updateCategory,
   getCategoryById,
+  getCategories,
 } from "../../database/categoryService";
+
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -23,75 +25,166 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 import { useThemeContext } from "../context/ThemeContext";
 
+// Common TextField
+import CustomTextField from "../../components/common/CustomTextField";
+
 const AddCategory = () => {
   const { darkMode } = useThemeContext();
+
   const navigate = useNavigate();
   const { id } = useParams();
 
   const isEdit = Boolean(id);
 
-  const [categoryName, setCategoryName] = useState("");
-  const [description, setDescription] = useState("");
+  const [menuType, setMenuType] = useState("");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [bannerImage, setBannerImage] = useState("");
+  const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("Active");
-  const [createdAt, setCreatedAt] = useState(null);
+  const [categoryType, setCategoryType] = useState("main");
+  const [description, setDescription] = useState("");
+
+  const [allCategories, setAllCategories] = useState([]);
+
+  // ======================================================
+  // DARK / LIGHT THEME STYLE
+  // ======================================================
+
+  const textFieldStyle = {
+    "& .MuiInputLabel-root": {
+      color: darkMode ? "#BDBDBD" : "#666",
+    },
+
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#B89478",
+    },
+
+    "& .MuiOutlinedInput-root": {
+      color: darkMode ? "#fff" : "#222",
+
+      "& fieldset": {
+        borderColor: darkMode ? "#555" : "#ccc",
+      },
+
+      "&:hover fieldset": {
+        borderColor: "#B89478",
+      },
+
+      "&.Mui-focused fieldset": {
+        borderColor: "#B89478",
+      },
+    },
+
+    "& .MuiSvgIcon-root": {
+      color: darkMode ? "#fff" : "#222",
+    },
+  };
+
+  // ======================================================
+  // LOAD DATA
+  // ======================================================
 
   useEffect(() => {
-    const loadCategory = async () => {
+    const loadData = async () => {
+      const categories = await getCategories();
+
+      setAllCategories(categories);
+
       if (!isEdit) return;
 
       const category = await getCategoryById(id);
 
       if (category) {
-        setCategoryName(category.name);
-        setDescription(category.description);
-        setStatus(category.status);
-        setCreatedAt(category.createdAt);
+        setMenuType(category.menuType || "");
+        setCategoryType(category.categoryType || "main");
+        setMainCategory(category.mainCategory || "");
+        setSubCategory(category.subCategory || "");
+        setDescription(category.description || "");
+        setBannerImage(category.bannerImage || "");
+        setStatus(category.status || "Active");
       }
     };
 
-    loadCategory();
+    loadData();
   }, [id, isEdit]);
 
+  // ======================================================
+  // SAVE CATEGORY
+  // ======================================================
+
   const handleSaveCategory = async () => {
-  if (categoryName.trim() === "") {
-    alert("Category name is required");
-    return;
-  }
+    const newErrors = {};
 
-  try {
-    if (isEdit) {
-      console.log("Updating category...");
-
-      await updateCategory({
-        id, // Keep the existing ID
-        name: categoryName,
-        description,
-        status,
-        createdAt,
-        productCount: 0,
-      });
-
-      console.log("Category updated successfully");
-    } else {
-      console.log("Adding category...");
-
-      await addCategory({
-        id: crypto.randomUUID(),
-        name: categoryName,
-        description,
-        status,
-        createdAt: Date.now(),
-        productCount: 0,
-      });
-
-      console.log("Category added successfully");
+    if (!menuType) {
+      newErrors.menuType = "Please select menu type";
     }
 
-    navigate("/admin/categories");
-  } catch (err) {
-    console.error("FULL ERROR:", err);
-  }
-};
+    if (categoryType === "main") {
+      if (!mainCategory.trim()) {
+        newErrors.mainCategory = "Category name is required";
+      }
+    }
+
+    if (categoryType === "sub") {
+      if (!mainCategory) {
+        newErrors.mainCategory = "Please select main category";
+      }
+
+      if (!subCategory.trim()) {
+        newErrors.subCategory = "Sub category is required";
+      }
+
+      if (!description.trim()) {
+        newErrors.description = "Description is required";
+      }
+
+      if (!bannerImage.trim()) {
+        newErrors.bannerImage = "Banner image URL is required";
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      const payload =
+        categoryType === "main"
+          ? {
+              menuType,
+              categoryType: "main",
+              mainCategory: mainCategory.trim(),
+              status,
+            }
+          : {
+              menuType,
+              categoryType: "sub",
+              mainCategory,
+              subCategory: subCategory.trim(),
+              description: description.trim(),
+              bannerImage: bannerImage.trim(),
+              status,
+            };
+
+      if (isEdit) {
+        await updateCategory(id, payload);
+      } else {
+        await createCategory(payload);
+      }
+
+      navigate("/admin/categories");
+    } catch (err) {
+      console.error("Error saving category:", err);
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to save category. Please try again.",
+      );
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -106,7 +199,7 @@ const AddCategory = () => {
       <Box
         sx={{
           flex: 1,
-          ml: "300px", // Same width as your sidebar
+          ml: "300px",
           backgroundColor: darkMode ? "#181818" : "#F7F5F2",
         }}
       >
@@ -119,7 +212,6 @@ const AddCategory = () => {
           }}
         >
           {/* Breadcrumb */}
-
           <Breadcrumbs
             separator={<NavigateNextIcon sx={{ fontSize: 16 }} />}
             sx={{
@@ -170,7 +262,6 @@ const AddCategory = () => {
           </Breadcrumbs>
 
           {/* Heading */}
-
           <Typography
             variant="h4"
             sx={{
@@ -196,7 +287,6 @@ const AddCategory = () => {
           </Typography>
 
           {/* Form Card */}
-
           <Paper
             elevation={2}
             sx={{
@@ -219,98 +309,178 @@ const AddCategory = () => {
             <Divider sx={{ mb: 4 }} />
 
             <Stack spacing={3}>
-              <TextField
-                label="Category Name"
-                placeholder="Enter category name"
-                fullWidth
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
-                }}
-              />
+              {/* Menu Type */}
+              <CustomTextField
+                select
+                label="Menu Type"
+                value={menuType}
+                onChange={(e) => {
+                  setMenuType(e.target.value);
 
-              <TextField
-                label="Description"
-                placeholder="Enter category description"
-                multiline
-                rows={4}
-                fullWidth
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
+                  setErrors((prev) => ({
+                    ...prev,
+                    menuType: "",
+                    subCategory: "",
+                  }));
                 }}
-              />
-              <TextField
+                fullWidth
+                error={Boolean(errors.menuType)}
+                helperText={errors.menuType}
+                sx={textFieldStyle}
+              >
+                <MenuItem value="skincare">Skincare</MenuItem>
+                <MenuItem value="haircare">Haircare</MenuItem>
+                <MenuItem value="more">More</MenuItem>
+              </CustomTextField>
+
+              {/* Category Type */}
+              <CustomTextField
+                select
+                label="Category Type"
+                value={categoryType}
+                onChange={(e) => {
+                  setCategoryType(e.target.value);
+
+                  setMainCategory("");
+                  setSubCategory("");
+                  setDescription("");
+                  setBannerImage("");
+
+                  setErrors({});
+                }}
+                fullWidth
+                sx={textFieldStyle}
+              >
+                <MenuItem value="main">Main Category</MenuItem>
+                <MenuItem value="sub">Sub Category</MenuItem>
+              </CustomTextField>
+
+              {/* Main Category */}
+              {categoryType === "main" ? (
+                <CustomTextField
+                  label="Category Name"
+                  value={mainCategory}
+                  onChange={(e) => setMainCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.mainCategory)}
+                  helperText={errors.mainCategory}
+                  sx={textFieldStyle}
+                />
+              ) : (
+                <CustomTextField
+                  select
+                  label="Main Category"
+                  value={mainCategory}
+                  onChange={(e) => setMainCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.mainCategory)}
+                  helperText={errors.mainCategory}
+                  sx={textFieldStyle}
+                >
+                  {allCategories
+                    .filter(
+                      (item) =>
+                        item.categoryType === "main" &&
+                        item.menuType === menuType,
+                    )
+                    .map((item) => (
+                      <MenuItem
+                        key={item._id}
+                        value={item.mainCategory}
+                      >
+                        {item.mainCategory}
+                      </MenuItem>
+                    ))}
+                </CustomTextField>
+              )}
+
+              {/* Sub Category */}
+              {categoryType === "sub" && (
+                <CustomTextField
+                  label="Sub Category"
+                  value={subCategory}
+                  onChange={(e) => setSubCategory(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.subCategory)}
+                  helperText={errors.subCategory}
+                  sx={textFieldStyle}
+                />
+              )}
+
+              {/* Description */}
+              {categoryType === "sub" && (
+                <CustomTextField
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  fullWidth
+                  error={Boolean(errors.description)}
+                  helperText={errors.description}
+                  sx={textFieldStyle}
+                />
+              )}
+
+              {/* Banner Image */}
+              {categoryType === "sub" && (
+                <>
+                  <CustomTextField
+                    label="Banner Image URL"
+                    value={bannerImage}
+                    onChange={(e) => {
+                      setBannerImage(e.target.value);
+
+                      setErrors((prev) => ({
+                        ...prev,
+                        bannerImage: "",
+                      }));
+                    }}
+                    placeholder="https://example.com/banner.jpg"
+                    fullWidth
+                    error={Boolean(errors.bannerImage)}
+                    helperText={errors.bannerImage}
+                    sx={textFieldStyle}
+                  />
+
+                  {bannerImage && (
+                    <Box
+                      component="img"
+                      src={bannerImage}
+                      alt="Banner Preview"
+                      sx={{
+                        width: "100%",
+                        height: 200,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* Status */}
+              <CustomTextField
                 select
                 label="Status"
                 fullWidth
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: darkMode ? "#BDBDBD" : "#666",
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#B89478",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: darkMode ? "#fff" : "#222",
-                    "& fieldset": {
-                      borderColor: darkMode ? "#555" : "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#B89478",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#B89478",
-                    },
-                  },
-                  "& .MuiSvgIcon-root": {
-                    color: darkMode ? "#fff" : "#222",
-                  },
-                }}
+                sx={textFieldStyle}
               >
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Inactive">Inactive</MenuItem>
-              </TextField>
+              </CustomTextField>
 
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              {/* Buttons */}
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{
+                  mt: 2,
+                }}
+              >
                 <Button
                   variant="outlined"
                   onClick={() => navigate("/admin/categories")}
@@ -319,6 +489,13 @@ const AddCategory = () => {
                     height: 44,
                     textTransform: "none",
                     borderRadius: 2,
+                    color: "#B89478",
+                    borderColor: "#B89478",
+
+                    "&:hover": {
+                      backgroundColor: darkMode ? "#333" : "#f0f0f0",
+                      borderColor: "#B89478",
+                    },
                   }}
                 >
                   Cancel
@@ -334,7 +511,6 @@ const AddCategory = () => {
                     textTransform: "none",
                     borderRadius: 2,
                     boxShadow: "none",
-                    // saveBtnStyle,
 
                     "&:hover": {
                       backgroundColor: "#A88366",

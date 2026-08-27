@@ -1,37 +1,100 @@
-import dbPromise from "./db";
+import api from "../api/axios";
+import adminApi from "../api/adminApi";
 
-// Get all categories
+// ===============================
+// Get All Categories - CUSTOMER
+// ===============================
 export const getCategories = async () => {
-  const db = await dbPromise;
-  return await db.getAll("categories");
+  try {
+    const response = await api.get("/categories");
+
+    return response.data.data || [];
+  } catch (error) {
+    console.error(
+      "Error fetching categories:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
-// Get category by ID
+// ===============================
+// Get Single Category - CUSTOMER
+// ===============================
 export const getCategoryById = async (id) => {
-  const db = await dbPromise;
-  return await db.get("categories", id);
+  try {
+    const response = await api.get(`/categories/${id}`);
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error fetching category:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
-// Add category
-export const addCategory = async (category) => {
-  const db = await dbPromise;
-  await db.put("categories", category);
+// ===============================
+// Create Category - ADMIN
+// ===============================
+export const createCategory = async (categoryData) => {
+  try {
+    const response = await adminApi.post(
+      "/categories",
+      categoryData
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error creating category:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
-// Update category
-export const updateCategory = async (category) => {
-  const db = await dbPromise;
-  await db.put("categories", category);
+// ===============================
+// Update Category - ADMIN
+// ===============================
+export const updateCategory = async (id, categoryData) => {
+  try {
+    const response = await adminApi.put(
+      `/categories/${id}`,
+      categoryData
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error updating category:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
-// Delete category
+// ===============================
+// Delete Category - ADMIN
+// ===============================
 export const deleteCategory = async (id) => {
-  const db = await dbPromise;
-  await db.delete("categories", id);
-};
+  try {
+    const response = await adminApi.delete(
+      `/categories/${id}`
+    );
 
-// Clear all categories
-export const clearCategories = async () => {
-  const db = await dbPromise;
-  await db.clear("categories");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error deleting category:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };

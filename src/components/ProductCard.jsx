@@ -3,13 +3,18 @@ import { Box, Typography, Button, Rating } from "@mui/material";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import IconButton from "@mui/material/IconButton";
-
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
   addToWishlist,
   removeFromWishlist,
 } from "../redux/wishlist/wishlistSlice";
+
+import {
+  addToWishlistDB,
+  removeFromWishlistDB,
+} from "../database/wishlistService";
 
 import { addProductToCart } from "../redux/cart/cartActions";
 
@@ -22,40 +27,102 @@ const ProductCard = ({
   showCart = true,
 }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const wishlistItems = useSelector(
+    (state) => state.wishlist.items,
+  );
 
   const firstVariant = product?.variants?.[0];
 
-  const currentPrice = firstVariant?.discountPrice || firstVariant?.price || 0;
+  const currentPrice =
+    firstVariant?.discountPrice ||
+    firstVariant?.price ||
+    0;
 
-  const originalPrice = firstVariant?.price || 0;
+  const originalPrice =
+    firstVariant?.price || 0;
 
-  const isWishlisted = wishlistItems.some((item) => item.id === product.id);
+  /* ===============================
+     CATEGORY
+  =============================== */
 
-  const handleWishlist = () => {
+  const categoryName =
+    product?.category?.subCategory ||
+    product?.category?.mainCategory ||
+    "";
+
+  /* ===============================
+     WISHLIST
+  =============================== */
+
+  const isWishlisted = wishlistItems.some(
+    (item) => item.id === product?._id,
+  );
+
+  /* ===============================
+     OPEN PRODUCT
+  =============================== */
+
+  const handleOpenProduct = () => {
+    navigate(`/product/${product._id}`);
+  };
+
+  /* ===============================
+     WISHLIST
+  =============================== */
+
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+
     if (isWishlisted) {
-      dispatch(removeFromWishlist(product.id));
+      dispatch(removeFromWishlist(product._id));
+
+      await removeFromWishlistDB(product._id);
     } else {
-      dispatch(addToWishlist(product));
+      dispatch(
+        addToWishlist({
+          ...product,
+
+          id: product._id,
+
+          name: product.productName,
+
+          category: categoryName,
+        }),
+      );
+
+      await addToWishlistDB(product._id);
     }
   };
 
-  const handleAddToCart = () => {
+  /* ===============================
+     ADD TO CART
+  =============================== */
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+
+    if (!firstVariant) return;
+
     dispatch(
       addProductToCart({
-        productId: product.id,
-        variantId: firstVariant?.id,
+        productId: product._id,
 
-        name: product.name,
+        variantId: firstVariant._id,
+
+        name: product.productName,
+
         image: product.image,
 
-        category: product.category,
+        category: categoryName,
+
         description: product.description,
 
-        size: firstVariant?.size,
+        size: firstVariant.size,
 
         price: currentPrice,
+
         originalPrice: originalPrice,
 
         quantity: 1,
@@ -63,8 +130,22 @@ const ProductCard = ({
     );
   };
 
+  /* ===============================
+     DISCOUNT
+  =============================== */
+
+  const discount =
+    firstVariant?.discountPrice && originalPrice > 0
+      ? Math.round(
+          ((originalPrice - currentPrice) /
+            originalPrice) *
+            100,
+        )
+      : 0;
+
   return (
     <Box
+      onClick={handleOpenProduct}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -74,9 +155,17 @@ const ProductCard = ({
         overflow: "hidden",
         bgcolor: "#fff",
         boxShadow: "0 4px 15px rgba(0,0,0,.08)",
+        transition: ".35s",
+
+        "&:hover": {
+          transform: "translateY(-8px)",
+          boxShadow: "0 18px 40px rgba(0,0,0,.12)",
+        },
       }}
     >
-      {/* Image Section */}
+      {/* ===============================
+          IMAGE SECTION
+      =============================== */}
 
       <Box
         sx={{
@@ -90,41 +179,43 @@ const ProductCard = ({
           alignItems: "center",
 
           "&:hover img": {
-            transform: "scale(1.08)",
+            transform: "translateY(-8px) scale(1.05)",
           },
         }}
       >
         {/* Badge */}
 
-        {showBadge && product.badge && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              zIndex: 10,
-
-              backgroundColor: "#1E2F2B",
-              color: "#fff",
-
-              px: 2,
-              py: 0.6,
-
-              borderRadius: "30px",
-            }}
-          >
-            <Typography
+        {showBadge &&
+          product.badge &&
+          product.badge !== "None" && (
+            <Box
               sx={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: 1,
-                textTransform: "uppercase",
+                position: "absolute",
+                top: 16,
+                right: 16,
+                zIndex: 10,
+
+                backgroundColor: "#1E2F2B",
+                color: "#fff",
+
+                px: 2,
+                py: 0.6,
+
+                borderRadius: "30px",
               }}
             >
-              {product.badge}
-            </Typography>
-          </Box>
-        )}
+              <Typography
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                {product.badge}
+              </Typography>
+            </Box>
+          )}
 
         {/* Wishlist */}
 
@@ -143,7 +234,8 @@ const ProductCard = ({
 
               bgcolor: "#fff",
 
-              boxShadow: "0 6px 20px rgba(0,0,0,.12)",
+              boxShadow:
+                "0 6px 20px rgba(0,0,0,.12)",
 
               transition: ".3s",
 
@@ -176,7 +268,7 @@ const ProductCard = ({
         <Box
           component="img"
           src={product.image}
-          alt={product.name}
+          alt={product.productName}
           sx={{
             width: "95%",
             height: "100%",
@@ -189,7 +281,9 @@ const ProductCard = ({
         />
       </Box>
 
-      {/* Product Info */}
+      {/* ===============================
+          PRODUCT INFO
+      =============================== */}
 
       <Box
         sx={{
@@ -210,7 +304,7 @@ const ProductCard = ({
             mb: 1,
           }}
         >
-          {product.category}
+          {categoryName}
         </Typography>
 
         {/* Product Name */}
@@ -231,7 +325,7 @@ const ProductCard = ({
             mb: 1,
           }}
         >
-          {product.name}
+          {product.productName}
         </Typography>
 
         {/* Description */}
@@ -250,7 +344,8 @@ const ProductCard = ({
               mb: 2,
             }}
           >
-            {product.description || "No description available."}
+            {product.description ||
+              "No description available."}
           </Typography>
         )}
 
@@ -265,7 +360,12 @@ const ProductCard = ({
               mb: 1,
             }}
           >
-            <Rating value={4.8} precision={0.5} readOnly size="small" />
+            <Rating
+              value={product.rating || 4.8}
+              precision={0.5}
+              readOnly
+              size="small"
+            />
 
             <Typography
               sx={{
@@ -273,7 +373,8 @@ const ProductCard = ({
                 color: "#666",
               }}
             >
-              4.8
+              {product.rating || 4.8} (
+              {product.reviewCount || 0} Reviews)
             </Typography>
           </Box>
         )}
@@ -310,9 +411,21 @@ const ProductCard = ({
               ₹{originalPrice}
             </Typography>
           )}
+
+          {firstVariant?.discountPrice && (
+            <Typography
+              sx={{
+                color: "#2E7D32",
+                fontWeight: 600,
+                fontSize: 13,
+              }}
+            >
+              {discount}% OFF
+            </Typography>
+          )}
         </Box>
 
-        {/* Add To Cart Button */}
+        {/* Add To Cart */}
 
         {showCart && (
           <Button
