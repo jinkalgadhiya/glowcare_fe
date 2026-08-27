@@ -9,14 +9,19 @@ import {
 import {
   getCartItems,
   saveCartItem,
+  updateCartItem,
   removeCartItem,
   clearCartItems,
 } from "../../database/cartService";
 
-// Load Cart From IndexedDB
+// ======================================================
+// LOAD CART FROM BACKEND
+// ======================================================
+
 export const loadCartFromDB = () => async (dispatch) => {
   try {
     const cartItems = await getCartItems();
+
     dispatch({
       type: "cart/loadCart",
       payload: cartItems,
@@ -26,67 +31,162 @@ export const loadCartFromDB = () => async (dispatch) => {
   }
 };
 
-// Add Product
-export const addProductToCart = (product) => async (dispatch, getState) => {
-  dispatch(addToCart(product));
+// ======================================================
+// ADD PRODUCT TO CART
+// ======================================================
 
-  const item = getState().cart.items.find(
-    (i) =>
-      i.productId === product.productId &&
-      i.variantId === product.variantId
-  );
+export const addProductToCart =
+  (product) => async (dispatch, getState) => {
+    try {
+      // Update Redux immediately
+      dispatch(addToCart(product));
 
-  await saveCartItem(item);
-};
+      // Get updated item from Redux
+      const item = getState().cart.items.find(
+        (i) =>
+          i.productId === product.productId &&
+          i.variantId === product.variantId,
+      );
 
-// Increase Quantity
+      if (!item) return;
+
+      // Save to backend
+      await saveCartItem(item);
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
+    }
+  };
+
+// ======================================================
+// INCREASE QUANTITY
+// ======================================================
+
 export const increaseCartQuantity =
   ({ productId, variantId }) =>
   async (dispatch, getState) => {
-    dispatch(increaseQuantity({ productId, variantId }));
+    try {
+      // Update Redux
+      dispatch(
+        increaseQuantity({
+          productId,
+          variantId,
+        }),
+      );
 
-    const item = getState().cart.items.find(
-      (i) =>
-        i.productId === productId &&
-        i.variantId === variantId
-    );
+      // Get updated item
+      const item = getState().cart.items.find(
+        (i) =>
+          i.productId === productId &&
+          i.variantId === variantId,
+      );
 
-    if (item) {
-      await saveCartItem(item);
+      if (!item) return;
+
+      // Update backend
+      await updateCartItem(
+        productId,
+        variantId,
+        item.quantity,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to increase cart quantity:",
+        error,
+      );
     }
   };
 
-// Decrease Quantity
+// ======================================================
+// DECREASE QUANTITY
+// ======================================================
+
 export const decreaseCartQuantity =
   ({ productId, variantId }) =>
   async (dispatch, getState) => {
-    dispatch(decreaseQuantity({ productId, variantId }));
+    try {
+      // Update Redux
+      dispatch(
+        decreaseQuantity({
+          productId,
+          variantId,
+        }),
+      );
 
-    const item = getState().cart.items.find(
-      (i) =>
-        i.productId === productId &&
-        i.variantId === variantId
-    );
+      // Check whether item still exists
+      const item = getState().cart.items.find(
+        (i) =>
+          i.productId === productId &&
+          i.variantId === variantId,
+      );
 
-    if (item) {
-      await saveCartItem(item);
-    } else {
-      await removeCartItem(productId, variantId);
+      if (!item) {
+        // Quantity reached 0
+        await removeCartItem(
+          productId,
+          variantId,
+        );
+
+        return;
+      }
+
+      // Update backend quantity
+      await updateCartItem(
+        productId,
+        variantId,
+        item.quantity,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to decrease cart quantity:",
+        error,
+      );
     }
   };
 
-// Remove Product
+// ======================================================
+// REMOVE PRODUCT FROM CART
+// ======================================================
+
 export const removeProductFromCart =
   ({ productId, variantId }) =>
   async (dispatch) => {
-    dispatch(removeFromCart({ productId, variantId }));
+    try {
+      // Update Redux
+      dispatch(
+        removeFromCart({
+          productId,
+          variantId,
+        }),
+      );
 
-    await removeCartItem(productId, variantId);
+      // Remove from backend
+      await removeCartItem(
+        productId,
+        variantId,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to remove product from cart:",
+        error,
+      );
+    }
   };
 
-// Clear Cart
-export const clearWholeCart = () => async (dispatch) => {
-  dispatch(clearCart());
+// ======================================================
+// CLEAR CART
+// ======================================================
 
-  await clearCartItems();
+export const clearWholeCart = () => async (dispatch) => {
+  try {
+    // Clear Redux
+    dispatch(clearCart());
+
+    // Clear backend cart
+    await clearCartItems();
+  } catch (error) {
+    console.error(
+      "Failed to clear cart:",
+      error,
+    );
+  }
 };

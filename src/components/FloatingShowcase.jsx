@@ -1,73 +1,99 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
   Button,
 } from "@mui/material";
 
-import floatingProducts from "../data/FloatingProducts";
+import {
+  getHomePageSettings,
+} from "../database/homePageService";
+
+import {
+  getDefaultHomePageSettings,
+  mergeHomePageSettings,
+} from "../data/homePageDefaults";
+
 import "../styles/FloatingShowcase.css";
 
 const FloatingShowcase = () => {
-  return (
-    <Box
-      className="bloom-section"
-    >
-      {/* Background Glow */}
+  const [floatingShowcase, setFloatingShowcase] = useState(
+    getDefaultHomePageSettings().floatingShowcase
+  );
 
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await getHomePageSettings();
+
+        if (savedSettings) {
+          const mergedSettings =
+            mergeHomePageSettings(savedSettings);
+
+          setFloatingShowcase(
+            mergedSettings.floatingShowcase
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error loading Floating Showcase settings:",
+          error
+        );
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  return (
+    <Box className="bloom-section">
+      {/* Background Glow */}
       <Box className="background-glow" />
 
       {/* Center Content */}
-
       <Box className="center-content">
         <Typography className="small-title">
-          GLOWCARE COLLECTION
+          {floatingShowcase.eyebrow}
         </Typography>
 
         <Typography className="main-title">
-          Healthy Skin
-          <br />
-          Starts Here
+          {floatingShowcase.title}
         </Typography>
 
         <Typography className="description">
-          Discover premium skincare crafted with
-          clean ingredients, dermatologist-tested
-          formulas, and luxurious textures that
-          transform your daily routine.
+          {floatingShowcase.description}
         </Typography>
 
         <Button
           variant="contained"
           className="explore-btn"
         >
-          Explore Collection
+          {floatingShowcase.buttonLabel}
         </Button>
       </Box>
 
       {/* Floating Products */}
-
-      {floatingProducts.map((product) => (
+      {floatingShowcase.items?.map((item) => (
         <Box
-          key={product.id}
+          key={item.id}
           className="product-card"
           sx={{
-            top: product.top,
-            bottom: product.bottom,
-            left: product.left,
-            right: product.right,
-            transform: `rotate(${product.rotate})`,
+            top: item.top || "auto",
+            bottom: item.bottom || "auto",
+            left: item.left || "auto",
+            right: item.right || "auto",
+            transform: `rotate(${item.rotate || "0deg"})`,
           }}
         >
           <Box
             component="img"
-            src={product.image}
-            alt={product.name}
+            src={item.image}
+            alt={item.name}
             className="product-image"
           />
 
           <Typography className="product-name">
-            {product.name}
+            {item.name}
           </Typography>
         </Box>
       ))}

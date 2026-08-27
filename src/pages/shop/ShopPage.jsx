@@ -13,9 +13,8 @@ import EmptyProducts from "../../components/shop/EmptyProducts";
 import ShopPromoBanner from "../../components/shop/ShopPromoBanner";
 import ShopBenefits from "../../components/shop/ShopBenefits";
 import ShopPagination from "../../components/shop/ShopPagination";
-
+import { getCategories } from "../../database/categoryService";
 import { getProducts } from "../../database/productService";
-import shopBannerData from "../../data/shopBannerData";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -24,6 +23,7 @@ const ShopPage = () => {
 
   /* ---------------- Products ---------------- */
 
+  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +32,7 @@ const ShopPage = () => {
   const [brand, setBrand] = useState("");
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
-  const [ingredient, setIngredient] = useState("");
+  const [benefit, setBenefit] = useState("");
   const [price, setPrice] = useState("");
 
   /* ---------------- Sorting ---------------- */
@@ -50,36 +50,37 @@ const ShopPage = () => {
   /* ---------------- Load Products ---------------- */
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
 
-        const data = await getProducts();
+        const productsData = await getProducts();
+        const categoriesData = await getCategories();
 
-        setProducts(data || []);
+        setProducts(
+          (productsData || []).filter((item) => item.status === "Active"),
+        );
+
+        setCategories(
+          (categoriesData || []).filter(
+            (item) => item.status === "Active" && item.categoryType === "sub",
+          ),
+        );
       } catch (error) {
-        console.error("Error loading products:", error);
+        console.error("Error loading shop data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    loadData();
   }, []);
 
   /* ---------------- Reset Page ---------------- */
 
   useEffect(() => {
     setPage(1);
-  }, [
-    category,
-    brand,
-    skinType,
-    concern,
-    ingredient,
-    price,
-    sortBy,
-  ]);
+  }, [category, brand, skinType, concern, benefit, price, sortBy]);
 
   /* ---------------- Clear Filters ---------------- */
 
@@ -87,7 +88,7 @@ const ShopPage = () => {
     setBrand("");
     setSkinType("");
     setConcern("");
-    setIngredient("");
+    setBenefit("");
     setPrice("");
 
     setSortBy("latest");
@@ -96,11 +97,26 @@ const ShopPage = () => {
 
   /* ---------------- Banner Data ---------------- */
 
-  const bannerData = shopBannerData[category] || {
-    title: "Shop",
+  const currentCategory = categories.find((cat) => {
+    const slug = cat.subCategory
+      ?.toLowerCase()
+      .replace(/&/g, "")
+      .replace(/\s+/g, "-");
+
+    return slug === category;
+  });
+
+  const bannerData = {
+    title:
+      currentCategory?.subCategory || currentCategory?.mainCategory || "Shop",
+
     subtitle:
+      currentCategory?.description ||
       "Discover premium skincare designed for healthy glowing skin.",
-    image: "",
+
+    image: currentCategory?.bannerImage || "",
+
+    promoImage: currentCategory?.bannerImage || "",
   };
 
   /* ---------------- Category Filter ---------------- */
@@ -109,12 +125,20 @@ const ShopPage = () => {
     if (!category) return products;
 
     return products.filter((product) => {
-      const slug = product.category
-        ?.toLowerCase()
+      const mainCategory = product.category?.mainCategory || "";
+      const subCategory = product.category?.subCategory || "";
+
+      const mainSlug = mainCategory
+        .toLowerCase()
         .replace(/&/g, "")
         .replace(/\s+/g, "-");
 
-      return slug === category;
+      const subSlug = subCategory
+        .toLowerCase()
+        .replace(/&/g, "")
+        .replace(/\s+/g, "-");
+
+      return mainSlug === category || subSlug === category;
     });
   }, [products, category]);
 
@@ -125,31 +149,22 @@ const ShopPage = () => {
 
     // Brand
     if (brand) {
-      data = data.filter(
-        (product) => product.brand === brand
-      );
+      data = data.filter((product) => product.brand === brand);
     }
 
     // Suitable For (Skin Type)
     if (skinType) {
-      data = data.filter((product) =>
-        product.suitableFor?.includes(skinType)
-      );
+      data = data.filter((product) => product.suitableFor?.includes(skinType));
     }
 
     // Skin Concern
     if (concern) {
-      data = data.filter((product) =>
-        product.skinConcerns?.includes(concern)
-      );
+      data = data.filter((product) => product.skinConcerns?.includes(concern));
     }
 
-    // Key Ingredient
-    if (ingredient) {
-      data = data.filter(
-        (product) =>
-          product.keyIngredients === ingredient
-      );
+    // Key Benefit
+    if (benefit) {
+      data = data.filter((product) => product.keybenefits?.includes(benefit));
     }
 
     // Price
@@ -165,16 +180,10 @@ const ShopPage = () => {
             return currentPrice <= 500;
 
           case "500-1000":
-            return (
-              currentPrice > 500 &&
-              currentPrice <= 1000
-            );
+            return currentPrice > 500 && currentPrice <= 1000;
 
           case "1000-2000":
-            return (
-              currentPrice > 1000 &&
-              currentPrice <= 2000
-            );
+            return currentPrice > 1000 && currentPrice <= 2000;
 
           case "2000+":
             return currentPrice > 2000;
@@ -186,18 +195,9 @@ const ShopPage = () => {
     }
 
     return data;
-  }, [
-    categoryProducts,
-    brand,
-    skinType,
-    concern,
-    ingredient,
-    price,
-  ]);
+  }, [categoryProducts, brand, skinType, concern, benefit, price]);
 
   /* ---------------- Sorting ---------------- */
-
-    /* ---------------- Sorting ---------------- */
 
   const sortedProducts = useMemo(() => {
     const data = [...filteredProducts];
@@ -206,14 +206,10 @@ const ShopPage = () => {
       case "priceLow":
         data.sort((a, b) => {
           const priceA =
-            a.variants?.[0]?.discountPrice ||
-            a.variants?.[0]?.price ||
-            0;
+            a.variants?.[0]?.discountPrice || a.variants?.[0]?.price || 0;
 
           const priceB =
-            b.variants?.[0]?.discountPrice ||
-            b.variants?.[0]?.price ||
-            0;
+            b.variants?.[0]?.discountPrice || b.variants?.[0]?.price || 0;
 
           return priceA - priceB;
         });
@@ -222,14 +218,10 @@ const ShopPage = () => {
       case "priceHigh":
         data.sort((a, b) => {
           const priceA =
-            a.variants?.[0]?.discountPrice ||
-            a.variants?.[0]?.price ||
-            0;
+            a.variants?.[0]?.discountPrice || a.variants?.[0]?.price || 0;
 
           const priceB =
-            b.variants?.[0]?.discountPrice ||
-            b.variants?.[0]?.price ||
-            0;
+            b.variants?.[0]?.discountPrice || b.variants?.[0]?.price || 0;
 
           return priceB - priceA;
         });
@@ -237,14 +229,12 @@ const ShopPage = () => {
 
       case "nameAZ":
         data.sort((a, b) =>
-          a.name.localeCompare(b.name)
+          (a.productName || "").localeCompare(b.productName || ""),
         );
         break;
 
       case "rating":
-        data.sort(
-          (a, b) => (b.rating || 0) - (a.rating || 0)
-        );
+        data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
 
       case "latest":
@@ -257,63 +247,33 @@ const ShopPage = () => {
 
   /* ---------------- Pagination ---------------- */
 
-  const totalPages = Math.ceil(
-    sortedProducts.length / PRODUCTS_PER_PAGE
-  );
+  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
 
   const paginatedProducts = useMemo(() => {
-    const start =
-      (page - 1) * PRODUCTS_PER_PAGE;
+    const start = (page - 1) * PRODUCTS_PER_PAGE;
 
-    return sortedProducts.slice(
-      start,
-      start + PRODUCTS_PER_PAGE
-    );
+    return sortedProducts.slice(start, start + PRODUCTS_PER_PAGE);
   }, [sortedProducts, page]);
 
   /* ---------------- Dynamic Filter Options ---------------- */
 
   const brands = useMemo(() => {
-    return [
-      ...new Set(
-        products
-          .map((p) => p.brand)
-          .filter(Boolean)
-      ),
-    ].sort();
+    return [...new Set(products.map((p) => p.brand).filter(Boolean))].sort();
   }, [products]);
 
   const skinTypes = useMemo(() => {
-    return [
-      ...new Set(
-        products.flatMap(
-          (p) => p.suitableFor || []
-        )
-      ),
-    ].sort();
+    return [...new Set(products.flatMap((p) => p.suitableFor || []))].sort();
   }, [products]);
 
   const concerns = useMemo(() => {
-    return [
-      ...new Set(
-        products.flatMap(
-          (p) => p.skinConcerns || []
-        )
-      ),
-    ].sort();
+    return [...new Set(products.flatMap((p) => p.skinConcerns || []))].sort();
   }, [products]);
 
-  const ingredients = useMemo(() => {
-    return [
-      ...new Set(
-        products
-          .map((p) => p.keyIngredients)
-          .filter(Boolean)
-      ),
-    ].sort();
+  const benefits = useMemo(() => {
+    return [...new Set(products.flatMap((p) => p.benefits || []))].sort();
   }, [products]);
 
-    if (loading) {
+  if (loading) {
     return (
       <>
         <Navbar />
@@ -357,9 +317,9 @@ const ShopPage = () => {
         concern={concern}
         setConcern={setConcern}
         concerns={concerns}
-        ingredient={ingredient}
-        setIngredient={setIngredient}
-        ingredients={ingredients}
+        benefit={benefit}
+        setBenefit={setBenefit}
+        benefits={benefits}
         price={price}
         setPrice={setPrice}
         sortBy={sortBy}
@@ -384,10 +344,7 @@ const ShopPage = () => {
           <EmptyProducts clearFilters={clearFilters} />
         ) : (
           <>
-            <ProductGrid
-              products={paginatedProducts}
-              view={view}
-            />
+            <ProductGrid products={paginatedProducts} view={view} />
 
             {totalPages > 1 && (
               <ShopPagination
@@ -401,11 +358,11 @@ const ShopPage = () => {
       </Container>
 
       <ShopPromoBanner
-        title="Everyday Glow Essentials"
-        description="Discover dermatologist-tested skincare powered by clean ingredients and designed to give your skin a healthy, natural glow every single day."
+        title={bannerData.title}
+        description={bannerData.subtitle}
         image={bannerData.promoImage}
         buttonText="Explore Collection"
-        buttonLink="/shop/face-wash"
+        buttonLink={`/shop/${category}`}
       />
 
       <ShopBenefits />

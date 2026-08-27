@@ -4,19 +4,18 @@ import {
   Paper,
   Box,
   Typography,
-  TextField,
   Button,
   Link,
   Stack,
-  IconButton,
-  InputAdornment,
 } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
 import registerImg from "../assets/registerImg.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUsers, addUser } from "../database/userService";
+import api from "../api/axios";
+
+// Common TextField
+import CustomTextField from "../components/common/CustomTextField";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -24,13 +23,13 @@ const Register = () => {
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [contactError, setContactError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -46,7 +45,8 @@ const Register = () => {
       setNameError("Please enter your name");
       return;
     } else if (name.length > 15) {
-      setNameError("name should be contain 15 latters");
+      setNameError("Name should contain maximum 15 letters");
+      return;
     }
 
     if (!email.trim()) {
@@ -83,49 +83,29 @@ const Register = () => {
       return;
     }
 
-    const users = await getUsers();
+    try {
+      const response = await api.post("/users/add", {
+        fullName: name.trim(),
+        email: email.trim(),
+        contactNumber: contact.trim(),
+        password,
+      });
 
-    const existingUser = users.find(
-      (user) => user.email.toLowerCase() === email.toLowerCase(),
-    );
+      if (response.data.status === "success") {
+        navigate("/login");
+      }
+    } catch (error) {
+      if (error.response?.status === 409) {
+        setEmailError("Email or contact number already exists.");
+      } else {
+        console.error("Registration error:", error);
 
-    if (existingUser) {
-      setEmailError("Email already exists. Please use a different email.");
-      return;
+        setEmailError(
+          error.response?.data?.message ||
+            "Registration failed. Please try again.",
+        );
+      }
     }
-
-    await addUser({
-  id: crypto.randomUUID(),
-
-  fullName: name,
-
-  email,
-
-  phone: contact,
-
-  password,
-
-  role: "customer",
-
-  status: "Active",
-
-  joinedDate: new Date().toISOString(),
-
-  totalOrders: 0,
-
-  totalSpent: 0,
-
-  image: "",
-
-  address: {
-    street: "",
-    city: "",
-    state: "",
-    pincode: "",
-  },
-});
-
-    navigate("/login");
   };
 
   return (
@@ -144,6 +124,7 @@ const Register = () => {
         }}
       >
         <Grid container sx={{ height: "100%" }}>
+          {/* LEFT IMAGE */}
           <Grid size={7}>
             <Box
               component="img"
@@ -158,6 +139,7 @@ const Register = () => {
             />
           </Grid>
 
+          {/* RIGHT FORM */}
           <Grid
             size={5}
             sx={{
@@ -188,7 +170,8 @@ const Register = () => {
                 Join GlowCare and discover your beauty essentials.
               </Typography>
 
-              <TextField
+              {/* Full Name */}
+              <CustomTextField
                 variant="standard"
                 label="Full Name"
                 value={name}
@@ -197,7 +180,8 @@ const Register = () => {
                 helperText={nameError}
               />
 
-              <TextField
+              {/* Email */}
+              <CustomTextField
                 variant="standard"
                 label="Email"
                 value={email}
@@ -206,7 +190,8 @@ const Register = () => {
                 helperText={emailError}
               />
 
-              <TextField
+              {/* Contact */}
+              <CustomTextField
                 variant="standard"
                 label="Contact Number"
                 value={contact}
@@ -215,20 +200,22 @@ const Register = () => {
                 helperText={contactError}
               />
 
-              <TextField
+              {/* Password */}
+              <CustomTextField
                 variant="standard"
                 label="Password"
-                type={showPassword ? "text" : "password"}
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={passwordError !== ""}
                 helperText={passwordError}
               />
 
-              <TextField
+              {/* Confirm Password */}
+              <CustomTextField
                 variant="standard"
                 label="Confirm Password"
-                type={showPassword ? "text" : "password"}
+                type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 error={confirmPasswordError !== ""}

@@ -1,14 +1,12 @@
 import React from "react";
 import { useDispatch } from "react-redux";
+
 import {
   Box,
   Typography,
   IconButton,
   Stack,
   Button,
-  Card,
-  CardMedia,
-  CardContent,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -16,35 +14,47 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import {
-  increaseQuantity,
-  decreaseQuantity,
-  removeFromCart,
-} from "../../redux/cart/cartSlice";
+  increaseCartQuantity,
+  decreaseCartQuantity,
+  removeProductFromCart,
+} from "../../redux/cart/cartActions";
 
 const CartPageItem = ({ item, product }) => {
   const dispatch = useDispatch();
 
+  // ======================================================
+  // INCREASE
+  // ======================================================
+
   const handleIncrease = () => {
     dispatch(
-      increaseQuantity({
+      increaseCartQuantity({
         productId: item.productId,
         variantId: item.variantId,
       }),
     );
   };
+
+  // ======================================================
+  // DECREASE
+  // ======================================================
 
   const handleDecrease = () => {
     dispatch(
-      decreaseQuantity({
+      decreaseCartQuantity({
         productId: item.productId,
         variantId: item.variantId,
       }),
     );
   };
 
+  // ======================================================
+  // REMOVE
+  // ======================================================
+
   const handleRemove = () => {
     dispatch(
-      removeFromCart({
+      removeProductFromCart({
         productId: item.productId,
         variantId: item.variantId,
       }),
@@ -63,7 +73,9 @@ const CartPageItem = ({ item, product }) => {
         boxShadow: "0 4px 15px rgba(0,0,0,.08)",
       }}
     >
-      {/* Product Image */}
+      {/* ==================================================
+          PRODUCT IMAGE
+      ================================================== */}
 
       <Box
         sx={{
@@ -82,8 +94,8 @@ const CartPageItem = ({ item, product }) => {
       >
         <Box
           component="img"
-          src={item.image}
-          alt={item.name}
+          src={item.image || product?.image}
+          alt={item.name || product?.productName}
           sx={{
             width: "95%",
             height: "100%",
@@ -93,7 +105,9 @@ const CartPageItem = ({ item, product }) => {
         />
       </Box>
 
-      {/* Product Info */}
+      {/* ==================================================
+          PRODUCT INFO
+      ================================================== */}
 
       <Box
         sx={{
@@ -114,10 +128,10 @@ const CartPageItem = ({ item, product }) => {
             mb: 1,
           }}
         >
-          {product?.category}
+          {item.category || product?.category?.subCategory || ""}
         </Typography>
 
-        {/* Name */}
+        {/* Product Name */}
 
         <Typography
           sx={{
@@ -135,7 +149,7 @@ const CartPageItem = ({ item, product }) => {
             mb: 1,
           }}
         >
-          {item.name}
+          {item.name || product?.productName}
         </Typography>
 
         {/* Description */}
@@ -155,7 +169,9 @@ const CartPageItem = ({ item, product }) => {
             mb: 2,
           }}
         >
-          {product?.description}
+          {item.description ||
+            product?.description ||
+            "No description available."}
         </Typography>
 
         {/* Price */}
@@ -171,66 +187,70 @@ const CartPageItem = ({ item, product }) => {
           ₹{item.price}
         </Typography>
 
-        {/* Quantity */}
+        {/* ==================================================
+            QUANTITY
+        ================================================== */}
 
         <Stack
-  direction="row"
-  alignItems="center"
-  sx={{
-    width: "fit-content",
-    border: "1px solid #E5DED4",
-    borderRadius: "30px",
-    overflow: "hidden",
-    mb: 3,
-  }}
->
-  <IconButton
-    onClick={handleDecrease}
-    sx={{
-      width: 44,
-      height: 44,
-      borderRadius: 0,
-      color: "#666",
+          direction="row"
+          alignItems="center"
+          sx={{
+            width: "fit-content",
+            border: "1px solid #E5DED4",
+            borderRadius: "30px",
+            overflow: "hidden",
+            mb: 3,
+          }}
+        >
+          <IconButton
+            onClick={handleDecrease}
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 0,
+              color: "#666",
 
-      "&:hover": {
-        bgcolor: "#F6F6F3",
-      },
-    }}
-  >
-    <RemoveIcon fontSize="small" />
-  </IconButton>
+              "&:hover": {
+                bgcolor: "#F6F6F3",
+              },
+            }}
+          >
+            <RemoveIcon fontSize="small" />
+          </IconButton>
 
-  <Typography
-    sx={{
-      width: 40,
-      textAlign: "center",
-      fontWeight: 600,
-      fontSize: 18,
-      pt: 1,
-      color: "#1E2F2B",
-    }}
-  >
-    {item.quantity}
-  </Typography>
+          <Typography
+            sx={{
+              width: 40,
+              textAlign: "center",
+              fontWeight: 600,
+              fontSize: 18,
+              pt: 1,
+              color: "#1E2F2B",
+            }}
+          >
+            {item.quantity}
+          </Typography>
 
-  <IconButton
-    onClick={handleIncrease}
-    sx={{
-      width: 44,
-      height: 44,
-      borderRadius: 0,
-      color: "#666",
+          <IconButton
+            onClick={handleIncrease}
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 0,
+              color: "#666",
 
-      "&:hover": {
-        bgcolor: "#F6F6F3",
-      },
-    }}
-  >
-    <AddIcon fontSize="small" />
-  </IconButton>
-</Stack>
+              "&:hover": {
+                bgcolor: "#F6F6F3",
+              },
+            }}
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </Stack>
 
-        {/* Remove Button */}
+        {/* ==================================================
+            REMOVE
+        ================================================== */}
 
         <Button
           fullWidth

@@ -4,15 +4,14 @@ import { Box, Drawer } from "@mui/material";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 
-import CustomerHeader from "../components/CustomerHeader";
-import CustomerFilter from "../components/CustomerFilter";
-import CustomerTable from "../components/CustomerTable";
-import ViewCustomer from "../components/ViewCustomer";
-import EditCustomer from "../components/EditCustomer";
-import DeleteCustomer from "../components/DeleteCustomer";
+import CustomerHeader from "../components/customer/CustomerHeader";
+import CustomerFilter from "../components/customer/CustomerFilter";
+import CustomerTable from "../components/customer/CustomerTable";
+import ViewCustomer from "../components/customer/ViewCustomer";
+import EditCustomer from "../components/customer/EditCustomer";
+import DeleteCustomer from "../components/customer/DeleteCustomer";
 
 import { getCustomers } from "../../database/userService";
-import { getOrders } from "../../database/orderService";
 import { useThemeContext } from "../context/ThemeContext";
 
 const Customers = () => {
@@ -24,29 +23,16 @@ const Customers = () => {
 
   useEffect(() => {
   const loadCustomers = async () => {
-    const customerList = await getCustomers();
-    const orders = await getOrders();
+    try {
+      const data = await getCustomers();
 
-    const updatedCustomers = customerList.map((customer) => {
-      const customerOrders = orders.filter(
-        (order) => order.customer?.id === customer.id
+      setCustomers(data);
+    } catch (error) {
+      console.error(
+        "Error loading customers:",
+        error
       );
-
-      const totalOrders = customerOrders.length;
-
-      const totalSpent = customerOrders.reduce(
-        (sum, order) => sum + Number(order.pricing?.total || 0),
-        0
-      );
-
-      return {
-        ...customer,
-        totalOrders,
-        totalSpent,
-      };
-    });
-
-    setCustomers(updatedCustomers);
+    }
   };
 
   loadCustomers();
@@ -59,6 +45,8 @@ const Customers = () => {
   /* ---------------- Filter Drawer ---------------- */
 
   const [openFilter, setOpenFilter] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("Newest");
 
   /* ---------------- View Drawer ---------------- */
 
@@ -73,6 +61,31 @@ const Customers = () => {
   /* ---------------- Delete Dialog ---------------- */
 
   const [openDelete, setOpenDelete] = useState(false);
+
+  const filteredCustomers = customers
+    .filter((customer) => {
+      if (statusFilter === "All") return true;
+
+      return customer.status === statusFilter;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "Newest":
+          return new Date(b.createdAt) - new Date(a.createdAt);
+
+        case "Oldest":
+          return new Date(a.createdAt) - new Date(b.createdAt);
+
+        case "Name A → Z":
+          return (a.fullName || "").localeCompare(b.fullName || "");
+
+        case "Name Z → A":
+          return (b.fullName || "").localeCompare(a.fullName || "");
+
+        default:
+          return 0;
+      }
+    });
 
   return (
     <Box
@@ -110,7 +123,7 @@ const Customers = () => {
           />
 
           <CustomerTable
-            customers={customers}
+            customers={filteredCustomers}
             searchTerm={searchTerm}
             setSelectedCustomer={setSelectedCustomer}
             setOpenView={setOpenView}
@@ -125,6 +138,14 @@ const Customers = () => {
       <CustomerFilter
         open={openFilter}
         onClose={() => setOpenFilter(false)}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        onReset={() => {
+          setStatusFilter("All");
+          setSortBy("Newest");
+        }}
       />
 
       {/* View Customer Drawer */}
@@ -156,9 +177,7 @@ const Customers = () => {
         onStatusUpdated={(updatedCustomer) => {
           setCustomers((prev) =>
             prev.map((customer) =>
-              customer.id === updatedCustomer.id
-                ? updatedCustomer
-                : customer,
+              customer._id === updatedCustomer._id ? updatedCustomer : customer,
             ),
           );
         }}
@@ -172,7 +191,7 @@ const Customers = () => {
         customer={selectedCustomer}
         onDelete={(id) => {
           setCustomers((prev) =>
-            prev.filter((customer) => customer.id !== id),
+            prev.filter((customer) => customer._id !== id),
           );
         }}
       />
