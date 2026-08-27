@@ -64,7 +64,7 @@ const Footer = () => {
           >
             Discover premium skincare crafted with clean ingredients,
             dermatologist-tested formulas, and luxurious textures for healthy,
-            glowing skin every day.
+            glowing skin every day too.
           </Typography>
 
           <Typography
