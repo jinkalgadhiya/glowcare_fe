@@ -4,12 +4,11 @@ import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import ProductHeader from "../components/ProductHeader";
-import ProductTable from "../components/ProductTable";
-import ProductFilter from "../components/ProductFilter";
-import ViewProduct from "../components/ViewProduct";
-import DeleteProduct from "../components/DeleteProduct";
-
+import ProductHeader from "../components/product/ProductHeader";
+import ProductTable from "../components/product/ProductTable";
+import ProductFilter from "../components/product/ProductFilter";
+import ViewProduct from "../components/product/ViewProduct";
+import DeleteProduct from "../components/product/DeleteProduct";
 import { getProducts } from "../../database/productService";
 import { useThemeContext } from "../context/ThemeContext";
 

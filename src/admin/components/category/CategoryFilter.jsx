@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Drawer,
   Box,
@@ -12,25 +12,20 @@ import {
 } from "@mui/material";
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import { useThemeContext } from "../../context/ThemeContext";
 
-import { getCategories } from "../../database/categoryService";
-import { useThemeContext } from "../context/ThemeContext";
-
-const ProductFilter = ({
+const CategoryFilter = ({
   open,
   onClose,
 
   statusFilter,
   setStatusFilter,
 
-  badgeFilter,
-  setBadgeFilter,
+  menuFilter,
+  setMenuFilter,
 
-  categoryFilter,
-  setCategoryFilter,
-
-  stockFilter,
-  setStockFilter,
+  categoryTypeFilter,
+  setCategoryTypeFilter,
 
   sortBy,
   setSortBy,
@@ -39,49 +34,21 @@ const ProductFilter = ({
 }) => {
   const { darkMode } = useThemeContext();
 
-  const [categories, setCategories] = useState([]);
-
-  /* ---------------- LOAD CATEGORIES ---------------- */
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const data = await getCategories();
-
-        // Only active subcategories
-        const activeSubCategories = data.filter(
-          (item) =>
-            item.status === "Active" &&
-            item.categoryType === "sub" &&
-            item.subCategory &&
-            item.subCategory.trim() !== "",
-        );
-
-        setCategories(activeSubCategories);
-      } catch (error) {
-        console.error("Error loading categories:", error);
-      }
-    };
-
-    loadCategories();
-  }, []);
-
-  const badgeOptions = [
-    "All",
-    "New Launch",
-    "Best Seller",
-    "Trending",
-    "Limited Stock",
-    "Out of Stock",
-    "Sold Out",
-  ];
-
   const radioStyle = {
-    color: "#B89478",
+    color: darkMode ? "#888" : "#B89478",
 
     "&.Mui-checked": {
       color: "#B89478",
     },
+  };
+
+  const labelStyle = {
+    color: darkMode ? "#E0E0E0" : "#444",
+  };
+
+  const dividerStyle = {
+    borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
+    my: 3,
   };
 
   return (
@@ -94,9 +61,7 @@ const ProductFilter = ({
           width: 360,
           backgroundColor: darkMode ? "#1E1E1E" : "#fff",
           color: darkMode ? "#fff" : "#222",
-
           overflow: "hidden",
-
           display: "flex",
           flexDirection: "column",
         },
@@ -107,9 +72,7 @@ const ProductFilter = ({
           p: 3,
           height: "100vh",
           overflowY: "auto",
-
           backgroundColor: darkMode ? "#1E1E1E" : "#FFFFFF",
-
           display: "flex",
           flexDirection: "column",
 
@@ -140,31 +103,32 @@ const ProductFilter = ({
           <Typography
             sx={{
               fontSize: 24,
-              fontWeight: 700,
+              fontWeight: 600,
               color: darkMode ? "#fff" : "#1E2F2B",
             }}
           >
-            Filter Products
+            Filter Categories
           </Typography>
 
           <IconButton
             onClick={onClose}
             sx={{
-              color: darkMode ? "#fff" : "#222",
+              color: darkMode ? "#fff" : "#555",
+
+              "&:hover": {
+                backgroundColor: darkMode ? "#383838" : "#F5F5F5",
+              },
             }}
           >
             <CloseOutlinedIcon />
           </IconButton>
         </Box>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Product Status */}
+        {/* =========================
+            STATUS
+        ========================= */}
 
         <Typography
           sx={{
@@ -173,7 +137,7 @@ const ProductFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Product Status
+          Status
         </Typography>
 
         <RadioGroup
@@ -186,21 +150,16 @@ const ProductFilter = ({
               value={item}
               control={<Radio sx={radioStyle} />}
               label={item}
-              sx={{
-                color: darkMode ? "#E5E5E5" : "#555",
-              }}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Product Badge */}
+        {/* =========================
+            MENU TYPE
+        ========================= */}
 
         <Typography
           sx={{
@@ -209,34 +168,34 @@ const ProductFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Product Badge
+          Menu Type
         </Typography>
 
         <RadioGroup
-          value={badgeFilter}
-          onChange={(e) => setBadgeFilter(e.target.value)}
+          value={menuFilter}
+          onChange={(e) => setMenuFilter(e.target.value)}
         >
-          {badgeOptions.map((item) => (
+          {[
+            { value: "All", label: "All" },
+            { value: "skincare", label: "Skincare" },
+            { value: "haircare", label: "Haircare" },
+            { value: "more", label: "More" },
+          ].map((item) => (
             <FormControlLabel
-              key={item}
-              value={item}
+              key={item.value}
+              value={item.value}
               control={<Radio sx={radioStyle} />}
-              label={item}
-              sx={{
-                color: darkMode ? "#E5E5E5" : "#555",
-              }}
+              label={item.label}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Category */}
+        {/* =========================
+            CATEGORY TYPE
+        ========================= */}
 
         <Typography
           sx={{
@@ -245,83 +204,33 @@ const ProductFilter = ({
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Category
+          Category Type
         </Typography>
 
         <RadioGroup
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          value={categoryTypeFilter}
+          onChange={(e) => setCategoryTypeFilter(e.target.value)}
         >
-          {/* All */}
-
-          <FormControlLabel
-            value="All"
-            control={<Radio sx={radioStyle} />}
-            label="All Categories"
-            sx={{
-              color: darkMode ? "#E5E5E5" : "#555",
-            }}
-          />
-
-          {/* MongoDB Categories */}
-
-          {categories.map((category) => (
+          {[
+            { value: "All", label: "All" },
+            { value: "main", label: "Main Category" },
+            { value: "sub", label: "Sub Category" },
+          ].map((item) => (
             <FormControlLabel
-              key={category._id}
-              value={category._id}
+              key={item.value}
+              value={item.value}
               control={<Radio sx={radioStyle} />}
-              label={`${category.mainCategory} → ${category.subCategory}`}
-              sx={{
-                color: darkMode ? "#E5E5E5" : "#555",
-              }}
+              label={item.label}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Stock */}
-
-        <Typography
-          sx={{
-            fontWeight: 600,
-            mb: 2,
-            color: darkMode ? "#fff" : "#222",
-          }}
-        >
-          Stock
-        </Typography>
-
-        <RadioGroup
-          value={stockFilter}
-          onChange={(e) => setStockFilter(e.target.value)}
-        >
-          {["All", "In Stock", "Low Stock", "Out of Stock"].map((item) => (
-            <FormControlLabel
-              key={item}
-              value={item}
-              control={<Radio sx={radioStyle} />}
-              label={item}
-              sx={{
-                color: darkMode ? "#E5E5E5" : "#555",
-              }}
-            />
-          ))}
-        </RadioGroup>
-
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
-
-        {/* Sort By */}
+        {/* =========================
+            SORT
+        ========================= */}
 
         <Typography
           sx={{
@@ -335,35 +244,30 @@ const ProductFilter = ({
 
         <RadioGroup value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {[
-            "Newest",
-            "Oldest",
-            "A-Z",
-            "Z-A",
-            "Price Low → High",
-            "Price High → Low",
+            { value: "Newest", label: "Newest First" },
+            { value: "Oldest", label: "Oldest First" },
+            { value: "A-Z", label: "A-Z" },
+            { value: "Z-A", label: "Z-A" },
           ].map((item) => (
             <FormControlLabel
-              key={item}
-              value={item}
+              key={item.value}
+              value={item.value}
               control={<Radio sx={radioStyle} />}
-              label={item}
-              sx={{
-                color: darkMode ? "#E5E5E5" : "#555",
-              }}
+              label={item.label}
+              sx={labelStyle}
             />
           ))}
         </RadioGroup>
 
+        {/* Push buttons to bottom */}
+
         <Box sx={{ flexGrow: 1 }} />
 
-        <Divider
-          sx={{
-            borderColor: darkMode ? "#3A3A3A" : "#E7DDD2",
-            my: 3,
-          }}
-        />
+        <Divider sx={dividerStyle} />
 
-        {/* Bottom Buttons */}
+        {/* =========================
+            BUTTONS
+        ========================= */}
 
         <Box
           sx={{
@@ -385,7 +289,9 @@ const ProductFilter = ({
 
               "&:hover": {
                 borderColor: "#A88366",
-                bgcolor: "rgba(184,148,120,.08)",
+                bgcolor: darkMode
+                  ? "rgba(184,148,120,.12)"
+                  : "rgba(184,148,120,.08)",
               },
             }}
           >
@@ -419,4 +325,4 @@ const ProductFilter = ({
   );
 };
 
-export default ProductFilter;
+export default CategoryFilter;

@@ -9,7 +9,7 @@ import HomePageSettings from "../admin/pages/HomePageSettings";
 
 import Categories from "../admin/pages/Categories";
 import AddCategory from "../admin/pages/AddCategory";
-import DeleteCategory from "../admin/components/DeleteCategory";
+import DeleteCategory from "../admin/components/category/DeleteCategory";
 
 import Products from "../admin/pages/Products";
 import AddProducts from "../admin/pages/AddProducts";

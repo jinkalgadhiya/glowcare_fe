@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,33 +9,52 @@ import {
   Box,
 } from "@mui/material";
 
-import api from "../../api/axios";
-import { useThemeContext } from "../context/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
+import api from "../../../api/axios";
 
-const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
+const DeleteOrder = ({ open, onClose, order, onDelete }) => {
   const { darkMode } = useThemeContext();
 
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async () => {
-    if (!customer) return;
+    if (!order) return;
+
+    const orderId = order._id || order.id;
+
+    if (!orderId) {
+      console.error("Order ID not found");
+      return;
+    }
 
     try {
-      const response = await api.delete(`/users/delete/${customer._id}`);
+      setDeleting(true);
 
-      if (response.data.status === "success") {
-        onDelete?.(customer._id);
-        onClose();
-      }
+      // Delete order from MongoDB
+      await api.delete(`/orders/${orderId}`);
+
+      // Remove order from Admin UI
+      onDelete?.(orderId);
+
+      onClose();
     } catch (error) {
-      console.error("Delete customer error:", error);
+      console.error("Delete order error:", error);
 
-      alert(error.response?.data?.message || "Failed to delete customer");
+      console.error(
+        error.response?.data?.message ||
+          "Failed to delete order"
+      );
+    } finally {
+      setDeleting(false);
     }
   };
+
+  const orderId = order?._id || order?.id;
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={deleting ? undefined : onClose}
       fullWidth
       maxWidth="xs"
       sx={{
@@ -46,6 +65,8 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
         },
       }}
     >
+      {/* ================= HEADER ================= */}
+
       <DialogTitle sx={{ pb: 1 }}>
         <Typography
           variant="h6"
@@ -54,7 +75,7 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
             color: darkMode ? "#fff" : "#222",
           }}
         >
-          Delete Customer
+          Delete Order
         </Typography>
 
         <Typography
@@ -68,6 +89,8 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
         </Typography>
       </DialogTitle>
 
+      {/* ================= CONTENT ================= */}
+
       <DialogContent sx={{ pt: "12px !important" }}>
         <Box
           sx={{
@@ -78,13 +101,15 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
             borderColor: darkMode ? "#444" : "#E5E5E5",
           }}
         >
+          {/* Order ID */}
+
           <Typography
             sx={{
               fontSize: 13,
               color: darkMode ? "#AFAFAF" : "#777",
             }}
           >
-            Customer Name
+            Order ID
           </Typography>
 
           <Typography
@@ -92,10 +117,13 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
               mt: 0.5,
               fontWeight: 600,
               color: darkMode ? "#fff" : "#222",
+              wordBreak: "break-all",
             }}
           >
-            {customer?.fullName}
+            {orderId || "N/A"}
           </Typography>
+
+          {/* Customer */}
 
           <Typography
             sx={{
@@ -104,7 +132,7 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
               color: darkMode ? "#AFAFAF" : "#777",
             }}
           >
-            Email
+            Customer
           </Typography>
 
           <Typography
@@ -114,7 +142,7 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
               color: darkMode ? "#fff" : "#222",
             }}
           >
-            {customer?.email}
+            {order?.customer?.fullName || "N/A"}
           </Typography>
         </Box>
 
@@ -125,9 +153,11 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
             lineHeight: 1.7,
           }}
         >
-          Are you sure you want to permanently delete this customer?
+          Are you sure you want to permanently delete this order?
         </Typography>
       </DialogContent>
+
+      {/* ================= ACTIONS ================= */}
 
       <DialogActions
         sx={{
@@ -140,6 +170,7 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
         <Button
           variant="outlined"
           onClick={onClose}
+          disabled={deleting}
           sx={{
             textTransform: "none",
             borderRadius: 2,
@@ -158,6 +189,7 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
         <Button
           variant="contained"
           onClick={handleDelete}
+          disabled={deleting}
           sx={{
             bgcolor: "#D32F2F",
             textTransform: "none",
@@ -170,11 +202,11 @@ const DeleteCustomer = ({ open, onClose, customer, onDelete }) => {
             },
           }}
         >
-          Delete
+          {deleting ? "Deleting..." : "Delete"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default DeleteCustomer;
+export default DeleteOrder;

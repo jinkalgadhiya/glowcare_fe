@@ -12,7 +12,7 @@ import {
 
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
-import { useThemeContext } from "../context/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const ViewCustomer = ({ customer, onClose }) => {
   const { darkMode } = useThemeContext();

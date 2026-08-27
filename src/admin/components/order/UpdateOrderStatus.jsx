@@ -15,8 +15,8 @@ import {
   Box,
 } from "@mui/material";
 
-import { updateOrderStatus } from "../../database/orderService";
-import { useThemeContext } from "../context/ThemeContext";
+import { updateOrderStatus } from "../../../database/orderService";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const UpdateOrderStatus = ({
   open,

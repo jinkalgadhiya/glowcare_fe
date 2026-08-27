@@ -3,12 +3,12 @@ import { Box, Drawer } from "@mui/material";
 
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import DeleteOrder from "../components/DeleteOrder";
-import UpdateOrderStatus from "../components/UpdateOrderStatus";
-import OrderHeader from "../components/OrderHeader";
-import OrderTable from "../components/OrderTable";
-import OrderFilter from "../components/OrderFilter";
-import ViewOrder from "../components/ViewOrder";
+import DeleteOrder from "../components/order/DeleteOrder";
+import UpdateOrderStatus from "../components/order/UpdateOrderStatus";
+import OrderHeader from "../components/order/OrderHeader";
+import OrderTable from "../components/order/OrderTable";
+import OrderFilter from "../components/order/OrderFilter";
+import ViewOrder from "../components/order/ViewOrder";
 
 import {
   getOrders,

@@ -10,9 +10,9 @@ import {
   Stack,
 } from "@mui/material";
 
-import { useThemeContext } from "../context/ThemeContext";
-import api from "../../api/axios";
-import CustomTextField from "../../components/common/CustomTextField";
+import { useThemeContext } from "../../context/ThemeContext";
+import api from "../../../api/axios";
+import CustomTextField from "../../../components/common/CustomTextField";
 
 const EditProfile = ({ admin, onClose, onUpdated }) => {
   const { darkMode } = useThemeContext();

@@ -14,10 +14,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 
-import { useThemeContext } from "../context/ThemeContext";
-import api from "../../api/axios";
+import { useThemeContext } from "../../context/ThemeContext";
+import api from "../../../api/axios";
 
-import CustomTextField from "../../components/common/CustomTextField";
+import CustomTextField from "../../../components/common/CustomTextField";
 
 const ChangePassword = ({ admin }) => {
   const { darkMode } = useThemeContext();

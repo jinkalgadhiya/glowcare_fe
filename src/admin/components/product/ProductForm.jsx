@@ -17,8 +17,8 @@ import {
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { getCategories } from "../../database/categoryService";
-import { useThemeContext } from "../context/ThemeContext";
+import { getCategories } from "../../../database/categoryService";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const ProductForm = ({
   productName,

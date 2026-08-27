@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
-import { useThemeContext } from "../context/ThemeContext";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const ProfileHeader = ({ onEdit }) => {
   const { darkMode } = useThemeContext();
