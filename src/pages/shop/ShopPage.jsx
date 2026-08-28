@@ -16,7 +16,7 @@ import ShopPagination from "../../components/shop/ShopPagination";
 import { getCategories } from "../../database/categoryService";
 import { getProducts } from "../../database/productService";
 
-const PRODUCTS_PER_PAGE = 12;
+const PRODUCTS_PER_PAGE = 8;
 
 const ShopPage = () => {
   const { category } = useParams();
