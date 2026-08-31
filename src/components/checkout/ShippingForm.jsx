@@ -508,6 +508,8 @@ const ShippingForm = ({ checkoutData, setCheckoutData, nextStep }) => {
                       p: 2.5,
                       cursor: "pointer",
                       borderRadius: 3,
+                      width: "260px",
+                      height: "200px",
 
                       border: selected
                         ? "2px solid #1E2F2B"

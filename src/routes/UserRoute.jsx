@@ -7,8 +7,10 @@ import Register from "../auth/Register";
 import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
 import Checkout from "../pages/Checkout";
+
 import ShopPage from "../pages/shop/ShopPage";
 import ProductDetails from "../pages/shop/ProductDetails";
+
 import UserProfile from "../pages/UserProfile";
 
 import ProtectedRoute from "../auth/UserProtectedRoute";
@@ -26,10 +28,21 @@ const UserRoute = () => {
 
       <Route path="/cart" element={<Cart />} />
 
+      {/* ================= SHOP ================= */}
+
+      {/* Global Search */}
+      <Route
+        path="/shop"
+        element={<ShopPage />}
+      />
+
+      {/* Category Shop */}
       <Route
         path="/shop/:category"
         element={<ShopPage />}
       />
+
+      {/* ================= PRODUCT ================= */}
 
       <Route
         path="/product/:id"

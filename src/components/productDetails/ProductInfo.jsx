@@ -22,6 +22,7 @@ import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import {
   addToWishlist,
@@ -33,39 +34,131 @@ import {
   removeFromWishlistDB,
 } from "../../database/wishlistService";
 
+// =====================================================
+// REVIEW SERVICE
+// =====================================================
+
+import { getMyReviews } from "../../database/reviewService";
+
+// =====================================================
+// CART
+// =====================================================
+
+import { addToCart } from "../../redux/cart/cartSlice";
+
 const ProductInfo = ({ product }) => {
   const dispatch = useDispatch();
 
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const navigate = useNavigate();
+
+  const wishlistItems = useSelector(
+    (state) => state.wishlist.items
+  );
 
   const productId = product?._id || product?.id;
 
-  const isWishlisted = wishlistItems.some((item) => item.id === productId);
-
-  const [selectedVariant, setSelectedVariant] = useState(
-    product?.variants?.[0],
+  const isWishlisted = wishlistItems.some(
+    (item) => item.id === productId
   );
 
+  const [selectedVariant, setSelectedVariant] =
+    useState(product?.variants?.[0]);
+
   const [quantity, setQuantity] = useState(1);
+
+  // =====================================================
+  // PRODUCT REVIEWS
+  // =====================================================
+
+  const [productReviews, setProductReviews] = useState([]);
+
+  // =====================================================
+  // RESET PRODUCT DATA
+  // =====================================================
 
   useEffect(() => {
     setSelectedVariant(product?.variants?.[0]);
     setQuantity(1);
   }, [product]);
 
+  // =====================================================
+  // LOAD REAL PRODUCT REVIEWS
+  // =====================================================
+
+  useEffect(() => {
+    const loadProductReviews = async () => {
+      try {
+        const reviews = await getMyReviews();
+
+        const currentProductReviews = reviews.filter(
+          (review) => {
+            const reviewProductId =
+              review.productId?._id ||
+              review.productId ||
+              review.product?._id ||
+              review.product;
+
+            return (
+              String(reviewProductId) ===
+              String(productId)
+            );
+          }
+        );
+
+        setProductReviews(currentProductReviews);
+      } catch (error) {
+        console.error(
+          "Failed to load product reviews:",
+          error
+        );
+
+        setProductReviews([]);
+      }
+    };
+
+    if (productId) {
+      loadProductReviews();
+    }
+  }, [productId]);
+
+  // =====================================================
+  // REAL REVIEW RATING
+  // =====================================================
+
+  const reviewCount = productReviews.length;
+
+  const averageRating =
+    reviewCount > 0
+      ? productReviews.reduce(
+          (total, review) =>
+            total + (Number(review.rating) || 0),
+          0
+        ) / reviewCount
+      : 0;
+
   if (!selectedVariant) return null;
 
-  const currentPrice = selectedVariant.discountPrice || selectedVariant.price;
+  const currentPrice =
+    selectedVariant.discountPrice ||
+    selectedVariant.price;
 
   const originalPrice = selectedVariant.price;
 
   const discount = selectedVariant.discountPrice
-    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    ? Math.round(
+        ((originalPrice - currentPrice) /
+          originalPrice) *
+          100
+      )
     : 0;
 
   const handleWishlist = async () => {
     if (!productId) {
-      console.error("Product ID not found:", product);
+      console.error(
+        "Product ID not found:",
+        product
+      );
+
       return;
     }
 
@@ -79,7 +172,9 @@ const ProductInfo = ({ product }) => {
 
         dispatch(removeFromWishlist(productId));
 
-        console.log("❤️ Product removed from wishlist");
+        console.log(
+          "❤️ Product removed from wishlist"
+        );
 
         return;
       }
@@ -95,18 +190,74 @@ const ProductInfo = ({ product }) => {
       };
 
       // Save to MongoDB first
+
       await addToWishlistDB(productId);
 
       // Then update Redux
+
       dispatch(addToWishlist(wishlistProduct));
 
-      console.log("❤️ Product added to wishlist");
+      console.log(
+        "❤️ Product added to wishlist"
+      );
     } catch (error) {
       console.error(
         "Wishlist operation failed:",
-        error.response?.data || error.message,
+        error.response?.data || error.message
       );
     }
+  };
+
+  // =====================================================
+  // CREATE CART PRODUCT
+  // =====================================================
+
+  const getCartProduct = () => {
+    return {
+      productId: productId,
+
+      variantId:
+        selectedVariant?._id ||
+        selectedVariant?.id,
+
+      name: product.productName,
+
+      image:
+        selectedVariant?.image ||
+        product?.image ||
+        product?.images?.[0] ||
+        "",
+
+      size: selectedVariant.size,
+
+      price: currentPrice,
+
+      quantity: quantity,
+
+      stock: selectedVariant.stock,
+    };
+  };
+
+  // =====================================================
+  // ADD TO CART
+  // =====================================================
+
+  const handleAddToCart = () => {
+    const cartProduct = getCartProduct();
+
+    dispatch(addToCart(cartProduct));
+  };
+
+  // =====================================================
+  // BUY NOW
+  // =====================================================
+
+  const handleBuyNow = () => {
+    const cartProduct = getCartProduct();
+
+    dispatch(addToCart(cartProduct));
+
+    navigate("/checkout");
   };
 
   return (
@@ -139,9 +290,13 @@ const ProductInfo = ({ product }) => {
 
       {/* Rating */}
 
-      <Stack direction="row" alignItems="center" spacing={1.2}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1.2}
+      >
         <Rating
-          value={product.rating || 4.8}
+          value={averageRating}
           precision={0.5}
           readOnly
           size="small"
@@ -154,7 +309,9 @@ const ProductInfo = ({ product }) => {
             fontWeight: 500,
           }}
         >
-          {product.rating || 4.8}
+          {reviewCount > 0
+            ? averageRating.toFixed(1)
+            : "0.0"}
         </Typography>
 
         <Typography
@@ -171,7 +328,7 @@ const ProductInfo = ({ product }) => {
             fontSize: 15,
           }}
         >
-          {product.reviewCount || 0} Reviews
+          {reviewCount} Reviews
         </Typography>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -205,8 +362,6 @@ const ProductInfo = ({ product }) => {
           )}
         </IconButton>
       </Stack>
-
-      {/* Description */}
 
       {/* Description */}
 
@@ -248,6 +403,7 @@ const ProductInfo = ({ product }) => {
             fontSize: 14,
             fontWeight: 600,
             cursor: "pointer",
+
             "&:hover": {
               textDecoration: "underline",
             },
@@ -259,7 +415,12 @@ const ProductInfo = ({ product }) => {
 
       {/* Price */}
 
-      <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={2}
+        mb={4}
+      >
         <Typography
           sx={{
             fontSize: {
@@ -363,11 +524,17 @@ const ProductInfo = ({ product }) => {
         Select Size
       </Typography>
 
-      <Stack direction="row" spacing={2} mb={5}>
+      <Stack
+        direction="row"
+        spacing={2}
+        mb={5}
+      >
         {product.variants.map((variant) => (
           <Box
             key={variant._id}
-            onClick={() => setSelectedVariant(variant)}
+            onClick={() =>
+              setSelectedVariant(variant)
+            }
             sx={{
               width: 92,
               height: 44,
@@ -375,12 +542,16 @@ const ProductInfo = ({ product }) => {
               cursor: "pointer",
 
               border:
-                selectedVariant?._id === variant._id
+                selectedVariant?._id ===
+                variant._id
                   ? "2px solid #C79A72"
                   : "1px solid #ECE6DD",
 
               bgcolor:
-                selectedVariant?._id === variant._id ? "#FBF5EF" : "#fff",
+                selectedVariant?._id ===
+                variant._id
+                  ? "#FBF5EF"
+                  : "#fff",
 
               display: "flex",
               flexDirection: "column",
@@ -421,7 +592,12 @@ const ProductInfo = ({ product }) => {
         Quantity
       </Typography>
 
-      <Stack direction="row" alignItems="center" spacing={3} mb={5}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={3}
+        mb={5}
+      >
         <Box
           sx={{
             display: "flex",
@@ -433,7 +609,11 @@ const ProductInfo = ({ product }) => {
           }}
         >
           <IconButton
-            onClick={() => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))}
+            onClick={() =>
+              setQuantity((prev) =>
+                prev > 1 ? prev - 1 : 1
+              )
+            }
             sx={{
               width: 48,
               height: 48,
@@ -454,7 +634,9 @@ const ProductInfo = ({ product }) => {
           </Typography>
 
           <IconButton
-            onClick={() => setQuantity((prev) => prev + 1)}
+            onClick={() =>
+              setQuantity((prev) => prev + 1)
+            }
             sx={{
               width: 48,
               height: 48,
@@ -466,7 +648,11 @@ const ProductInfo = ({ product }) => {
 
         <Typography
           sx={{
-            color: selectedVariant.stock > 5 ? "#2E7D32" : "#D32F2F",
+            color:
+              selectedVariant.stock > 5
+                ? "#2E7D32"
+                : "#D32F2F",
+
             fontWeight: 600,
             pt: 2,
           }}
@@ -493,6 +679,7 @@ const ProductInfo = ({ product }) => {
         <Button
           fullWidth
           variant="contained"
+          onClick={handleAddToCart}
           sx={{
             height: 58,
             borderRadius: "50px",
@@ -514,6 +701,7 @@ const ProductInfo = ({ product }) => {
         <Button
           fullWidth
           variant="outlined"
+          onClick={handleBuyNow}
           sx={{
             height: 58,
             borderRadius: "50px",
@@ -547,7 +735,11 @@ const ProductInfo = ({ product }) => {
           mt: "30px",
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="flex-start">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="flex-start"
+        >
           <LocalShippingOutlinedIcon
             sx={{
               color: "#A86C45",
@@ -591,7 +783,12 @@ const ProductInfo = ({ product }) => {
 
       {/* Trust Badges */}
 
-      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+      <Stack
+        direction="row"
+        spacing={2}
+        flexWrap="wrap"
+        useFlexGap
+      >
         <Chip
           icon={<VerifiedOutlinedIcon />}
           label="100% Authentic"

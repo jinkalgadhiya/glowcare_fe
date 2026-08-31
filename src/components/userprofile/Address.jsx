@@ -7,7 +7,6 @@ import {
   Stack,
   Button,
   Chip,
-  Grid,
   IconButton,
   Divider,
 } from "@mui/material";
@@ -450,27 +449,41 @@ const Address = () => {
             </Box>
           ) : (
             /* ==================================================
-                ADDRESS LIST
+                ADDRESS LIST - FIXED SAME WIDTH CARDS
             ================================================== */
 
-            <Grid container spacing={2.5}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2.5,
+                alignItems: "stretch",
+              }}
+            >
               {addresses.map((address) => {
-                const addressType = address.addressType || "Home";
+                const addressType =
+                  address.addressType || "Home";
 
                 return (
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
+                  <Box
                     key={address.id}
                     sx={{
+                      width: {
+                        xs: "100%",
+                        sm: 360,
+                      },
+
+                      flexShrink: 0,
+
                       display: "flex",
                     }}
                   >
                     <Card
                       elevation={0}
                       sx={{
-                        width: "100%",
+                        width: "95%",
+                        minHeight: 350,
+
                         display: "flex",
                         flexDirection: "column",
 
@@ -487,14 +500,16 @@ const Address = () => {
                         transition: "all .25s ease",
 
                         "&:hover": {
-                          transform: "translateY(-2px)",
+                          transform:
+                            "translateY(-2px)",
 
                           boxShadow:
                             "0 10px 28px rgba(30,47,43,0.07)",
 
-                          borderColor: address.isDefault
-                            ? "#B8CCBD"
-                            : "#D5CABE",
+                          borderColor:
+                            address.isDefault
+                              ? "#B8CCBD"
+                              : "#D5CABE",
                         },
                       }}
                     >
@@ -504,15 +519,20 @@ const Address = () => {
                         sx={{
                           px: 2.5,
                           py: 2,
-                          backgroundColor: address.isDefault
-                            ? "#F5F8F5"
-                            : "#FBF9F5",
-                          borderBottom: "1px solid #EEE8DF",
+
+                          backgroundColor:
+                            address.isDefault
+                              ? "#F5F8F5"
+                              : "#FBF9F5",
+
+                          borderBottom:
+                            "1px solid #EEE8DF",
                         }}
                       >
                         <Box
                           sx={{
                             width: "100%",
+
                             display: "flex",
                             alignItems: "center",
                           }}
@@ -534,11 +554,13 @@ const Address = () => {
                                 width: 42,
                                 height: 42,
                                 flexShrink: 0,
+
                                 borderRadius: "12px",
 
-                                backgroundColor: address.isDefault
-                                  ? "#E7F0E9"
-                                  : "#F1ECE5",
+                                backgroundColor:
+                                  address.isDefault
+                                    ? "#E7F0E9"
+                                    : "#F1ECE5",
 
                                 display: "flex",
                                 alignItems: "center",
@@ -547,7 +569,9 @@ const Address = () => {
                                 color: "#1E2F2B",
                               }}
                             >
-                              {getAddressIcon(addressType)}
+                              {getAddressIcon(
+                                addressType,
+                              )}
                             </Box>
 
                             {/* TYPE */}
@@ -569,7 +593,8 @@ const Address = () => {
                                   mt: 0.3,
                                   fontSize: 11,
                                   color: "#8A8178",
-                                  textTransform: "uppercase",
+                                  textTransform:
+                                    "uppercase",
                                   letterSpacing: 0.5,
                                 }}
                               >
@@ -578,7 +603,7 @@ const Address = () => {
                             </Box>
                           </Box>
 
-                          {/* RIGHT */}
+                          {/* DEFAULT */}
 
                           {address.isDefault && (
                             <Chip
@@ -590,10 +615,14 @@ const Address = () => {
                                 height: 32,
                                 px: 1.2,
 
-                                backgroundColor: "#E8F1EA",
+                                backgroundColor:
+                                  "#E8F1EA",
+
                                 color: "#2F5D45",
 
-                                border: "1px solid #CDDFD2",
+                                border:
+                                  "1px solid #CDDFD2",
+
                                 borderRadius: "18px",
 
                                 fontSize: 12,
@@ -656,6 +685,7 @@ const Address = () => {
                             fontSize: 14,
                             lineHeight: 1.7,
                             color: "#4F4A44",
+                            wordBreak: "break-word",
                           }}
                         >
                           {address.addressLine}
@@ -729,14 +759,17 @@ const Address = () => {
                               ) : (
                                 <Button
                                   onClick={() =>
-                                    handleSetDefault(address.id)
+                                    handleSetDefault(
+                                      address.id,
+                                    )
                                   }
                                   sx={{
                                     p: 0,
 
                                     minWidth: 0,
 
-                                    textTransform: "none",
+                                    textTransform:
+                                      "none",
 
                                     fontSize: 13,
                                     fontWeight: 600,
@@ -773,7 +806,8 @@ const Address = () => {
                                   color: "#1E2F2B",
 
                                   "&:hover": {
-                                    backgroundColor: "#EEF3EF",
+                                    backgroundColor:
+                                      "#EEF3EF",
                                   },
                                 }}
                               >
@@ -786,7 +820,9 @@ const Address = () => {
 
                               <IconButton
                                 onClick={() =>
-                                  handleDelete(address.id)
+                                  handleDelete(
+                                    address.id,
+                                  )
                                 }
                                 sx={{
                                   width: 36,
@@ -795,7 +831,8 @@ const Address = () => {
                                   color: "#8A5C55",
 
                                   "&:hover": {
-                                    backgroundColor: "#F8EEEC",
+                                    backgroundColor:
+                                      "#F8EEEC",
 
                                     color: "#7A4038",
                                   },
@@ -812,10 +849,10 @@ const Address = () => {
                         </Box>
                       </Box>
                     </Card>
-                  </Grid>
+                  </Box>
                 );
               })}
-            </Grid>
+            </Box>
           )}
         </Box>
       </Card>

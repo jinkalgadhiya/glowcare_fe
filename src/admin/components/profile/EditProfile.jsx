@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Box,
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -10,8 +12,12 @@ import {
   Stack,
 } from "@mui/material";
 
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+
 import { useThemeContext } from "../../context/ThemeContext";
-import api from "../../../api/axios";
+import adminApi from "../../../api/adminApi";
+
 import CustomTextField from "../../../components/common/CustomTextField";
 
 const EditProfile = ({ admin, onClose, onUpdated }) => {
@@ -22,6 +28,21 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState("");
 
+  // ==========================================
+  // MODAL STATE
+  // ==========================================
+
+  const [modal, setModal] = useState({
+    open: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
+
+  // ==========================================
+  // LOAD ADMIN DATA
+  // ==========================================
+
   useEffect(() => {
     if (admin) {
       setFullName(admin.fullName || "");
@@ -31,9 +52,51 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
     }
   }, [admin]);
 
+  // ==========================================
+  // OPEN MODAL
+  // ==========================================
+
+  const showModal = (type, title, message) => {
+    setModal({
+      open: true,
+      type,
+      title,
+      message,
+    });
+  };
+
+  // ==========================================
+  // CLOSE MODAL
+  // ==========================================
+
+  const handleCloseModal = () => {
+    setModal((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
+
+  // ==========================================
+  // SAVE PROFILE
+  // ==========================================
+
   const handleSave = async () => {
+    // Validation
+
+    if (!fullName.trim()) {
+      showModal("error", "Full Name Required", "Please enter your full name.");
+
+      return;
+    }
+
+    if (!email.trim()) {
+      showModal("error", "Email Required", "Please enter your email address.");
+
+      return;
+    }
+
     try {
-      const response = await api.put("/admin/profile", {
+      const response = await adminApi.put("/admin/profile", {
         fullName: fullName.trim(),
         email: email.trim(),
         contactNumber: phone.trim(),
@@ -43,18 +106,43 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
       if (response.data.status === "success") {
         onUpdated(response.data.data);
 
-        alert("Profile updated successfully");
-
-        onClose();
+        showModal(
+          "success",
+          "Profile Updated",
+          "Your profile has been updated successfully.",
+        );
       }
     } catch (error) {
       console.error("Update admin profile error:", error);
 
-      alert(error.response?.data?.message || "Failed to update profile");
+      showModal(
+        "error",
+        "Profile Update Failed",
+        error.response?.data?.message ||
+          "Failed to update profile. Please try again.",
+      );
     }
   };
 
-  if (!admin) return null;
+  // ==========================================
+  // MODAL CLOSE
+  // ==========================================
+
+  const handleModalOK = () => {
+    const modalType = modal.type;
+
+    handleCloseModal();
+
+    // Close Edit Profile after successful update
+
+    if (modalType === "success") {
+      onClose();
+    }
+  };
+
+  // ==========================================
+  // TEXT FIELD STYLE
+  // ==========================================
 
   const textFieldStyle = {
     "& .MuiOutlinedInput-root": {
@@ -90,8 +178,14 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
     },
   };
 
+  if (!admin) return null;
+
   return (
     <>
+      {/* ==========================================
+          EDIT PROFILE FORM
+      ========================================== */}
+
       <DialogTitle
         sx={{
           fontWeight: 700,
@@ -113,6 +207,8 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             mt: 2,
           }}
         >
+          {/* PROFILE IMAGE */}
+
           <Box
             sx={{
               display: "flex",
@@ -126,11 +222,16 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
                 height: 110,
                 fontSize: 42,
                 fontWeight: 700,
+
+                bgcolor: "#F8F4EF",
+                color: "#B89478",
               }}
             >
               {fullName?.charAt(0)}
             </Avatar>
           </Box>
+
+          {/* FULL NAME */}
 
           <CustomTextField
             label="Full Name"
@@ -140,6 +241,8 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             sx={textFieldStyle}
           />
 
+          {/* EMAIL */}
+
           <CustomTextField
             label="Email"
             fullWidth
@@ -148,6 +251,8 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             sx={textFieldStyle}
           />
 
+          {/* PHONE */}
+
           <CustomTextField
             label="Phone Number"
             fullWidth
@@ -155,6 +260,8 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
             onChange={(e) => setPhone(e.target.value)}
             sx={textFieldStyle}
           />
+
+          {/* PROFILE IMAGE URL */}
 
           <CustomTextField
             label="Profile Image URL"
@@ -167,6 +274,10 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
         </Stack>
       </DialogContent>
 
+      {/* ==========================================
+          FORM ACTIONS
+      ========================================== */}
+
       <DialogActions
         sx={{
           px: 3,
@@ -178,7 +289,7 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
           onClick={onClose}
           sx={{
             textTransform: "none",
-            color: "#777",
+            color: darkMode ? "#B5B5B5" : "#777",
           }}
         >
           Cancel
@@ -201,6 +312,138 @@ const EditProfile = ({ admin, onClose, onUpdated }) => {
           Save Changes
         </Button>
       </DialogActions>
+
+      {/* ==========================================
+          SUCCESS / ERROR MODAL
+      ========================================== */}
+
+      <Dialog
+        open={modal.open}
+        onClose={handleCloseModal}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+
+            bgcolor: darkMode ? "#252525" : "#FFFCF8",
+
+            border: darkMode ? "1px solid #3A3A3A" : "1px solid #E9DED4",
+          },
+        }}
+      >
+        {/* ICON */}
+
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            pt: 4,
+            pb: 1,
+          }}
+        >
+          <Box
+            sx={{
+              width: 68,
+              height: 68,
+
+              borderRadius: "50%",
+
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+
+              bgcolor: modal.type === "success" ? "#EEF5EF" : "#FFF1F1",
+            }}
+          >
+            {modal.type === "success" ? (
+              <CheckCircleOutlineOutlinedIcon
+                sx={{
+                  fontSize: 38,
+                  color: "#5E8B68",
+                }}
+              />
+            ) : (
+              <ErrorOutlineOutlinedIcon
+                sx={{
+                  fontSize: 38,
+                  color: "#B85C5C",
+                }}
+              />
+            )}
+          </Box>
+        </DialogTitle>
+
+        {/* CONTENT */}
+
+        <DialogContent
+          sx={{
+            textAlign: "center",
+            px: 4,
+            pb: 2,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: 700,
+              mb: 1,
+
+              color: darkMode ? "#fff" : "#1E2F2B",
+            }}
+          >
+            {modal.title}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              lineHeight: 1.7,
+
+              color: darkMode ? "#B5B5B5" : "#6B7280",
+            }}
+          >
+            {modal.message}
+          </Typography>
+        </DialogContent>
+
+        {/* BUTTON */}
+
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            pb: 3,
+            px: 4,
+          }}
+        >
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleModalOK}
+            sx={{
+              height: 46,
+
+              borderRadius: 2,
+
+              textTransform: "none",
+
+              fontSize: 15,
+              fontWeight: 600,
+
+              bgcolor: "#B89478",
+
+              boxShadow: "none",
+
+              "&:hover": {
+                bgcolor: "#A88366",
+                boxShadow: "none",
+              },
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

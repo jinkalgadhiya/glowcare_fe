@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Box, Container } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -13,6 +13,7 @@ import EmptyProducts from "../../components/shop/EmptyProducts";
 import ShopPromoBanner from "../../components/shop/ShopPromoBanner";
 import ShopBenefits from "../../components/shop/ShopBenefits";
 import ShopPagination from "../../components/shop/ShopPagination";
+
 import { getCategories } from "../../database/categoryService";
 import { getProducts } from "../../database/productService";
 
@@ -21,13 +22,18 @@ const PRODUCTS_PER_PAGE = 8;
 const ShopPage = () => {
   const { category } = useParams();
 
-  /* ---------------- Products ---------------- */
+  const [searchParams] = useSearchParams();
+
+  // Search value coming from Navbar URL
+  const searchQuery = searchParams.get("search") || "";
+
+  /* ---------------- PRODUCTS ---------------- */
 
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- Filters ---------------- */
+  /* ---------------- FILTERS ---------------- */
 
   const [brand, setBrand] = useState("");
   const [skinType, setSkinType] = useState("");
@@ -35,19 +41,19 @@ const ShopPage = () => {
   const [benefit, setBenefit] = useState("");
   const [price, setPrice] = useState("");
 
-  /* ---------------- Sorting ---------------- */
+  /* ---------------- SORTING ---------------- */
 
   const [sortBy, setSortBy] = useState("latest");
 
-  /* ---------------- View ---------------- */
+  /* ---------------- VIEW ---------------- */
 
   const [view, setView] = useState("grid");
 
-  /* ---------------- Pagination ---------------- */
+  /* ---------------- PAGINATION ---------------- */
 
   const [page, setPage] = useState(1);
 
-  /* ---------------- Load Products ---------------- */
+  /* ---------------- LOAD DATA ---------------- */
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,10 +63,12 @@ const ShopPage = () => {
         const productsData = await getProducts();
         const categoriesData = await getCategories();
 
+        // Only active products
         setProducts(
           (productsData || []).filter((item) => item.status === "Active"),
         );
 
+        // Only active sub categories
         setCategories(
           (categoriesData || []).filter(
             (item) => item.status === "Active" && item.categoryType === "sub",
@@ -76,13 +84,13 @@ const ShopPage = () => {
     loadData();
   }, []);
 
-  /* ---------------- Reset Page ---------------- */
+  /* ---------------- RESET PAGE ---------------- */
 
   useEffect(() => {
     setPage(1);
-  }, [category, brand, skinType, concern, benefit, price, sortBy]);
+  }, [category, searchQuery, brand, skinType, concern, benefit, price, sortBy]);
 
-  /* ---------------- Clear Filters ---------------- */
+  /* ---------------- CLEAR FILTERS ---------------- */
 
   const clearFilters = () => {
     setBrand("");
@@ -95,7 +103,7 @@ const ShopPage = () => {
     setPage(1);
   };
 
-  /* ---------------- Banner Data ---------------- */
+  /* ---------------- CATEGORY DATA ---------------- */
 
   const currentCategory = categories.find((cat) => {
     const slug = cat.subCategory
@@ -119,13 +127,14 @@ const ShopPage = () => {
     promoImage: currentCategory?.bannerImage || "",
   };
 
-  /* ---------------- Category Filter ---------------- */
+  /* ---------------- CATEGORY FILTER ---------------- */
 
   const categoryProducts = useMemo(() => {
     if (!category) return products;
 
     return products.filter((product) => {
       const mainCategory = product.category?.mainCategory || "";
+
       const subCategory = product.category?.subCategory || "";
 
       const mainSlug = mainCategory
@@ -142,32 +151,73 @@ const ShopPage = () => {
     });
   }, [products, category]);
 
-  /* ---------------- Apply Filters ---------------- */
+  /* ---------------- SEARCH + FILTERS ---------------- */
 
   const filteredProducts = useMemo(() => {
     let data = [...categoryProducts];
 
-    // Brand
+    /* ---------------- GLOBAL SEARCH ---------------- */
+
+    if (searchQuery.trim()) {
+      const searchWords = searchQuery.toLowerCase().trim().split(/\s+/);
+
+      data = data.filter((product) => {
+        const searchableText = [
+          product.productName,
+          product.brand,
+          product.description,
+
+          product.category?.mainCategory,
+          product.category?.subCategory,
+
+          ...(product.suitableFor || []),
+
+          ...(product.skinConcerns || []),
+
+          ...(product.benefits || []),
+
+          ...(product.keybenefits || []),
+
+          product.badge,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchWords.every((word) => searchableText.includes(word));
+      });
+    }
+
+    /* ---------------- BRAND ---------------- */
+
     if (brand) {
       data = data.filter((product) => product.brand === brand);
     }
 
-    // Suitable For (Skin Type)
+    /* ---------------- SKIN TYPE ---------------- */
+
     if (skinType) {
       data = data.filter((product) => product.suitableFor?.includes(skinType));
     }
 
-    // Skin Concern
+    /* ---------------- SKIN CONCERN ---------------- */
+
     if (concern) {
       data = data.filter((product) => product.skinConcerns?.includes(concern));
     }
 
-    // Key Benefit
+    /* ---------------- BENEFIT ---------------- */
+
     if (benefit) {
-      data = data.filter((product) => product.keybenefits?.includes(benefit));
+      data = data.filter((product) => {
+        const productBenefits = product.benefits || product.keybenefits || [];
+
+        return productBenefits.includes(benefit);
+      });
     }
 
-    // Price
+    /* ---------------- PRICE ---------------- */
+
     if (price) {
       data = data.filter((product) => {
         const currentPrice =
@@ -195,9 +245,9 @@ const ShopPage = () => {
     }
 
     return data;
-  }, [categoryProducts, brand, skinType, concern, benefit, price]);
+  }, [categoryProducts, searchQuery, brand, skinType, concern, benefit, price]);
 
-  /* ---------------- Sorting ---------------- */
+  /* ---------------- SORTING ---------------- */
 
   const sortedProducts = useMemo(() => {
     const data = [...filteredProducts];
@@ -239,13 +289,16 @@ const ShopPage = () => {
 
       case "latest":
       default:
-        data.reverse();
+        data.sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+        );
+        break;
     }
 
     return data;
   }, [filteredProducts, sortBy]);
 
-  /* ---------------- Pagination ---------------- */
+  /* ---------------- PAGINATION ---------------- */
 
   const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
 
@@ -255,23 +308,37 @@ const ShopPage = () => {
     return sortedProducts.slice(start, start + PRODUCTS_PER_PAGE);
   }, [sortedProducts, page]);
 
-  /* ---------------- Dynamic Filter Options ---------------- */
+  /* ---------------- FILTER OPTIONS ---------------- */
 
   const brands = useMemo(() => {
-    return [...new Set(products.map((p) => p.brand).filter(Boolean))].sort();
+    return [
+      ...new Set(products.map((product) => product.brand).filter(Boolean)),
+    ].sort();
   }, [products]);
 
   const skinTypes = useMemo(() => {
-    return [...new Set(products.flatMap((p) => p.suitableFor || []))].sort();
+    return [
+      ...new Set(products.flatMap((product) => product.suitableFor || [])),
+    ].sort();
   }, [products]);
 
   const concerns = useMemo(() => {
-    return [...new Set(products.flatMap((p) => p.skinConcerns || []))].sort();
+    return [
+      ...new Set(products.flatMap((product) => product.skinConcerns || [])),
+    ].sort();
   }, [products]);
 
   const benefits = useMemo(() => {
-    return [...new Set(products.flatMap((p) => p.benefits || []))].sort();
+    return [
+      ...new Set(
+        products.flatMap(
+          (product) => product.benefits || product.keybenefits || [],
+        ),
+      ),
+    ].sort();
   }, [products]);
+
+  /* ---------------- LOADING ---------------- */
 
   if (loading) {
     return (
@@ -295,6 +362,8 @@ const ShopPage = () => {
       </>
     );
   }
+
+  /* ---------------- PAGE ---------------- */
 
   return (
     <>
@@ -362,7 +431,7 @@ const ShopPage = () => {
         description={bannerData.subtitle}
         image={bannerData.promoImage}
         buttonText="Explore Collection"
-        buttonLink={`/shop/${category}`}
+        buttonLink={category ? `/shop/${category}` : "/shop"}
       />
 
       <ShopBenefits />

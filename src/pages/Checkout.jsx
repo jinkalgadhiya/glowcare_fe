@@ -1,5 +1,6 @@
 import { Box, Container, Grid, Paper } from "@mui/material";
 import { useState } from "react";
+
 import Navbar from "../components/Navbar";
 import CheckoutStepper from "../components/checkout/CheckoutStepper";
 import ShippingForm from "../components/checkout/ShippingForm";
@@ -25,6 +26,19 @@ const Checkout = () => {
     delivery: "standard",
 
     payment: "cod",
+  });
+
+  // =====================================================
+  // SINGLE PRICING SOURCE
+  // =====================================================
+
+  const [pricing, setPricing] = useState({
+    subtotal: 0,
+    discount: 0,
+    gst: 0,
+    shipping: 0,
+    total: 0,
+    appliedCoupon: null,
   });
 
   const nextStep = () => {
@@ -71,7 +85,13 @@ const Checkout = () => {
         );
 
       case 3:
-        return <ReviewOrder checkoutData={checkoutData} backStep={backStep} />;
+        return (
+          <ReviewOrder
+            checkoutData={checkoutData}
+            backStep={backStep}
+            pricing={pricing}
+          />
+        );
 
       default:
         return null;
@@ -81,6 +101,7 @@ const Checkout = () => {
   return (
     <>
       <Navbar />
+
       <Box
         sx={{
           background: "#FCFAF7",
@@ -96,14 +117,24 @@ const Checkout = () => {
         >
           <CheckoutStepper activeStep={activeStep} />
 
-          <Grid container spacing={5} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={7} lg={7}>
+          <Grid
+            container
+            spacing={5}
+            sx={{ mt: 2 }}
+          >
+            <Grid
+              item
+              xs={12}
+              md={7}
+              lg={7}
+            >
               <Paper
                 elevation={0}
                 sx={{
                   p: 5,
                   borderRadius: 4,
-                  border: "1px solid #ECE6DE",
+                  border:
+                    "1px solid #ECE6DE",
                   background: "#fff",
                 }}
               >
@@ -111,8 +142,16 @@ const Checkout = () => {
               </Paper>
             </Grid>
 
-            <Grid item xs={12} md={5} lg={5}>
-              <OrderSummary checkoutData={checkoutData} />
+            <Grid
+              item
+              xs={12}
+              md={5}
+              lg={5}
+            >
+              <OrderSummary
+                checkoutData={checkoutData}
+                onPricingChange={setPricing}
+              />
             </Grid>
           </Grid>
         </Container>
