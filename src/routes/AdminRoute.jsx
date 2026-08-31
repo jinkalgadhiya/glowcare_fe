@@ -11,7 +11,7 @@ import Categories from "../admin/pages/Categories";
 import AddCategory from "../admin/pages/AddCategory";
 import DeleteCategory from "../admin/components/category/DeleteCategory";
 
-import Products from "../admin/pages/Products";
+import Products from "../admin/pages/products";
 import AddProducts from "../admin/pages/AddProducts";
 
 import Orders from "../admin/pages/Orders";
