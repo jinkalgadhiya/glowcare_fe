@@ -1,4 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   Box,
   Paper,
@@ -14,17 +19,36 @@ import PriceDetails from "./PriceDetails";
 
 import { getCoupons } from "../../database/couponService";
 
-const OrderSummary = ({ checkoutData }) => {
-  const cartItems = useSelector((state) => state.cart.items);
+const OrderSummary = ({
+  checkoutData,
+  onPricingChange,
+}) => {
+  const cartItems = useSelector(
+    (state) => state.cart.items,
+  );
 
   // =====================================================
   // COUPON STATE
   // =====================================================
 
-  const [coupons, setCoupons] = useState([]);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState("");
-  const [couponLoading, setCouponLoading] = useState(false);
+  const [coupons, setCoupons] =
+    useState([]);
+
+  const [
+    appliedCoupon,
+    setAppliedCoupon,
+  ] = useState(null);
+
+  const [couponError, setCouponError] =
+    useState("");
+
+  const [
+    couponLoading,
+    setCouponLoading,
+  ] = useState(false);
+
+  const [couponCode, setCouponCode] =
+    useState("");
 
   // =====================================================
   // LOAD COUPONS
@@ -38,15 +62,18 @@ const OrderSummary = ({ checkoutData }) => {
     try {
       const data = await getCoupons();
 
-      console.log("🔥 COUPONS LOADED:", data);
-
-      const couponList = Array.isArray(data)
-        ? data
-        : data?.coupons || [];
+      const couponList =
+        Array.isArray(data)
+          ? data
+          : data?.coupons || [];
 
       setCoupons(couponList);
     } catch (error) {
-      console.error("❌ FAILED TO LOAD COUPONS:", error);
+      console.error(
+        "Failed to load coupons:",
+        error,
+      );
+
       setCoupons([]);
     }
   };
@@ -56,77 +83,199 @@ const OrderSummary = ({ checkoutData }) => {
   // =====================================================
 
   const subtotal = useMemo(() => {
-    return cartItems.reduce((total, item) => {
-      const price = Number(item.price) || 0;
-      const quantity = Number(item.quantity) || 1;
+    return cartItems.reduce(
+      (total, item) => {
+        const price =
+          Number(item.price) || 0;
 
-      return total + price * quantity;
-    }, 0);
+        const quantity =
+          Number(item.quantity) || 1;
+
+        return (
+          total +
+          price * quantity
+        );
+      },
+      0,
+    );
   }, [cartItems]);
 
   // =====================================================
-  // DELIVERY / SHIPPING
+  // DELIVERY
   // =====================================================
 
-  const deliveryType = checkoutData?.delivery || "standard";
+  const deliveryType =
+    checkoutData?.delivery ||
+    "standard";
 
-  const shipping = deliveryType === "express" ? 99 : 0;
+  const shipping =
+    deliveryType === "express"
+      ? 99
+      : 0;
+
+  // =====================================================
+  // DISCOUNT
+  // =====================================================
+
+  const discount =
+    appliedCoupon
+      ? Number(
+          appliedCoupon.discountAmount,
+        ) || 0
+      : 0;
+
+  // =====================================================
+  // GST
+  // GST AFTER DISCOUNT
+  // =====================================================
+
+  const gst = Math.round(
+    Math.max(
+      subtotal - discount,
+      0,
+    ) * 0.05,
+  );
+
+  // =====================================================
+  // FINAL TOTAL
+  // =====================================================
+
+  const finalTotal = Math.max(
+    subtotal -
+      discount +
+      gst +
+      shipping,
+    0,
+  );
+
+  // =====================================================
+  // PRICING DATA
+  // THIS WILL BE USED EVERYWHERE
+  // =====================================================
+
+  const pricingData = useMemo(() => {
+    return {
+      subtotal,
+      discount,
+      gst,
+      shipping,
+      total: finalTotal,
+
+      appliedCoupon:
+        appliedCoupon
+          ? {
+              code:
+                appliedCoupon.code ||
+                "",
+
+              discountAmount:
+                discount,
+            }
+          : null,
+    };
+  }, [
+    subtotal,
+    discount,
+    gst,
+    shipping,
+    finalTotal,
+    appliedCoupon,
+  ]);
+
+  // =====================================================
+  // SEND PRICING TO CHECKOUT PARENT
+  // =====================================================
+
+  useEffect(() => {
+    if (onPricingChange) {
+      onPricingChange(
+        pricingData,
+      );
+    }
+  }, [
+    pricingData,
+    onPricingChange,
+  ]);
 
   // =====================================================
   // APPLY COUPON
   // =====================================================
 
-  const handleApplyCoupon = async (code) => {
+  const handleApplyCoupon = async (
+    code,
+  ) => {
     setCouponError("");
 
-    const enteredCode = String(code || "")
+    const enteredCode = String(
+      code || "",
+    )
       .trim()
       .toUpperCase();
 
     if (!enteredCode) {
-      setCouponError("Please enter a coupon code.");
+      setCouponError(
+        "Please enter a coupon code.",
+      );
+
       return;
     }
 
     try {
       setCouponLoading(true);
 
-      const latestData = await getCoupons();
+      const latestData =
+        await getCoupons();
 
-      const latestCoupons = Array.isArray(latestData)
-        ? latestData
-        : latestData?.coupons || [];
+      const latestCoupons =
+        Array.isArray(latestData)
+          ? latestData
+          : latestData?.coupons || [];
 
       setCoupons(latestCoupons);
 
-      const coupon = latestCoupons.find((item) => {
-        const couponCode = String(item.code || "")
-          .trim()
-          .toUpperCase();
+      const coupon =
+        latestCoupons.find(
+          (item) => {
+            const currentCode =
+              String(
+                item.code || "",
+              )
+                .trim()
+                .toUpperCase();
 
-        return couponCode === enteredCode;
-      });
+            return (
+              currentCode ===
+              enteredCode
+            );
+          },
+        );
 
       // =================================================
-      // COUPON NOT FOUND
+      // NOT FOUND
       // =================================================
 
       if (!coupon) {
-        setCouponError("Invalid coupon code.");
+        setCouponError(
+          "Invalid coupon code.",
+        );
+
         return;
       }
 
       // =================================================
-      // ACTIVE STATUS
+      // ACTIVE
       // =================================================
 
       if (
         coupon.isActive === false ||
-        String(coupon.isActive).toLowerCase() === "false"
+        String(
+          coupon.isActive,
+        ).toLowerCase() === "false"
       ) {
         setCouponError(
-          "This coupon is currently inactive."
+          "This coupon is currently inactive.",
         );
+
         return;
       }
 
@@ -135,18 +284,38 @@ const OrderSummary = ({ checkoutData }) => {
       // =================================================
 
       if (coupon.startDate) {
-        const startDate = new Date(coupon.startDate);
+        const startDate =
+          new Date(
+            coupon.startDate,
+          );
 
-        if (!Number.isNaN(startDate.getTime())) {
-          startDate.setHours(0, 0, 0, 0);
+        if (
+          !Number.isNaN(
+            startDate.getTime(),
+          )
+        ) {
+          startDate.setHours(
+            0,
+            0,
+            0,
+            0,
+          );
 
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+          const today =
+            new Date();
+
+          today.setHours(
+            0,
+            0,
+            0,
+            0,
+          );
 
           if (today < startDate) {
             setCouponError(
-              "This coupon is not active yet."
+              "This coupon is not active yet.",
             );
+
             return;
           }
         }
@@ -157,17 +326,31 @@ const OrderSummary = ({ checkoutData }) => {
       // =================================================
 
       if (coupon.expiryDate) {
-        const expiryDate = new Date(coupon.expiryDate);
+        const expiryDate =
+          new Date(
+            coupon.expiryDate,
+          );
 
-        if (!Number.isNaN(expiryDate.getTime())) {
-          expiryDate.setHours(23, 59, 59, 999);
+        if (
+          !Number.isNaN(
+            expiryDate.getTime(),
+          )
+        ) {
+          expiryDate.setHours(
+            23,
+            59,
+            59,
+            999,
+          );
 
-          const today = new Date();
-
-          if (today > expiryDate) {
+          if (
+            new Date() >
+            expiryDate
+          ) {
             setCouponError(
-              "This coupon has expired."
+              "This coupon has expired.",
             );
+
             return;
           }
         }
@@ -178,86 +361,120 @@ const OrderSummary = ({ checkoutData }) => {
       // =================================================
 
       const minimumOrder =
-        Number(coupon.minimumOrderAmount) || 0;
+        Number(
+          coupon.minimumOrderAmount,
+        ) || 0;
 
-      if (subtotal < minimumOrder) {
+      if (
+        subtotal < minimumOrder
+      ) {
         setCouponError(
           `Minimum order amount is ₹${minimumOrder.toLocaleString(
-            "en-IN"
-          )}.`
+            "en-IN",
+          )}.`,
         );
 
         return;
       }
 
       // =================================================
-      // DISCOUNT
+      // CALCULATE DISCOUNT
       // =================================================
 
-      const discountType = String(
-        coupon.discountType || ""
-      )
-        .trim()
-        .toLowerCase();
+      const discountType =
+        String(
+          coupon.discountType ||
+            "",
+        )
+          .trim()
+          .toLowerCase();
 
       const discountValue =
-        Number(coupon.discountValue) || 0;
+        Number(
+          coupon.discountValue,
+        ) || 0;
 
-      let discount = 0;
+      let calculatedDiscount =
+        0;
 
-      // Percentage discount
+      // Percentage
+
       if (
-        discountType === "percentage" ||
-        discountType === "percent"
+        discountType ===
+          "percentage" ||
+        discountType ===
+          "percent"
       ) {
-        discount =
-          (subtotal * discountValue) / 100;
+        calculatedDiscount =
+          (subtotal *
+            discountValue) /
+          100;
 
         const maximumDiscount =
-          Number(coupon.maximumDiscount);
+          Number(
+            coupon.maximumDiscount,
+          );
 
         if (
-          coupon.maximumDiscount !== null &&
-          coupon.maximumDiscount !== undefined &&
-          coupon.maximumDiscount !== "" &&
-          !Number.isNaN(maximumDiscount) &&
+          coupon.maximumDiscount !==
+            null &&
+          coupon.maximumDiscount !==
+            undefined &&
+          coupon.maximumDiscount !==
+            "" &&
+          !Number.isNaN(
+            maximumDiscount,
+          ) &&
           maximumDiscount > 0
         ) {
-          discount = Math.min(
-            discount,
-            maximumDiscount
-          );
+          calculatedDiscount =
+            Math.min(
+              calculatedDiscount,
+              maximumDiscount,
+            );
         }
       }
 
-      // Fixed discount
+      // Fixed
+
       else if (
         discountType === "fixed" ||
-        discountType === "fixedamount" ||
-        discountType === "fixed_amount" ||
+        discountType ===
+          "fixedamount" ||
+        discountType ===
+          "fixed_amount" ||
         discountType === "amount"
       ) {
-        discount = discountValue;
+        calculatedDiscount =
+          discountValue;
       }
 
-      // Never discount more than subtotal
-      discount = Math.min(
-        discount,
-        subtotal
-      );
+      // =================================================
+      // SAFE DISCOUNT
+      // =================================================
 
-      discount = Math.max(
-        discount,
-        0
-      );
+      calculatedDiscount =
+        Math.min(
+          calculatedDiscount,
+          subtotal,
+        );
+
+      calculatedDiscount =
+        Math.max(
+          calculatedDiscount,
+          0,
+        );
 
       if (
-        !Number.isFinite(discount) ||
-        discount <= 0
+        !Number.isFinite(
+          calculatedDiscount,
+        ) ||
+        calculatedDiscount <= 0
       ) {
         setCouponError(
-          "This coupon does not provide a valid discount."
+          "This coupon does not provide a valid discount.",
         );
+
         return;
       }
 
@@ -267,21 +484,24 @@ const OrderSummary = ({ checkoutData }) => {
 
       setAppliedCoupon({
         ...coupon,
-        discountAmount: discount,
+
+        discountAmount:
+          calculatedDiscount,
       });
 
-      setCouponError("");
+      setCouponCode(
+        enteredCode,
+      );
 
-      console.log("🎉 COUPON APPLIED:", coupon.code);
-      console.log("💰 DISCOUNT:", discount);
+      setCouponError("");
     } catch (error) {
       console.error(
-        "❌ APPLY COUPON ERROR:",
-        error
+        "Apply coupon error:",
+        error,
       );
 
       setCouponError(
-        "Unable to apply coupon. Please try again."
+        "Unable to apply coupon. Please try again.",
       );
     } finally {
       setCouponLoading(false);
@@ -294,25 +514,11 @@ const OrderSummary = ({ checkoutData }) => {
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
+
+    setCouponCode("");
+
     setCouponError("");
   };
-
-  // =====================================================
-  // DISCOUNT
-  // =====================================================
-
-  const discount = appliedCoupon
-    ? Number(appliedCoupon.discountAmount) || 0
-    : 0;
-
-  // =====================================================
-  // FINAL TOTAL
-  // =====================================================
-
-  const finalTotal = Math.max(
-    subtotal + shipping - discount,
-    0
-  );
 
   // =====================================================
   // RETURN
@@ -324,17 +530,17 @@ const OrderSummary = ({ checkoutData }) => {
       sx={{
         p: 4,
         borderRadius: 4,
-        border: "1px solid #ECE6DE",
+        border:
+          "1px solid #ECE6DE",
         position: "sticky",
         top: 100,
         background: "#fff",
         width: 480,
-        boxSizing: "border-box",
+        boxSizing:
+          "border-box",
       }}
     >
-      {/* =================================================
-          HEADING
-      ================================================= */}
+      {/* HEADING */}
 
       <Typography
         sx={{
@@ -347,127 +553,162 @@ const OrderSummary = ({ checkoutData }) => {
         Order Summary
       </Typography>
 
-      {/* =================================================
-          PRODUCTS
-      ================================================= */}
+      {/* PRODUCTS */}
 
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection:
+            "column",
           gap: 2.5,
         }}
       >
-        {cartItems.map((item) => (
-          <Box
-            key={`${item.productId}-${item.variantId}`}
-            sx={{
-              display: "flex",
-              gap: 2,
-              alignItems: "center",
-            }}
-          >
-            <Avatar
-              src={item.image}
-              variant="rounded"
-              sx={{
-                width: 75,
-                height: 75,
-                bgcolor: "#F7F5F2",
-                borderRadius: 3,
-              }}
-            />
-
+        {cartItems.map(
+          (item) => (
             <Box
+              key={`${item.productId}-${item.variantId}`}
               sx={{
-                flex: 1,
-                minWidth: 0,
+                display: "flex",
+                gap: 2,
+                alignItems:
+                  "center",
               }}
             >
+              <Avatar
+                src={item.image}
+                variant="rounded"
+                sx={{
+                  width: 75,
+                  height: 75,
+                  bgcolor:
+                    "#F7F5F2",
+                  borderRadius: 3,
+                }}
+              />
+
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color:
+                      "#1E2F2B",
+                    fontSize: 15,
+                    overflow:
+                      "hidden",
+                    textOverflow:
+                      "ellipsis",
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {item.name}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    color: "#777",
+                    fontSize: 13,
+                    mt: 0.5,
+                  }}
+                >
+                  {item.size}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    color: "#777",
+                    fontSize: 13,
+                    mt: 0.5,
+                  }}
+                >
+                  Qty :{" "}
+                  {item.quantity}
+                </Typography>
+              </Box>
+
               <Typography
                 sx={{
                   fontWeight: 600,
-                  color: "#1E2F2B",
-                  fontSize: 15,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  color:
+                    "#1E2F2B",
+                  fontSize: 16,
+                  whiteSpace:
+                    "nowrap",
                 }}
               >
-                {item.name}
-              </Typography>
-
-              <Typography
-                sx={{
-                  color: "#777",
-                  fontSize: 13,
-                  mt: 0.5,
-                }}
-              >
-                {item.size}
-              </Typography>
-
-              <Typography
-                sx={{
-                  color: "#777",
-                  fontSize: 13,
-                  mt: 0.5,
-                }}
-              >
-                Qty : {item.quantity}
+                ₹
+                {(
+                  Number(
+                    item.price ||
+                      0,
+                  ) *
+                  Number(
+                    item.quantity ||
+                      1,
+                  )
+                ).toLocaleString(
+                  "en-IN",
+                )}
               </Typography>
             </Box>
-
-            <Typography
-              sx={{
-                fontWeight: 600,
-                color: "#1E2F2B",
-                fontSize: 16,
-                whiteSpace: "nowrap",
-              }}
-            >
-              ₹
-              {(
-                Number(item.price || 0) *
-                Number(item.quantity || 1)
-              ).toLocaleString("en-IN")}
-            </Typography>
-          </Box>
-        ))}
+          ),
+        )}
       </Box>
 
       <Divider sx={{ my: 4 }} />
 
-      {/* =================================================
-          COUPON
-      ================================================= */}
+      {/* COUPON */}
 
       <CouponBox
-        appliedCoupon={appliedCoupon}
-        couponError={couponError}
-        loading={couponLoading}
-        onApply={handleApplyCoupon}
-        onRemove={handleRemoveCoupon}
+        couponCode={
+          couponCode
+        }
+        setCouponCode={
+          setCouponCode
+        }
+        appliedCoupon={
+          appliedCoupon
+        }
+        couponError={
+          couponError
+        }
+        loading={
+          couponLoading
+        }
+        onApply={
+          handleApplyCoupon
+        }
+        onRemove={
+          handleRemoveCoupon
+        }
       />
 
       <Divider sx={{ my: 4 }} />
 
-      {/* =================================================
-          PRICE DETAILS
-      ================================================= */}
+      {/* PRICE DETAILS */}
 
       <PriceDetails
-  subtotal={subtotal}
-  discount={discount}
-  appliedCoupon={appliedCoupon}
-  delivery={deliveryType}
-/>
+        subtotal={subtotal}
+        discount={discount}
+        gst={gst}
+        shipping={shipping}
+        total={finalTotal}
+        appliedCoupon={
+          appliedCoupon
+        }
+        delivery={
+          deliveryType
+        }
+      />
 
       <Divider sx={{ my: 4 }} />
 
-      {/* =================================================
-          DELIVERY INFORMATION
-      ================================================= */}
+      {/* DELIVERY */}
 
       <Typography
         sx={{
@@ -485,26 +726,28 @@ const OrderSummary = ({ checkoutData }) => {
           mb: 4,
         }}
       >
-        {deliveryType === "express"
+        {deliveryType ===
+        "express"
           ? "1–2 Business Days"
           : "3–5 Business Days"}
       </Typography>
 
-      {/* =================================================
-          SECURE CHECKOUT
-      ================================================= */}
+      {/* SECURE */}
 
       <Box
         sx={{
-          background: "#F8F6F3",
+          background:
+            "#F8F6F3",
           p: 2,
           borderRadius: 3,
-          textAlign: "center",
+          textAlign:
+            "center",
         }}
       >
         <Typography
           sx={{
-            color: "#1E2F2B",
+            color:
+              "#1E2F2B",
             fontWeight: 600,
             fontSize: 15,
           }}
@@ -519,7 +762,10 @@ const OrderSummary = ({ checkoutData }) => {
             fontSize: 13,
           }}
         >
-          Your payment information is encrypted and secure.
+          Your payment
+          information is
+          encrypted and
+          secure.
         </Typography>
       </Box>
     </Paper>

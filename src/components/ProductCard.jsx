@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, Rating } from "@mui/material";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
@@ -18,6 +18,12 @@ import {
 
 import { addProductToCart } from "../redux/cart/cartActions";
 
+// =====================================================
+// REVIEW SERVICE
+// =====================================================
+
+import { getMyReviews } from "../database/reviewService";
+
 const ProductCard = ({
   product,
   showBadge = true,
@@ -32,6 +38,13 @@ const ProductCard = ({
   const wishlistItems = useSelector(
     (state) => state.wishlist.items,
   );
+
+  // =====================================================
+  // PRODUCT REVIEWS
+  // =====================================================
+
+  const [productReviews, setProductReviews] =
+    useState([]);
 
   const firstVariant = product?.variants?.[0];
 
@@ -51,6 +64,64 @@ const ProductCard = ({
     product?.category?.subCategory ||
     product?.category?.mainCategory ||
     "";
+
+  /* ===============================
+     LOAD REAL PRODUCT REVIEWS
+  =============================== */
+
+  useEffect(() => {
+    const loadProductReviews = async () => {
+      try {
+        const reviews = await getMyReviews();
+
+        const currentProductReviews =
+          reviews.filter((review) => {
+            const reviewProductId =
+              review.productId?._id ||
+              review.productId ||
+              review.product?._id ||
+              review.product;
+
+            return (
+              String(reviewProductId) ===
+              String(product?._id)
+            );
+          });
+
+        setProductReviews(
+          currentProductReviews,
+        );
+      } catch (error) {
+        console.error(
+          "Failed to load product reviews:",
+          error,
+        );
+
+        setProductReviews([]);
+      }
+    };
+
+    if (product?._id) {
+      loadProductReviews();
+    }
+  }, [product?._id]);
+
+  /* ===============================
+     REAL REVIEW RATING
+  =============================== */
+
+  const reviewCount =
+    productReviews.length;
+
+  const averageRating =
+    reviewCount > 0
+      ? productReviews.reduce(
+          (total, review) =>
+            total +
+            (Number(review.rating) || 0),
+          0,
+        ) / reviewCount
+      : 0;
 
   /* ===============================
      WISHLIST
@@ -135,9 +206,11 @@ const ProductCard = ({
   =============================== */
 
   const discount =
-    firstVariant?.discountPrice && originalPrice > 0
+    firstVariant?.discountPrice &&
+    originalPrice > 0
       ? Math.round(
-          ((originalPrice - currentPrice) /
+          ((originalPrice -
+            currentPrice) /
             originalPrice) *
             100,
         )
@@ -159,7 +232,8 @@ const ProductCard = ({
 
         "&:hover": {
           transform: "translateY(-8px)",
-          boxShadow: "0 18px 40px rgba(0,0,0,.12)",
+          boxShadow:
+            "0 18px 40px rgba(0,0,0,.12)",
         },
       }}
     >
@@ -179,7 +253,8 @@ const ProductCard = ({
           alignItems: "center",
 
           "&:hover img": {
-            transform: "translateY(-8px) scale(1.05)",
+            transform:
+              "translateY(-8px) scale(1.05)",
           },
         }}
       >
@@ -361,7 +436,7 @@ const ProductCard = ({
             }}
           >
             <Rating
-              value={product.rating || 4.8}
+              value={averageRating}
               precision={0.5}
               readOnly
               size="small"
@@ -373,8 +448,10 @@ const ProductCard = ({
                 color: "#666",
               }}
             >
-              {product.rating || 4.8} (
-              {product.reviewCount || 0} Reviews)
+              {reviewCount > 0
+                ? averageRating.toFixed(1)
+                : "0.0"}{" "}
+              ({reviewCount} Reviews)
             </Typography>
           </Box>
         )}
@@ -404,8 +481,10 @@ const ProductCard = ({
               sx={{
                 fontSize: 16,
                 color: "#999",
-                textDecoration: "line-through",
-                textDecorationColor: "#D32F2F",
+                textDecoration:
+                  "line-through",
+                textDecorationColor:
+                  "#D32F2F",
               }}
             >
               ₹{originalPrice}
@@ -448,7 +527,8 @@ const ProductCard = ({
               "&:hover": {
                 bgcolor: "#1E2F2B",
                 color: "#fff",
-                borderColor: "#1E2F2B",
+                borderColor:
+                  "#1E2F2B",
               },
             }}
           >

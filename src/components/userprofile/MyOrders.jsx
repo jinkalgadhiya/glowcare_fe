@@ -50,22 +50,19 @@ const MyOrders = () => {
 
         console.log("🔥 CUSTOMER ORDERS RESPONSE:", data);
 
-        if (data?.length > 0) {
-          console.log("🔥 FIRST ORDER:", data[0]);
-          console.log("🔥 TOTAL AMOUNT:", data[0]?.totalAmount);
-          console.log("🔥 TOTAL:", data[0]?.total);
-          console.log("🔥 GRAND TOTAL:", data[0]?.grandTotal);
-          console.log("🔥 ITEMS:", data[0]?.items);
-        }
-
         // Latest orders first
         const sortedOrders = [...(data || [])].sort(
-          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+          (a, b) =>
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0),
         );
 
         setOrders(sortedOrders);
       } catch (error) {
-        console.error("Failed to load orders:", error);
+        console.error(
+          "Failed to load orders:",
+          error,
+        );
       }
     };
 
@@ -77,7 +74,9 @@ const MyOrders = () => {
   // =====================================================
 
   const getStatusStyle = (status) => {
-    const normalizedStatus = String(status || "Processing").toLowerCase();
+    const normalizedStatus = String(
+      status || "Processing",
+    ).toLowerCase();
 
     if (normalizedStatus === "delivered") {
       return {
@@ -95,7 +94,10 @@ const MyOrders = () => {
       };
     }
 
-    if (normalizedStatus === "cancelled" || normalizedStatus === "canceled") {
+    if (
+      normalizedStatus === "cancelled" ||
+      normalizedStatus === "canceled"
+    ) {
       return {
         color: "#7A4038",
         backgroundColor: "#F7E9E6",
@@ -103,7 +105,10 @@ const MyOrders = () => {
       };
     }
 
-    if (normalizedStatus === "out for delivery") {
+    if (
+      normalizedStatus ===
+      "out for delivery"
+    ) {
       return {
         color: "#365A4E",
         backgroundColor: "#E8F0EC",
@@ -129,15 +134,22 @@ const MyOrders = () => {
 
     const parsedDate = new Date(date);
 
-    if (Number.isNaN(parsedDate.getTime())) {
+    if (
+      Number.isNaN(
+        parsedDate.getTime(),
+      )
+    ) {
       return "Date unavailable";
     }
 
-    return parsedDate.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return parsedDate.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      },
+    );
   };
 
   // =====================================================
@@ -145,28 +157,53 @@ const MyOrders = () => {
   // =====================================================
 
   const getOrderTotal = (order) => {
-    // Main source
-    if (order?.pricing?.total !== undefined) {
-      return Number(order.pricing.total) || 0;
+    if (
+      order?.pricing?.total !==
+      undefined
+    ) {
+      return (
+        Number(
+          order.pricing.total,
+        ) || 0
+      );
     }
 
-    // Older orders
-    if (order?.totalAmount !== undefined) {
-      return Number(order.totalAmount) || 0;
+    if (
+      order?.totalAmount !==
+      undefined
+    ) {
+      return (
+        Number(
+          order.totalAmount,
+        ) || 0
+      );
     }
 
-    if (order?.total !== undefined) {
-      return Number(order.total) || 0;
+    if (
+      order?.total !== undefined
+    ) {
+      return (
+        Number(order.total) || 0
+      );
     }
 
-    // Last fallback
     if (order?.items?.length) {
-      return order.items.reduce((total, item) => {
-        const price = Number(item.price) || 0;
-        const quantity = Number(item.quantity) || 1;
+      return order.items.reduce(
+        (total, item) => {
+          const itemTotal =
+            item.total !== undefined
+              ? Number(item.total) || 0
+              : Number(
+                  item.price || 0,
+                ) *
+                Number(
+                  item.quantity || 1,
+                );
 
-        return total + price * quantity;
-      }, 0);
+          return total + itemTotal;
+        },
+        0,
+      );
     }
 
     return 0;
@@ -177,7 +214,33 @@ const MyOrders = () => {
   // =====================================================
 
   const getProductImage = (item) => {
-    return item?.thumbnail || item?.image || item?.images?.[0] || "";
+    return (
+      item?.thumbnail ||
+      item?.image ||
+      item?.images?.[0] ||
+      ""
+    );
+  };
+
+  // =====================================================
+  // PRODUCT TOTAL
+  // SAME AS ORDER SUMMARY
+  // =====================================================
+
+  const getItemTotal = (item) => {
+    if (
+      item?.total !== undefined &&
+      item?.total !== null
+    ) {
+      return (
+        Number(item.total) || 0
+      );
+    }
+
+    return (
+      Number(item?.price || 0) *
+      Number(item?.quantity || 1)
+    );
   };
 
   // =====================================================
@@ -200,24 +263,22 @@ const MyOrders = () => {
   // REVIEW SUBMITTED
   // =====================================================
 
-  const handleReviewSubmitted = async (review) => {
-    console.log("⭐ REVIEW SUBMITTED:", review);
+  const handleReviewSubmitted = async (
+    review,
+  ) => {
+    console.log(
+      "⭐ REVIEW SUBMITTED:",
+      review,
+    );
 
-    /*
-      Later connect this to reviewService / IndexedDB.
-
-      Example:
-
-      await createReview(review);
-    */
-
-    console.log("⭐ Review data ready for database:", review);
+    console.log(
+      "⭐ Review data ready for database:",
+      review,
+    );
   };
 
   // =====================================================
-  // IMPORTANT
-  // IF ORDER IS SELECTED
-  // SHOW ORDER DETAILS INSTEAD OF MY ORDERS
+  // SHOW ORDER DETAILS
   // =====================================================
 
   if (selectedOrder) {
@@ -225,7 +286,9 @@ const MyOrders = () => {
       <OrderDetails
         order={selectedOrder}
         onBack={handleBackToOrders}
-        onReviewSubmitted={handleReviewSubmitted}
+        onReviewSubmitted={
+          handleReviewSubmitted
+        }
       />
     );
   }
@@ -242,13 +305,13 @@ const MyOrders = () => {
           width: "100%",
           minHeight: 620,
           borderRadius: "24px",
-          border: "1px solid #E8E1D8",
-          backgroundColor: "#FFFFFF",
+          border:
+            "1px solid #E8E1D8",
+          backgroundColor:
+            "#FFFFFF",
           overflow: "hidden",
         }}
       >
-        {/* HEADER */}
-
         <Box
           sx={{
             px: {
@@ -256,8 +319,10 @@ const MyOrders = () => {
               md: 4,
             },
             py: 3,
-            background: "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
-            borderBottom: "1px solid #E5DDD1",
+            background:
+              "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
+            borderBottom:
+              "1px solid #E5DDD1",
           }}
         >
           <Typography
@@ -280,18 +345,18 @@ const MyOrders = () => {
               color: "#777168",
             }}
           >
-            Track and manage your GlowCare orders
+            Track and manage your GlowCare
+            orders
           </Typography>
         </Box>
-
-        {/* EMPTY CONTENT */}
 
         <Box
           sx={{
             minHeight: 480,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
+            justifyContent:
+              "center",
             alignItems: "center",
             textAlign: "center",
             px: 3,
@@ -302,10 +367,12 @@ const MyOrders = () => {
               width: 100,
               height: 100,
               borderRadius: "50%",
-              backgroundColor: "#F1F5F1",
+              backgroundColor:
+                "#F1F5F1",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent:
+                "center",
               mb: 3,
             }}
           >
@@ -336,8 +403,10 @@ const MyOrders = () => {
               color: "#777168",
             }}
           >
-            You haven't placed any orders yet. Explore our skincare collection
-            and find something you'll love.
+            You haven't placed any orders
+            yet. Explore our skincare
+            collection and find something
+            you'll love.
           </Typography>
         </Box>
       </Card>
@@ -354,14 +423,13 @@ const MyOrders = () => {
       sx={{
         width: "100%",
         borderRadius: "24px",
-        border: "1px solid #E8E1D8",
+        border:
+          "1px solid #E8E1D8",
         backgroundColor: "#FFFFFF",
         overflow: "hidden",
       }}
     >
-      {/* =====================================================
-          PAGE HEADER
-      ===================================================== */}
+      {/* HEADER */}
 
       <Box
         sx={{
@@ -370,8 +438,10 @@ const MyOrders = () => {
             md: 4,
           },
           py: 3,
-          background: "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
-          borderBottom: "1px solid #E5DDD1",
+          background:
+            "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
+          borderBottom:
+            "1px solid #E5DDD1",
         }}
       >
         <Stack
@@ -388,8 +458,6 @@ const MyOrders = () => {
             width: "100%",
           }}
         >
-          {/* LEFT */}
-
           <Box>
             <Typography
               sx={{
@@ -411,11 +479,10 @@ const MyOrders = () => {
                 color: "#777168",
               }}
             >
-              Track and manage your GlowCare orders
+              Track and manage your GlowCare
+              orders
             </Typography>
           </Box>
-
-          {/* RIGHT - ORDER COUNT */}
 
           <Box
             sx={{
@@ -424,15 +491,16 @@ const MyOrders = () => {
               px: 2,
               mt: "10px",
               borderRadius: "14px",
-              backgroundColor: "#FFFFFF",
-              border: "1px solid #DDD5C9",
-
+              backgroundColor:
+                "#FFFFFF",
+              border:
+                "1px solid #DDD5C9",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-
+              justifyContent:
+                "center",
               flexShrink: 0,
-              ml: "auto", // 👈 pushes counter to the right
+              ml: "auto",
             }}
           >
             <Typography
@@ -443,15 +511,16 @@ const MyOrders = () => {
                 whiteSpace: "nowrap",
               }}
             >
-              {orders.length} {orders.length === 1 ? "Order" : "Orders"}
+              {orders.length}{" "}
+              {orders.length === 1
+                ? "Order"
+                : "Orders"}
             </Typography>
           </Box>
         </Stack>
       </Box>
 
-      {/* =====================================================
-          ORDER LIST
-      ===================================================== */}
+      {/* ORDER LIST */}
 
       <Box
         sx={{
@@ -464,29 +533,41 @@ const MyOrders = () => {
       >
         <Stack spacing={2.5}>
           {orders.map((order) => {
-            const statusStyle = getStatusStyle(order.status);
-            const items = order.items || [];
+            const statusStyle =
+              getStatusStyle(
+                order.status,
+              );
+
+            const items =
+              order.items || [];
 
             return (
               <Box
-                key={order._id || order.id || order.orderId}
+                key={
+                  order._id ||
+                  order.id ||
+                  order.orderId
+                }
                 sx={{
                   width: "100%",
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E9E2D8",
+                  backgroundColor:
+                    "#FFFFFF",
+                  border:
+                    "1px solid #E9E2D8",
                   borderRadius: "18px",
                   overflow: "hidden",
-                  transition: "all .25s ease",
+                  transition:
+                    "all .25s ease",
 
                   "&:hover": {
-                    borderColor: "#D6CBBE",
-                    boxShadow: "0 8px 25px rgba(30,47,43,0.06)",
+                    borderColor:
+                      "#D6CBBE",
+                    boxShadow:
+                      "0 8px 25px rgba(30,47,43,0.06)",
                   },
                 }}
               >
-                {/* =====================================================
-                    ORDER HEADER
-                ===================================================== */}
+                {/* ORDER HEADER */}
 
                 <Box
                   sx={{
@@ -495,20 +576,21 @@ const MyOrders = () => {
                       md: 3,
                     },
                     py: 2,
-                    backgroundColor: "#FBF9F5",
+                    backgroundColor:
+                      "#FBF9F5",
                   }}
                 >
                   <Box
                     sx={{
                       width: "100%",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "space-between",
                       gap: 3,
                     }}
                   >
-                    {/* ORDER ID */}
-
                     <Box
                       sx={{
                         minWidth: 0,
@@ -517,9 +599,11 @@ const MyOrders = () => {
                       <Typography
                         sx={{
                           fontSize: 12,
-                          color: "#8A8178",
+                          color:
+                            "#8A8178",
                           mb: 0.5,
-                          letterSpacing: 0.5,
+                          letterSpacing:
+                            0.5,
                         }}
                       >
                         ORDER ID
@@ -529,20 +613,25 @@ const MyOrders = () => {
                         sx={{
                           fontSize: 14,
                           fontWeight: 700,
-                          color: "#1E2F2B",
+                          color:
+                            "#1E2F2B",
                         }}
                       >
-                        #{order.orderNumber || order._id || order.id || "N/A"}
+                        #
+                        {order.orderNumber ||
+                          order._id ||
+                          order.id ||
+                          "N/A"}
                       </Typography>
                     </Box>
-
-                    {/* DATE + STATUS */}
 
                     <Box
                       sx={{
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "flex-end",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "flex-end",
                         gap: 2,
                         ml: "auto",
                         flexShrink: 0,
@@ -551,26 +640,37 @@ const MyOrders = () => {
                       <Typography
                         sx={{
                           fontSize: 13,
-                          color: "#777168",
-                          whiteSpace: "nowrap",
+                          color:
+                            "#777168",
+                          whiteSpace:
+                            "nowrap",
                         }}
                       >
-                        {formatDate(order.createdAt)}
+                        {formatDate(
+                          order.createdAt,
+                        )}
                       </Typography>
 
                       <Chip
-                        label={order.status || "Processing"}
+                        label={
+                          order.status ||
+                          "Processing"
+                        }
                         size="small"
                         sx={{
                           height: 30,
                           px: 0.5,
                           fontSize: 12,
                           fontWeight: 600,
-                          color: statusStyle.color,
-                          backgroundColor: statusStyle.backgroundColor,
+                          color:
+                            statusStyle.color,
+                          backgroundColor:
+                            statusStyle.backgroundColor,
                           border: `1px solid ${statusStyle.borderColor}`,
-                          borderRadius: "20px",
-                          whiteSpace: "nowrap",
+                          borderRadius:
+                            "20px",
+                          whiteSpace:
+                            "nowrap",
                         }}
                       />
                     </Box>
@@ -579,9 +679,7 @@ const MyOrders = () => {
 
                 <Divider />
 
-                {/* =====================================================
-                    PRODUCTS
-                ===================================================== */}
+                {/* PRODUCTS */}
 
                 <Box
                   sx={{
@@ -594,158 +692,213 @@ const MyOrders = () => {
                 >
                   <Stack spacing={2}>
                     {items.length > 0 ? (
-                      items.map((item, index) => (
-                        <React.Fragment
-                          key={item.id || item.productId || index}
-                        >
-                          <Box
-                            sx={{
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: 3,
-                            }}
+                      items.map(
+                        (
+                          item,
+                          index,
+                        ) => (
+                          <React.Fragment
+                            key={
+                              item.id ||
+                              item.productId ||
+                              index
+                            }
                           >
-                            {/* LEFT PRODUCT */}
-
                             <Box
                               sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                                minWidth: 0,
-                                flex: 1,
+                                width:
+                                  "100%",
+                                display:
+                                  "flex",
+                                alignItems:
+                                  "center",
+                                justifyContent:
+                                  "space-between",
+                                gap: 3,
                               }}
                             >
-                              {/* IMAGE */}
+                              {/* LEFT */}
 
                               <Box
                                 sx={{
-                                  width: 76,
-                                  height: 76,
-                                  flexShrink: 0,
-                                  borderRadius: "12px",
-                                  backgroundColor: "#F5F2ED",
-                                  border: "1px solid #ECE5DB",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  overflow: "hidden",
+                                  display:
+                                    "flex",
+                                  alignItems:
+                                    "center",
+                                  gap: 2,
+                                  minWidth: 0,
+                                  flex: 1,
                                 }}
                               >
-                                {getProductImage(item) ? (
-                                  <Box
-                                    component="img"
-                                    src={getProductImage(item)}
-                                    alt={
-                                      item.productName || item.name || "Product"
-                                    }
+                                <Box
+                                  sx={{
+                                    width: 76,
+                                    height: 76,
+                                    flexShrink: 0,
+                                    borderRadius:
+                                      "12px",
+                                    backgroundColor:
+                                      "#F5F2ED",
+                                    border:
+                                      "1px solid #ECE5DB",
+                                    display:
+                                      "flex",
+                                    alignItems:
+                                      "center",
+                                    justifyContent:
+                                      "center",
+                                    overflow:
+                                      "hidden",
+                                  }}
+                                >
+                                  {getProductImage(
+                                    item,
+                                  ) ? (
+                                    <Box
+                                      component="img"
+                                      src={getProductImage(
+                                        item,
+                                      )}
+                                      alt={
+                                        item.productName ||
+                                        item.name ||
+                                        "Product"
+                                      }
+                                      sx={{
+                                        width:
+                                          "100%",
+                                        height:
+                                          "100%",
+                                        objectFit:
+                                          "cover",
+                                      }}
+                                    />
+                                  ) : (
+                                    <ShoppingBagOutlinedIcon
+                                      sx={{
+                                        color:
+                                          "#B8B0A6",
+                                        fontSize:
+                                          30,
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+
+                                <Box
+                                  sx={{
+                                    minWidth: 0,
+                                  }}
+                                >
+                                  <Typography
                                     sx={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
+                                      fontSize:
+                                        15,
+                                      fontWeight:
+                                        650,
+                                      color:
+                                        "#1E2F2B",
+                                      lineHeight:
+                                        1.4,
+                                      overflow:
+                                        "hidden",
+                                      textOverflow:
+                                        "ellipsis",
+                                      whiteSpace:
+                                        "nowrap",
                                     }}
-                                  />
-                                ) : (
-                                  <ShoppingBagOutlinedIcon
+                                  >
+                                    {item.productName ||
+                                      item.name ||
+                                      "GlowCare Product"}
+                                  </Typography>
+
+                                  {item.size && (
+                                    <Typography
+                                      sx={{
+                                        mt: 0.5,
+                                        fontSize:
+                                          13,
+                                        color:
+                                          "#777168",
+                                      }}
+                                    >
+                                      Size:{" "}
+                                      {item.size}
+                                    </Typography>
+                                  )}
+
+                                  <Typography
                                     sx={{
-                                      color: "#B8B0A6",
-                                      fontSize: 30,
+                                      mt: 0.5,
+                                      fontSize:
+                                        13,
+                                      color:
+                                        "#777168",
                                     }}
-                                  />
-                                )}
+                                  >
+                                    Qty:{" "}
+                                    {item.quantity ||
+                                      1}
+                                  </Typography>
+                                </Box>
                               </Box>
 
-                              {/* PRODUCT DETAILS */}
+                              {/* PRODUCT TOTAL */}
 
                               <Box
                                 sx={{
-                                  minWidth: 0,
+                                  ml: "auto",
+                                  flexShrink: 0,
+                                  textAlign:
+                                    "right",
                                 }}
                               >
                                 <Typography
                                   sx={{
                                     fontSize: 15,
-                                    fontWeight: 650,
-                                    color: "#1E2F2B",
-                                    lineHeight: 1.4,
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    fontWeight: 700,
+                                    color:
+                                      "#1E2F2B",
+                                    whiteSpace:
+                                      "nowrap",
                                   }}
                                 >
-                                  {item.productName ||
-                                    item.name ||
-                                    "GlowCare Product"}
-                                </Typography>
-
-                                {item.size && (
-                                  <Typography
-                                    sx={{
-                                      mt: 0.5,
-                                      fontSize: 13,
-                                      color: "#777168",
-                                    }}
-                                  >
-                                    Size: {item.size}
-                                  </Typography>
-                                )}
-
-                                <Typography
-                                  sx={{
-                                    mt: 0.5,
-                                    fontSize: 13,
-                                    color: "#777168",
-                                  }}
-                                >
-                                  Qty: {item.quantity || 1}
+                                  ₹
+                                  {Number(
+                                    getItemTotal(
+                                      item,
+                                    ),
+                                  ).toLocaleString(
+                                    "en-IN",
+                                  )}
                                 </Typography>
                               </Box>
                             </Box>
 
-                            {/* RIGHT PRICE */}
-
-                            <Box
-                              sx={{
-                                ml: "auto",
-                                flexShrink: 0,
-                                textAlign: "right",
-                              }}
-                            >
-                              <Typography
+                            {index <
+                              items.length -
+                                1 && (
+                              <Divider
                                 sx={{
-                                  fontSize: 15,
-                                  fontWeight: 700,
-                                  color: "#1E2F2B",
-                                  whiteSpace: "nowrap",
+                                  borderColor:
+                                    "#EEE8DF",
                                 }}
-                              >
-                                ₹
-                                {Number(
-                                  item.price || item.total || 0,
-                                ).toLocaleString("en-IN")}
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          {index < items.length - 1 && (
-                            <Divider
-                              sx={{
-                                borderColor: "#EEE8DF",
-                              }}
-                            />
-                          )}
-                        </React.Fragment>
-                      ))
+                              />
+                            )}
+                          </React.Fragment>
+                        ),
+                      )
                     ) : (
                       <Typography
                         sx={{
-                          color: "#777168",
+                          color:
+                            "#777168",
                           fontSize: 14,
                         }}
                       >
-                        No product details available.
+                        No product details
+                        available.
                       </Typography>
                     )}
                   </Stack>
@@ -753,9 +906,7 @@ const MyOrders = () => {
 
                 <Divider />
 
-                {/* =====================================================
-                    ORDER FOOTER
-                ===================================================== */}
+                {/* ORDER FOOTER */}
 
                 <Box
                   sx={{
@@ -770,17 +921,18 @@ const MyOrders = () => {
                     sx={{
                       width: "100%",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "space-between",
                       gap: 3,
                     }}
                   >
-                    {/* DELIVERY */}
-
                     <Box
                       sx={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems:
+                          "center",
                         gap: 1,
                         minWidth: 0,
                       }}
@@ -790,17 +942,22 @@ const MyOrders = () => {
                           width: 34,
                           height: 34,
                           flexShrink: 0,
-                          borderRadius: "50%",
-                          backgroundColor: "#EDF3EF",
+                          borderRadius:
+                            "50%",
+                          backgroundColor:
+                            "#EDF3EF",
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          alignItems:
+                            "center",
+                          justifyContent:
+                            "center",
                         }}
                       >
                         <LocalShippingOutlinedIcon
                           sx={{
                             fontSize: 19,
-                            color: "#1E2F2B",
+                            color:
+                              "#1E2F2B",
                           }}
                         />
                       </Box>
@@ -808,21 +965,23 @@ const MyOrders = () => {
                       <Typography
                         sx={{
                           fontSize: 13,
-                          color: "#6F6961",
-                          whiteSpace: "nowrap",
+                          color:
+                            "#6F6961",
+                          whiteSpace:
+                            "nowrap",
                         }}
                       >
                         GlowCare order
                       </Typography>
                     </Box>
 
-                    {/* TOTAL + VIEW DETAILS */}
-
                     <Box
                       sx={{
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "flex-end",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "flex-end",
                         gap: 2.5,
                         ml: "auto",
                         flexShrink: 0,
@@ -832,15 +991,19 @@ const MyOrders = () => {
 
                       <Box
                         sx={{
-                          textAlign: "right",
+                          textAlign:
+                            "right",
                         }}
                       >
                         <Typography
                           sx={{
                             fontSize: 11,
-                            color: "#8A8178",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
+                            color:
+                              "#8A8178",
+                            textTransform:
+                              "uppercase",
+                            letterSpacing:
+                              0.5,
                           }}
                         >
                           Total
@@ -850,12 +1013,20 @@ const MyOrders = () => {
                           sx={{
                             fontSize: 18,
                             fontWeight: 700,
-                            color: "#1E2F2B",
-                            whiteSpace: "nowrap",
+                            color:
+                              "#1E2F2B",
+                            whiteSpace:
+                              "nowrap",
                           }}
                         >
                           ₹
-                          {Number(getOrderTotal(order)).toLocaleString("en-IN")}
+                          {Number(
+                            getOrderTotal(
+                              order,
+                            ),
+                          ).toLocaleString(
+                            "en-IN",
+                          )}
                         </Typography>
                       </Box>
 
@@ -866,26 +1037,39 @@ const MyOrders = () => {
                         endIcon={
                           <ArrowForwardIosRoundedIcon
                             sx={{
-                              fontSize: "13px !important",
+                              fontSize:
+                                "13px !important",
                             }}
                           />
                         }
-                        onClick={() => handleViewDetails(order)}
+                        onClick={() =>
+                          handleViewDetails(
+                            order,
+                          )
+                        }
                         sx={{
                           minWidth: 135,
                           height: 42,
-                          borderRadius: "12px",
-                          textTransform: "none",
+                          borderRadius:
+                            "12px",
+                          textTransform:
+                            "none",
                           fontSize: 13,
                           fontWeight: 600,
-                          color: "#1E2F2B",
-                          borderColor: "#1E2F2B",
-                          whiteSpace: "nowrap",
+                          color:
+                            "#1E2F2B",
+                          borderColor:
+                            "#1E2F2B",
+                          whiteSpace:
+                            "nowrap",
 
                           "&:hover": {
-                            backgroundColor: "#1E2F2B",
-                            color: "#FFFFFF",
-                            borderColor: "#1E2F2B",
+                            backgroundColor:
+                              "#1E2F2B",
+                            color:
+                              "#FFFFFF",
+                            borderColor:
+                              "#1E2F2B",
                           },
                         }}
                       >

@@ -137,52 +137,51 @@ const OrderHeader = ({
 
         {/* Buttons */}
 
-        <Stack
-          direction="row"
-          spacing={2}
-        >
-          <Button
-            variant="contained"
-            disableElevation
-            sx={{
-              minWidth: 170,
-              height: 46,
-              bgcolor: "#B89478",
-              textTransform: "none",
-              fontSize: 15,
-              fontWeight: 600,
-              borderRadius: 2,
+        <Stack direction="row" spacing={2}>
+  {/* Total Orders Counter */}
+  <Box
+    sx={{
+      minWidth: 190,
+      height: 46,
+      px: 2.5,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      bgcolor: "#B89478",
+      fontSize: 15,
+      fontWeight: 600,
+      borderRadius: 2,
+      color: "#fff",
+      cursor: "default",
+      userSelect: "none",
+    }}
+  >
+    Total Orders : {totalOrders}
+  </Box>
 
-              "&:hover": {
-                bgcolor: "#A88366",
-              },
-            }}
-          >
-            Total Orders : {totalOrders}
-          </Button>
+  {/* Filter Button */}
+  <Button
+    variant="outlined"
+    startIcon={<FilterListOutlinedIcon />}
+    onClick={onOpenFilter}
+    sx={{
+      minWidth: 120,
+      height: 46,
+      borderColor: "#B89478",
+      color: "#B89478",
+      textTransform: "none",
+      fontWeight: 600,
+      borderRadius: 2,
 
-          <Button
-            variant="outlined"
-            startIcon={<FilterListOutlinedIcon />}
-            onClick={onOpenFilter}
-            sx={{
-              minWidth: 120,
-              height: 46,
-              borderColor: "#B89478",
-              color: "#B89478",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-
-              "&:hover": {
-                borderColor: "#A88366",
-                bgcolor: "rgba(184,148,120,.08)",
-              },
-            }}
-          >
-            Filter
-          </Button>
-        </Stack>
+      "&:hover": {
+        borderColor: "#A88366",
+        bgcolor: "rgba(184,148,120,.08)",
+      },
+    }}
+  >
+    Filter
+  </Button>
+</Stack>
       </Box>
     </Box>
   );

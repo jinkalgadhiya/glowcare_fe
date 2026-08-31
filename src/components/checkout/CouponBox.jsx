@@ -1,100 +1,74 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+
 import {
   Box,
-  Button,
-  TextField,
   Typography,
+  TextField,
+  Button,
 } from "@mui/material";
 
 const CouponBox = ({
+  couponCode,
+  setCouponCode,
   appliedCoupon,
   couponError,
   loading,
   onApply,
   onRemove,
 }) => {
-  const [coupon, setCoupon] = useState("");
-
   // =====================================================
-  // KEEP INPUT UPDATED AFTER COUPON IS APPLIED
+  // REMOVE COUPON
   // =====================================================
 
-  useEffect(() => {
-    if (appliedCoupon?.code) {
-      setCoupon(appliedCoupon.code);
-    }
-  }, [appliedCoupon]);
+  const handleRemove = () => {
+    // Remove applied coupon
+    onRemove();
 
-  // =====================================================
-  // APPLY
-  // =====================================================
-
-  const handleApply = () => {
-    onApply(coupon);
+    // Clear input field
+    setCouponCode("");
   };
 
   // =====================================================
-  // ENTER KEY
+  // COUPON APPLIED VIEW
   // =====================================================
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      if (!loading && coupon.trim()) {
-        handleApply();
-      }
-    }
-  };
-
-  // =====================================================
-  // RETURN
-  // =====================================================
-
-  return (
-    <Box>
-      {/* =================================================
-          TITLE
-      ================================================= */}
-
-      <Typography
-        sx={{
-          fontSize: 22,
-          fontWeight: 600,
-          color: "#1E2F2B",
-          mb: 2,
-        }}
-      >
-        Coupon
-      </Typography>
-
-      {/* =================================================
-          APPLIED COUPON
-      ================================================= */}
-
-      {appliedCoupon ? (
-        <Box
+  if (appliedCoupon) {
+    return (
+      <Box>
+        <Typography
           sx={{
-            border: "1px solid #D6E5DA",
-            backgroundColor: "#F4F8F5",
-            borderRadius: 2.5,
-            p: 2,
+            fontSize: 24,
+            fontWeight: 600,
+            color: "#1E2F2B",
+            mb: 2,
           }}
         >
+          Coupon
+        </Typography>
+
+        <Box
+          sx={{
+            p: 2.5,
+            borderRadius: 3,
+            border: "1px solid #C7D8CC",
+            backgroundColor: "#F3F8F4",
+          }}
+        >
+          {/* TOP */}
+
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 2,
             }}
           >
             <Box>
               <Typography
                 sx={{
-                  fontSize: 14,
-                  color: "#2F5D45",
+                  fontSize: 16,
                   fontWeight: 600,
+                  color: "#2F5D45",
                 }}
               >
                 ✓ Coupon Applied
@@ -102,11 +76,11 @@ const CouponBox = ({
 
               <Typography
                 sx={{
-                  mt: 0.5,
-                  fontSize: 16,
+                  mt: 1,
+                  fontSize: 18,
                   fontWeight: 700,
-                  color: "#1E2F2B",
                   letterSpacing: 1,
+                  color: "#1E2F2B",
                 }}
               >
                 {appliedCoupon.code}
@@ -114,9 +88,9 @@ const CouponBox = ({
 
               <Typography
                 sx={{
-                  mt: 0.5,
-                  fontSize: 13,
-                  color: "#777",
+                  mt: 1,
+                  fontSize: 14,
+                  color: "#777168",
                 }}
               >
                 You saved ₹
@@ -127,15 +101,17 @@ const CouponBox = ({
             </Box>
 
             <Button
-              size="small"
-              onClick={onRemove}
+              onClick={handleRemove}
               sx={{
+                minWidth: "auto",
                 textTransform: "none",
-                color: "#7A4038",
+                fontSize: 14,
                 fontWeight: 600,
+                color: "#8A5C55",
 
                 "&:hover": {
-                  backgroundColor: "#F7E9E6",
+                  backgroundColor: "transparent",
+                  color: "#7A4038",
                 },
               }}
             >
@@ -143,97 +119,101 @@ const CouponBox = ({
             </Button>
           </Box>
         </Box>
-      ) : (
-        <>
-          {/* =================================================
-              INPUT + APPLY
-          ================================================= */}
+      </Box>
+    );
+  }
 
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-            }}
-          >
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Enter coupon code"
-              value={coupon}
-              onChange={(e) =>
-                setCoupon(e.target.value)
-              }
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
+  // =====================================================
+  // COUPON INPUT VIEW
+  // =====================================================
 
-                  "& fieldset": {
-                    borderColor: "#D6D0C8",
-                  },
+  return (
+    <Box>
+      <Typography
+        sx={{
+          fontSize: 24,
+          fontWeight: 600,
+          color: "#1E2F2B",
+          mb: 2,
+        }}
+      >
+        Coupon
+      </Typography>
 
-                  "&:hover fieldset": {
-                    borderColor: "#B8AEA2",
-                  },
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          alignItems: "flex-start",
+        }}
+      >
+        <TextField
+          fullWidth
+          placeholder="Enter coupon code"
+          value={couponCode}
+          onChange={(e) => {
+            setCouponCode(
+              e.target.value.toUpperCase()
+            );
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onApply(couponCode);
+            }
+          }}
+          error={!!couponError}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              height: 52,
+              borderRadius: "12px",
+            },
+          }}
+        />
 
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1E2F2B",
-                  },
-                },
-              }}
-            />
+        <Button
+          onClick={() =>
+            onApply(couponCode)
+          }
+          disabled={loading}
+          variant="contained"
+          sx={{
+            minWidth: 115,
+            height: 52,
+            borderRadius: "12px",
+            textTransform: "none",
+            fontSize: 15,
+            fontWeight: 600,
 
-            <Button
-              variant="contained"
-              onClick={handleApply}
-              disabled={
-                loading || !coupon.trim()
-              }
-              sx={{
-                minWidth: 95,
-                px: 3,
+            backgroundColor: "#1E2F2B",
 
-                backgroundColor: "#1E2F2B",
+            "&:hover": {
+              backgroundColor: "#294039",
+            },
 
-                textTransform: "none",
+            "&.Mui-disabled": {
+              backgroundColor: "#AAB5B0",
+              color: "#FFFFFF",
+            },
+          }}
+        >
+          {loading
+            ? "Applying..."
+            : "Apply"}
+        </Button>
+      </Box>
 
-                borderRadius: 2,
+      {/* ERROR */}
 
-                fontWeight: 600,
-
-                "&:hover": {
-                  backgroundColor: "#16251F",
-                },
-
-                "&.Mui-disabled": {
-                  backgroundColor: "#D6D6D6",
-                  color: "#888",
-                },
-              }}
-            >
-              {loading
-                ? "Checking..."
-                : "Apply"}
-            </Button>
-          </Box>
-
-          {/* =================================================
-              ERROR
-          ================================================= */}
-
-          {couponError && (
-            <Typography
-              sx={{
-                mt: 1.5,
-                fontSize: 14,
-                color: "#D32F2F",
-              }}
-            >
-              ✕ {couponError}
-            </Typography>
-          )}
-        </>
+      {couponError && (
+        <Typography
+          sx={{
+            mt: 1,
+            fontSize: 13,
+            color: "#C62828",
+          }}
+        >
+          {couponError}
+        </Typography>
       )}
     </Box>
   );
