@@ -7,6 +7,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 import { getHomePageSettings } from "../database/homePageService";
+
 import {
   getDefaultHomePageSettings,
   mergeHomePageSettings,
@@ -18,65 +19,113 @@ const HeroSection = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [heroSlides, setHeroSlides] = useState([]);
 
+  // =====================================================
+  // LOAD HERO SETTINGS
+  // =====================================================
+
   useEffect(() => {
     const loadHeroSettings = async () => {
       try {
         const savedSettings = await getHomePageSettings();
 
         if (savedSettings) {
-          const { id, updatedAt, ...homePageSettings } = savedSettings;
+          const { id, updatedAt, ...homePageSettings } =
+            savedSettings;
 
           const mergedSettings =
-            mergeHomePageSettings(homePageSettings);
+            mergeHomePageSettings(
+              homePageSettings,
+            );
 
-          setHeroSlides(mergedSettings.hero.slides || []);
+          setHeroSlides(
+            mergedSettings.hero.slides || [],
+          );
         } else {
-          const defaults = getDefaultHomePageSettings();
+          const defaults =
+            getDefaultHomePageSettings();
 
-          setHeroSlides(defaults.hero.slides || []);
+          setHeroSlides(
+            defaults.hero.slides || [],
+          );
         }
       } catch (error) {
-        console.error("Error loading hero settings:", error);
+        console.error(
+          "Error loading hero settings:",
+          error,
+        );
 
-        const defaults = getDefaultHomePageSettings();
+        const defaults =
+          getDefaultHomePageSettings();
 
-        setHeroSlides(defaults.hero.slides || []);
+        setHeroSlides(
+          defaults.hero.slides || [],
+        );
       }
     };
 
     loadHeroSettings();
   }, []);
 
+  // =====================================================
+  // AUTO SLIDE
+  // =====================================================
+
   useEffect(() => {
     if (!heroSlides.length) return;
 
     const interval = setInterval(() => {
       setCurrentImage(
-        (prev) => (prev + 1) % heroSlides.length,
+        (prev) =>
+          (prev + 1) %
+          heroSlides.length,
       );
     }, 4000);
 
-    return () => clearInterval(interval);
+    return () =>
+      clearInterval(interval);
   }, [heroSlides]);
+
+  // =====================================================
+  // NEXT SLIDE
+  // =====================================================
 
   const nextSlide = () => {
     setCurrentImage(
-      (prev) => (prev + 1) % heroSlides.length,
+      (prev) =>
+        (prev + 1) %
+        heroSlides.length,
     );
   };
+
+  // =====================================================
+  // PREVIOUS SLIDE
+  // =====================================================
 
   const prevSlide = () => {
     setCurrentImage((prev) =>
-      prev === 0 ? heroSlides.length - 1 : prev - 1,
+      prev === 0
+        ? heroSlides.length - 1
+        : prev - 1,
     );
   };
 
+  // =====================================================
+  // NO SLIDES
+  // =====================================================
+
   if (!heroSlides.length) return null;
 
-  const currentSlide = heroSlides[currentImage];
+  const currentSlide =
+    heroSlides[currentImage];
+
+  // =====================================================
+  // CONTENT POSITION
+  // =====================================================
 
   const getContentPosition = () => {
-    switch (currentSlide.contentPosition) {
+    switch (
+      currentSlide.contentPosition
+    ) {
       case "left":
         return {
           left: "8%",
@@ -99,6 +148,20 @@ const HeroSection = () => {
     }
   };
 
+  // =====================================================
+  // CHECK IF BUTTON TEXT EXISTS
+  // =====================================================
+
+  const hasButton =
+    currentSlide?.buttonLabel &&
+    String(
+      currentSlide.buttonLabel,
+    ).trim() !== "";
+
+  // =====================================================
+  // RETURN
+  // =====================================================
+
   return (
     <Box
       sx={{
@@ -112,15 +175,18 @@ const HeroSection = () => {
       }}
     >
       {/* Overlay */}
+
       <Box
         sx={{
           position: "absolute",
           inset: 0,
-          backgroundColor: "rgba(0,0,0,0.15)",
+          backgroundColor:
+            "rgba(0,0,0,0.15)",
         }}
       />
 
       {/* Dynamic Content */}
+
       <Box
         sx={{
           position: "absolute",
@@ -131,6 +197,8 @@ const HeroSection = () => {
           ...getContentPosition(),
         }}
       >
+        {/* TITLE */}
+
         <Typography
           variant="h2"
           fontWeight="bold"
@@ -142,9 +210,11 @@ const HeroSection = () => {
           {currentSlide.title}
         </Typography>
 
+        {/* SUBTITLE */}
+
         <Typography
           sx={{
-            mb: 4,
+            mb: hasButton ? 4 : 0,
             fontSize: {
               xs: "16px",
               md: "20px",
@@ -156,39 +226,48 @@ const HeroSection = () => {
           {currentSlide.subtitle}
         </Typography>
 
-        <Button
-          variant="contained"
-          onClick={() =>
-            navigate(
-              currentSlide.buttonLink || "/shop",
-            )
-          }
-          sx={{
-            backgroundColor: "white",
-            color: "black",
-            borderRadius: "30px",
-            px: 4,
-            py: 1.5,
-            fontWeight: "bold",
-            boxShadow: 3,
+        {/* BUTTON
+            ONLY SHOW IF BUTTON LABEL EXISTS */}
 
-            "&:hover": {
-              backgroundColor: "#f5f5f5",
-            },
-          }}
-        >
-          {currentSlide.buttonLabel}
-        </Button>
+        {hasButton && (
+          <Button
+            variant="contained"
+            onClick={() =>
+              navigate(
+                currentSlide.buttonLink ||
+                  "/shop",
+              )
+            }
+            sx={{
+              backgroundColor: "white",
+              color: "black",
+              borderRadius: "30px",
+              px: 4,
+              py: 1.5,
+              fontWeight: "bold",
+              boxShadow: 3,
+
+              "&:hover": {
+                backgroundColor:
+                  "#f5f5f5",
+              },
+            }}
+          >
+            {currentSlide.buttonLabel}
+          </Button>
+        )}
       </Box>
 
       {/* Left Arrow */}
+
       <IconButton
         onClick={prevSlide}
         sx={{
           position: "absolute",
           left: 20,
           top: "50%",
-          transform: "translateY(-50%)",
+          transform:
+            "translateY(-50%)",
           color: "white",
           zIndex: 2,
         }}
@@ -197,13 +276,15 @@ const HeroSection = () => {
       </IconButton>
 
       {/* Right Arrow */}
+
       <IconButton
         onClick={nextSlide}
         sx={{
           position: "absolute",
           right: 20,
           top: "50%",
-          transform: "translateY(-50%)",
+          transform:
+            "translateY(-50%)",
           color: "white",
           zIndex: 2,
         }}
@@ -212,44 +293,50 @@ const HeroSection = () => {
       </IconButton>
 
       {/* Dots */}
+
       <Box
         sx={{
           position: "absolute",
           bottom: 30,
           left: "50%",
-          transform: "translateX(-50%)",
+          transform:
+            "translateX(-50%)",
           display: "flex",
           gap: 1,
           zIndex: 2,
         }}
       >
-        {heroSlides.map((_, index) => (
-          <Box
-            key={index}
-            onClick={() =>
-              setCurrentImage(index)
-            }
-            sx={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              cursor: "pointer",
-              bgcolor:
-                currentImage === index
-                  ? "white"
-                  : "rgba(255,255,255,.5)",
-            }}
-          />
-        ))}
+        {heroSlides.map(
+          (_, index) => (
+            <Box
+              key={index}
+              onClick={() =>
+                setCurrentImage(index)
+              }
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                cursor: "pointer",
+                bgcolor:
+                  currentImage === index
+                    ? "white"
+                    : "rgba(255,255,255,.5)",
+              }}
+            />
+          ),
+        )}
       </Box>
 
       {/* Scroll Indicator */}
+
       <Box
         sx={{
           position: "absolute",
           bottom: 70,
           left: "50%",
-          transform: "translateX(-50%)",
+          transform:
+            "translateX(-50%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -271,16 +358,18 @@ const HeroSection = () => {
         <KeyboardArrowDownIcon
           sx={{
             fontSize: 28,
-            animation: "bounce 1.5s infinite",
+            animation:
+              "bounce 1.5s infinite",
           }}
         />
 
         <style>
           {`
             @keyframes bounce {
-              0%,100% {
+              0%, 100% {
                 transform: translateY(0);
               }
+
               50% {
                 transform: translateY(8px);
               }
