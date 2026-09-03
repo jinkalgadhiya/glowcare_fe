@@ -106,8 +106,7 @@ const MyOrders = () => {
     }
 
     if (
-      normalizedStatus ===
-      "out for delivery"
+      normalizedStatus === "out for delivery"
     ) {
       return {
         color: "#365A4E",
@@ -224,7 +223,6 @@ const MyOrders = () => {
 
   // =====================================================
   // PRODUCT TOTAL
-  // SAME AS ORDER SUMMARY
   // =====================================================
 
   const getItemTotal = (item) => {
@@ -270,11 +268,6 @@ const MyOrders = () => {
       "⭐ REVIEW SUBMITTED:",
       review,
     );
-
-    console.log(
-      "⭐ Review data ready for database:",
-      review,
-    );
   };
 
   // =====================================================
@@ -292,6 +285,161 @@ const MyOrders = () => {
       />
     );
   }
+
+  // =====================================================
+  // PAGE HEADER
+  // =====================================================
+
+  const OrdersHeader = () => {
+    return (
+      <Box
+        sx={{
+          px: {
+            xs: 3,
+            md: 5,
+          },
+          py: {
+            xs: 4,
+            md: 5,
+          },
+          background:
+            "linear-gradient(135deg, #F8F3EC 0%, #EFE7DC 100%)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Decorative Circles */}
+
+        <Box
+          sx={{
+            position: "absolute",
+            width: 180,
+            height: 180,
+            borderRadius: "50%",
+            backgroundColor:
+              "rgba(184,148,120,0.10)",
+            right: -60,
+            top: -70,
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            width: 100,
+            height: 100,
+            borderRadius: "50%",
+            backgroundColor:
+              "rgba(184,148,120,0.08)",
+            right: 100,
+            bottom: -60,
+          }}
+        />
+
+        <Stack
+          direction={{
+            xs: "column",
+            md: "row",
+          }}
+          justifyContent="space-between"
+          alignItems={{
+            xs: "flex-start",
+            md: "center",
+          }}
+          spacing={3}
+          sx={{
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* LEFT SIDE */}
+
+          <Stack
+            direction={{
+              xs: "column",
+              sm: "row",
+            }}
+            spacing={3}
+            alignItems={{
+              xs: "flex-start",
+              sm: "center",
+            }}
+          >
+            {/* ICON */}
+
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                backgroundColor:
+                  "#1E2F2B",
+                display: "flex",
+                justifyContent:
+                  "center",
+                alignItems: "center",
+                flexShrink: 0,
+                boxShadow:
+                  "0 10px 25px rgba(30,47,43,0.15)",
+              }}
+            >
+              <ShoppingBagOutlinedIcon
+                sx={{
+                  color: "#FFFFFF",
+                  fontSize: 32,
+                }}
+              />
+            </Box>
+
+            {/* TEXT */}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform:
+                    "uppercase",
+                  color: "#B89478",
+                  mb: 1,
+                }}
+              >
+                Order Management
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: 28,
+                    md: 34,
+                  },
+                  fontWeight: 600,
+                  color: "#1E2F2B",
+                  lineHeight: 1.2,
+                }}
+              >
+                My Orders
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  color: "#777168",
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  maxWidth: 600,
+                }}
+              >
+                Track your purchases and
+                manage your GlowCare orders.
+              </Typography>
+            </Box>
+          </Stack>
+        </Stack>
+      </Box>
+    );
+  };
 
   // =====================================================
   // EMPTY STATE
@@ -312,47 +460,11 @@ const MyOrders = () => {
           overflow: "hidden",
         }}
       >
-        <Box
-          sx={{
-            px: {
-              xs: 3,
-              md: 4,
-            },
-            py: 3,
-            background:
-              "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
-            borderBottom:
-              "1px solid #E5DDD1",
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: {
-                xs: 24,
-                md: 28,
-              },
-              fontWeight: 700,
-              color: "#1E2F2B",
-            }}
-          >
-            My Orders
-          </Typography>
-
-          <Typography
-            sx={{
-              mt: 0.5,
-              fontSize: 14,
-              color: "#777168",
-            }}
-          >
-            Track and manage your GlowCare
-            orders
-          </Typography>
-        </Box>
+        <OrdersHeader />
 
         <Box
           sx={{
-            minHeight: 480,
+            minHeight: 450,
             display: "flex",
             flexDirection: "column",
             justifyContent:
@@ -360,6 +472,8 @@ const MyOrders = () => {
             alignItems: "center",
             textAlign: "center",
             px: 3,
+            backgroundColor:
+              "#FCFAF7",
           }}
         >
           <Box
@@ -429,98 +543,15 @@ const MyOrders = () => {
         overflow: "hidden",
       }}
     >
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-      <Box
-        sx={{
-          px: {
-            xs: 3,
-            md: 4,
-          },
-          py: 3,
-          background:
-            "linear-gradient(135deg, #F4EEE5 0%, #EEE7DC 100%)",
-          borderBottom:
-            "1px solid #E5DDD1",
-        }}
-      >
-        <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
-          }}
-          justifyContent="space-between"
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
-          }}
-          sx={{
-            width: "100%",
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{
-                fontSize: {
-                  xs: 24,
-                  md: 28,
-                },
-                fontWeight: 700,
-                color: "#1E2F2B",
-              }}
-            >
-              My Orders
-            </Typography>
+      <OrdersHeader />
 
-            <Typography
-              sx={{
-                mt: 0.5,
-                fontSize: 14,
-                color: "#777168",
-              }}
-            >
-              Track and manage your GlowCare
-              orders
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              minWidth: 110,
-              height: 42,
-              px: 2,
-              mt: "10px",
-              borderRadius: "14px",
-              backgroundColor:
-                "#FFFFFF",
-              border:
-                "1px solid #DDD5C9",
-              display: "flex",
-              alignItems: "center",
-              justifyContent:
-                "center",
-              flexShrink: 0,
-              ml: "auto",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: "#1E2F2B",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {orders.length}{" "}
-              {orders.length === 1
-                ? "Order"
-                : "Orders"}
-            </Typography>
-          </Box>
-        </Stack>
-      </Box>
-
-      {/* ORDER LIST */}
+      {/* =====================================================
+          ORDER LIST
+      ===================================================== */}
 
       <Box
         sx={{

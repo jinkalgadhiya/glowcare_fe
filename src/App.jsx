@@ -7,7 +7,6 @@ import AdminRoute from "./routes/AdminRoute";
 import CartLoader from "./components/cart/CartLoader";
 
 import { Users } from "./data/Users";
-import { initializeAdmin } from "./database/adminService";
 
 import {
   getUsers,
@@ -16,7 +15,7 @@ import {
 
 function App() {
   useEffect(() => {
-    const initializeAdmin = async () => {
+    const initializeUsers = async () => {
       const users = await getUsers();
 
       if (users.length === 0) {
@@ -24,14 +23,18 @@ function App() {
       }
     };
 
-    initializeAdmin();
+    initializeUsers();
   }, []);
 
   return (
     <BrowserRouter>
+      {/* Load cart */}
       <CartLoader />
 
+      {/* User Routes */}
       <UserRoute />
+
+      {/* Admin Routes */}
       <AdminRoute />
     </BrowserRouter>
   );

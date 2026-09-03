@@ -14,11 +14,17 @@ import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import PrivacyTipOutlinedIcon from "@mui/icons-material/PrivacyTipOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { logout } from "../../auth/AuthService";
+
+// =====================================================
+// ACCOUNT MENU ITEMS
+// =====================================================
 
 const menuItems = [
   {
@@ -46,15 +52,30 @@ const menuItems = [
     icon: <SupportAgentOutlinedIcon />,
     path: "/user/help-center",
   },
+  {
+    label: "Terms & Conditions",
+    icon: <DescriptionOutlinedIcon />,
+    path: "/user/terms-conditions",
+  },
+  {
+    label: "Privacy Policy",
+    icon: <PrivacyTipOutlinedIcon />,
+    path: "/user/privacy-policy",
+  },
 ];
+
+// =====================================================
+// ACCOUNT SIDEBAR
+// =====================================================
 
 const AccountSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ================================
+  // =====================================================
   // LOGOUT
-  // ================================
+  // =====================================================
+
   const handleLogout = () => {
     // Remove currentUser and token
     logout();
@@ -76,9 +97,9 @@ const AccountSidebar = () => {
         boxSizing: "border-box",
       }}
     >
-      {/* ================================
+      {/* =====================================================
           HEADER
-      ================================ */}
+      ===================================================== */}
 
       <Typography
         sx={{
@@ -103,9 +124,9 @@ const AccountSidebar = () => {
 
       <Divider sx={{ mb: 2 }} />
 
-      {/* ================================
+      {/* =====================================================
           MENU
-      ================================ */}
+      ===================================================== */}
 
       <List sx={{ p: 0 }}>
         {menuItems.map((item) => {
@@ -161,9 +182,9 @@ const AccountSidebar = () => {
         })}
       </List>
 
-      {/* ================================
+      {/* =====================================================
           LOGOUT
-      ================================ */}
+      ===================================================== */}
 
       <Divider
         sx={{
@@ -209,9 +230,9 @@ const AccountSidebar = () => {
         </ListItemButton>
       </List>
 
-      {/* ================================
+      {/* =====================================================
           BOTTOM PREMIUM CARD
-      ================================ */}
+      ===================================================== */}
 
       <Box
         sx={{

@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   AppBar,
@@ -14,10 +10,7 @@ import {
   Badge,
 } from "@mui/material";
 
-import {
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import DarkLogo from "../assets/LogoDark.png";
 import WhiteLogo from "../assets/LogoWhite.png";
@@ -46,29 +39,23 @@ const Navbar = () => {
 
   const isHome = location.pathname === "/";
 
-  const [scrolled, setScrolled] =
-    useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const [activeMenu, setActiveMenu] =
-    useState(null);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   // =====================================================
   // CART STATE
   // =====================================================
 
-  const [cartOpen, setCartOpen] =
-    useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
-  const cartItems = useSelector(
-    (state) => state.cart.items
-  );
+  const cartItems = useSelector((state) => state.cart.items);
 
   // =====================================================
   // AUTH STATE
   // =====================================================
 
-  const [loggedIn, setLoggedIn] =
-    useState(isLoggedIn());
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -78,8 +65,7 @@ const Navbar = () => {
   // NAVBAR COLOR
   // =====================================================
 
-  const isDarkNavbar =
-    !isHome || scrolled;
+  const isDarkNavbar = !isHome || scrolled;
 
   // =====================================================
   // MEGA MENU
@@ -104,9 +90,8 @@ const Navbar = () => {
   // =====================================================
 
   const totalItems = cartItems.reduce(
-    (total, item) =>
-      total + item.quantity,
-    0
+    (total, item) => total + item.quantity,
+    0,
   );
 
   // =====================================================
@@ -115,21 +100,13 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(
-        window.scrollY > 50
-      );
+      setScrolled(window.scrollY > 50);
     };
 
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    );
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -165,17 +142,11 @@ const Navbar = () => {
       position="fixed"
       elevation={0}
       sx={{
-        bgcolor: isHome
-          ? "transparent"
-          : "#F8F6F2",
+        bgcolor: isHome && !scrolled ? "transparent" : "#F8F6F2",
 
-        boxShadow: isHome
-          ? "none"
-          : "0 2px 10px rgba(0,0,0,.05)",
+        boxShadow: isHome && !scrolled ? "none" : "0 2px 10px rgba(0,0,0,.05)",
 
-        backdropFilter: scrolled
-          ? "blur(12px)"
-          : "none",
+        backdropFilter: "none",
 
         transition: "all .4s ease",
       }}
@@ -183,8 +154,7 @@ const Navbar = () => {
       <Toolbar
         sx={{
           display: "grid",
-          gridTemplateColumns:
-            "1fr auto 1fr",
+          gridTemplateColumns: "1fr auto 1fr",
 
           alignItems: "center",
 
@@ -205,32 +175,22 @@ const Navbar = () => {
           onMouseLeave={closeMenu}
           onMouseEnter={() => {
             if (closeTimer.current) {
-              clearTimeout(
-                closeTimer.current
-              );
+              clearTimeout(closeTimer.current);
             }
           }}
         >
-          <Stack
-            direction="row"
-            spacing={6}
-          >
+          <Stack direction="row" spacing={6}>
             {/* SKINCARE */}
 
             <Box position="relative">
               <Typography
-                onMouseEnter={() =>
-                  openMenu("skincare")
-                }
+                onMouseEnter={() => openMenu("skincare")}
                 sx={{
-                  color: isDarkNavbar
-                    ? "#222"
-                    : "#fff",
+                  color: isDarkNavbar ? "#222" : "#fff",
 
                   fontSize: "13px",
 
-                  letterSpacing:
-                    "2px",
+                  letterSpacing: "2px",
 
                   cursor: "pointer",
                 }}
@@ -242,18 +202,13 @@ const Navbar = () => {
             {/* HAIRCARE */}
 
             <Typography
-              onMouseEnter={() =>
-                openMenu("haircare")
-              }
+              onMouseEnter={() => openMenu("haircare")}
               sx={{
-                color: isDarkNavbar
-                  ? "#222"
-                  : "#fff",
+                color: isDarkNavbar ? "#222" : "#fff",
 
                 fontSize: "13px",
 
-                letterSpacing:
-                  "2px",
+                letterSpacing: "2px",
 
                 cursor: "pointer",
               }}
@@ -264,18 +219,13 @@ const Navbar = () => {
             {/* MORE */}
 
             <Typography
-              onMouseEnter={() =>
-                openMenu("more")
-              }
+              onMouseEnter={() => openMenu("more")}
               sx={{
-                color: isDarkNavbar
-                  ? "#222"
-                  : "#fff",
+                color: isDarkNavbar ? "#222" : "#fff",
 
                 fontSize: "13px",
 
-                letterSpacing:
-                  "2px",
+                letterSpacing: "2px",
 
                 cursor: "pointer",
               }}
@@ -289,19 +239,13 @@ const Navbar = () => {
           {activeMenu && (
             <Box
               onMouseEnter={() => {
-                if (
-                  closeTimer.current
-                ) {
-                  clearTimeout(
-                    closeTimer.current
-                  );
+                if (closeTimer.current) {
+                  clearTimeout(closeTimer.current);
                 }
               }}
               onMouseLeave={closeMenu}
             >
-              <MegaMenu
-                type={activeMenu}
-              />
+              <MegaMenu type={activeMenu} />
             </Box>
           )}
         </Box>
@@ -312,23 +256,15 @@ const Navbar = () => {
 
         <Box
           component="img"
-          onClick={() =>
-            navigate("/")
-          }
-          src={
-            isDarkNavbar
-              ? DarkLogo
-              : WhiteLogo
-          }
+          onClick={() => navigate("/")}
+          src={isDarkNavbar ? DarkLogo : WhiteLogo}
           alt="GlowCare"
           sx={{
             width: 140,
 
-            justifySelf:
-              "center",
+            justifySelf: "center",
 
-            transition:
-              "0.35s ease",
+            transition: "0.35s ease",
 
             cursor: "pointer",
           }}
@@ -341,61 +277,40 @@ const Navbar = () => {
         <Box
           sx={{
             display: "flex",
-            justifyContent:
-              "flex-end",
+            justifyContent: "flex-end",
           }}
         >
-          <Stack
-            direction="row"
-            spacing={1}
-          >
+          <Stack direction="row" spacing={1}>
             {/* SEARCH */}
 
-            <SearchBar
-              scrolled={
-                isDarkNavbar
-              }
-            />
+            <SearchBar scrolled={isDarkNavbar} />
 
             {/* =================================================
                 CART
             ================================================= */}
 
             <IconButton
-              onClick={
-                handleCartClick
-              }
+              onClick={handleCartClick}
               sx={{
-                color:
-                  isDarkNavbar
-                    ? "#222"
-                    : "#fff",
+                color: isDarkNavbar ? "#222" : "#fff",
               }}
             >
               <Badge
-                badgeContent={
-                  totalItems
-                }
+                badgeContent={totalItems}
                 overlap="circular"
-                invisible={
-                  totalItems === 0
-                }
+                invisible={totalItems === 0}
                 sx={{
-                  "& .MuiBadge-badge":
-                    {
-                      backgroundColor:
-                        "#3A3A3A",
+                  "& .MuiBadge-badge": {
+                    backgroundColor: "#3A3A3A",
 
-                      color: "#fff",
+                    color: "#fff",
 
-                      fontSize:
-                        "11px",
+                    fontSize: "11px",
 
-                      fontWeight: 600,
+                    fontWeight: 600,
 
-                      border:
-                        "2px solid #fff",
-                    },
+                    border: "2px solid #fff",
+                  },
                 }}
               >
                 <ShoppingCartOutlinedIcon />
@@ -409,16 +324,9 @@ const Navbar = () => {
 
             {loggedIn && (
               <IconButton
-                onClick={() =>
-                  navigate(
-                    "/wishlist"
-                  )
-                }
+                onClick={() => navigate("/wishlist")}
                 sx={{
-                  color:
-                    isDarkNavbar
-                      ? "#222"
-                      : "#fff",
+                  color: isDarkNavbar ? "#222" : "#fff",
                 }}
               >
                 <FavoriteBorderOutlinedIcon />
@@ -432,27 +340,17 @@ const Navbar = () => {
             {loggedIn ? (
               <IconButton
                 sx={{
-                  color:
-                    isDarkNavbar
-                      ? "#222"
-                      : "#fff",
+                  color: isDarkNavbar ? "#222" : "#fff",
                 }}
-                onClick={
-                  handleProfileClick
-                }
+                onClick={handleProfileClick}
               >
                 <PersonOutlineOutlinedIcon />
               </IconButton>
             ) : (
               <Typography
-                onClick={() =>
-                  navigate("/login")
-                }
+                onClick={() => navigate("/login")}
                 sx={{
-                  color:
-                    isDarkNavbar
-                      ? "#222"
-                      : "#fff",
+                  color: isDarkNavbar ? "#222" : "#fff",
 
                   cursor: "pointer",
 
@@ -460,8 +358,7 @@ const Navbar = () => {
 
                   display: "flex",
 
-                  alignItems:
-                    "center",
+                  alignItems: "center",
 
                   px: 1,
 
@@ -480,12 +377,7 @@ const Navbar = () => {
               IMPORTANT: OUTSIDE THE STACK
           ================================================= */}
 
-          <CartDrawer
-            open={cartOpen}
-            onClose={() =>
-              setCartOpen(false)
-            }
-          />
+          <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
         </Box>
       </Toolbar>
     </AppBar>

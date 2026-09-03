@@ -1,5 +1,12 @@
 import React from "react";
-import { Box, Grid, Typography, IconButton, Link } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  IconButton,
+  Link,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
@@ -7,97 +14,162 @@ import PinterestIcon from "@mui/icons-material/Pinterest";
 import XIcon from "@mui/icons-material/X";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const shopLinks = [
+    "Shop All",
+    "Skin Care",
+    "Hair Care",
+    "New Launches",
+    "Featured Products",
+  ];
+
+  const supportLinks = [
+    "Contact Us",
+    "FAQs",
+    "Shipping",
+    "Returns",
+    "Privacy Policy",
+  ];
+
+  const companyLinks = [
+    "About Us",
+    "Our Story",
+    "Blog",
+    "Careers",
+    "Terms & Conditions",
+  ];
+
+  const linkStyle = {
+    display: "block",
+    mb: 2,
+    color: "#fff",
+    fontSize: 15,
+    transition: "all .3s ease",
+    cursor: "pointer",
+
+    "&:hover": {
+      color: "#F7ECE2",
+      transform: "translateX(6px)",
+    },
+  };
+
+  const handleSupportClick = (item) => {
+    if (item === "FAQs") {
+      navigate("/user/help-center");
+    }
+
+    if (item === "Contact Us") {
+      navigate("/user/help-center");
+    }
+
+    if (item === "Privacy Policy") {
+      navigate("/user/privacy-policy");
+    }
+  };
+
   return (
     <Box
+      component="footer"
       sx={{
         backgroundColor: "#B89478",
         color: "#fff",
         pt: 8,
         pb: 4,
-        px: { xs: 3, md: 8 },
+        px: { xs: 3, md: 5 },
       }}
     >
-      <Grid
-        container
-        spacing={6}
-        justifyContent="center"
+      {/* CENTERED FOOTER CONTENT CONTAINER */}
+
+      <Box
         sx={{
-          maxWidth: "1300px",
+          maxWidth: "1250px",
           mx: "auto",
-          textAlign: { xs: "center", md: "left" },
         }}
       >
-        {/* Brand */}
-
         <Grid
-          item
-          xs={12}
-          md={3}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: {
-              xs: "center",
-              md: "flex-start",
-            },
+          container
+          spacing={{
+            xs: 5,
+            md: 7,
           }}
+          justifyContent="center"
         >
-          <Typography
-            sx={{
-              fontSize: 48,
-              fontWeight: 700,
-              letterSpacing: 1,
-              mb: 3,
-            }}
-          >
-            GlowCare
-          </Typography>
+          {/* BRAND */}
 
-          <Typography
-            sx={{
-              color: "#F8F5F1",
-              lineHeight: 2,
-              fontSize: 16,
-              maxWidth: 320,
-              mb: 5,
-            }}
-          >
-            Discover premium skincare crafted with clean ingredients,
-            dermatologist-tested formulas, and luxurious textures for healthy,
-            glowing skin every day.
-          </Typography>
-
-          <Typography
-            sx={{
-              color: "#FFF8F2",
-              letterSpacing: 3,
-              fontSize: 13,
-              textTransform: "uppercase",
-              mb: 2.5,
-            }}
-          >
-            Follow Us
-          </Typography>
-
-          <Box
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            lg={4}
             sx={{
               display: "flex",
-              gap: 1,
+              flexDirection: "column",
+              alignItems: "flex-start",
+              textAlign: "left",
             }}
           >
-            {[InstagramIcon, FacebookOutlinedIcon, PinterestIcon, XIcon].map(
-              (Icon, index) => (
+            <Typography
+              sx={{
+                fontSize: {
+                  xs: 42,
+                  md: 48,
+                },
+                fontWeight: 700,
+                letterSpacing: 1,
+                mb: 3,
+              }}
+            >
+              GlowCare
+            </Typography>
+
+            <Typography
+              sx={{
+                color: "#F8F5F1",
+                lineHeight: 2,
+                fontSize: 16,
+                maxWidth: 330,
+                mb: 5,
+              }}
+            >
+              Discover premium skincare crafted with clean ingredients,
+              dermatologist-tested formulas, and luxurious textures for healthy,
+              glowing skin every day.
+            </Typography>
+
+            <Typography
+              sx={{
+                color: "#FFF8F2",
+                letterSpacing: 3,
+                fontSize: 13,
+                textTransform: "uppercase",
+                mb: 2.5,
+              }}
+            >
+              Follow Us
+            </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+              }}
+            >
+              {[
+                InstagramIcon,
+                FacebookOutlinedIcon,
+                PinterestIcon,
+                XIcon,
+              ].map((Icon, index) => (
                 <IconButton
                   key={index}
                   sx={{
                     width: 44,
                     height: 44,
-
                     color: "#fff",
-
                     border: "1px solid rgba(255,255,255,.35)",
-
-                    transition: ".35s",
+                    transition: "all .35s ease",
 
                     "&:hover": {
                       backgroundColor: "#fff",
@@ -108,222 +180,171 @@ const Footer = () => {
                 >
                   <Icon fontSize="small" />
                 </IconButton>
-              ),
-            )}
-          </Box>
-        </Grid>
+              ))}
+            </Box>
+          </Grid>
 
-        {/* Shop */}
+          {/* SHOP */}
 
-        <Grid
-          item
-          xs={6}
-          sm={4}
-          md={2.5}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: {
-              xs: "center",
-              md: "flex-start",
-            },
-          }}
-        >
-          <Typography
+          <Grid
+            item
+            xs={6}
+            sm={4}
+            md={2}
+            lg={2}
             sx={{
-              fontSize: 20,
-              fontWeight: 600,
-              mb: 3,
+              textAlign: "left",
+              ml: "100px",
             }}
           >
-            Shop
-          </Typography>
-
-          {[
-            "Shop All",
-            "Skin Care",
-            "Hair Care",
-            "New Launches",
-            "Featured Products",
-          ].map((item) => (
-            <Link
-              key={item}
-              href="#"
-              underline="none"
+            <Typography
               sx={{
-                display: "block",
-                mb: 2,
-                color: "#fff",
-                fontSize: 15,
-
-                transition: ".3s",
-
-                "&:hover": {
-                  color: "#F7ECE2",
-                  pl: 1,
-                },
+                fontSize: 20,
+                fontWeight: 600,
+                mb: 3,
               }}
             >
-              {item}
-            </Link>
-          ))}
-        </Grid>
+              Shop
+            </Typography>
 
-        {/* Support */}
-
-        <Grid
-          item
-          xs={6}
-          sm={4}
-          md={2.5}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: {
-              xs: "center",
-              md: "flex-start",
-            },
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: 20,
-              fontWeight: 600,
-              mb: 3,
-            }}
-          >
-            Support
-          </Typography>
-
-          {["Contact Us", "FAQs", "Shipping", "Returns", "Privacy Policy"].map(
-            (item) => (
+            {shopLinks.map((item) => (
               <Link
                 key={item}
                 href="#"
                 underline="none"
+                sx={linkStyle}
+              >
+                {item}
+              </Link>
+            ))}
+          </Grid>
+
+          {/* SUPPORT */}
+
+          <Grid
+            item
+            xs={6}
+            sm={4}
+            md={2}
+            lg={2}
+            sx={{
+              textAlign: "left",
+              ml: "100px",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 20,
+                fontWeight: 600,
+                mb: 3,
+              }}
+            >
+              Support
+            </Typography>
+
+            {supportLinks.map((item) => (
+              <Link
+                key={item}
+                component="button"
+                type="button"
+                underline="none"
+                onClick={() => handleSupportClick(item)}
                 sx={{
-                  display: "block",
-                  mb: 2,
-                  color: "#fff",
-                  fontSize: 15,
-
-                  transition: ".3s",
-
-                  "&:hover": {
-                    color: "#F7ECE2",
-                    pl: 1,
-                  },
+                  ...linkStyle,
+                  border: "none",
+                  background: "transparent",
+                  padding: 0,
+                  fontFamily: "inherit",
+                  textAlign: "left",
                 }}
               >
                 {item}
               </Link>
-            ),
-          )}
-        </Grid>
-        {/* Company */}
+            ))}
+          </Grid>
 
-        <Grid
-          item
-          xs={6}
-          sm={4}
-          md={2.5}
+          {/* COMPANY */}
+
+          <Grid
+            item
+            xs={6}
+            sm={4}
+            md={2}
+            lg={2}
+            sx={{
+              textAlign: "left",
+              ml: "100px",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 20,
+                fontWeight: 600,
+                mb: 3,
+              }}
+            >
+              Company
+            </Typography>
+
+            {companyLinks.map((item) => (
+              <Link
+                key={item}
+                href="#"
+                underline="none"
+                sx={linkStyle}
+              >
+                {item}
+              </Link>
+            ))}
+          </Grid>
+        </Grid>
+
+        {/* DIVIDER */}
+
+        <Box
+          sx={{
+            mt: 7,
+            mb: 4,
+            borderTop: "1px solid rgba(255,255,255,.25)",
+          }}
+        />
+
+        {/* BOTTOM FOOTER */}
+
+        <Box
           sx={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: {
-              xs: "center",
-              md: "flex-start",
+            justifyContent: "space-between",
+            alignItems: "center",
+
+            flexDirection: {
+              xs: "column",
+              md: "row",
             },
+
+            gap: 2,
           }}
         >
           <Typography
             sx={{
-              fontSize: 20,
-              fontWeight: 600,
-              mb: 3,
+              color: "#F8F5F1",
+              fontSize: 14,
             }}
           >
-            Company
+            © 2026 GlowCare. All Rights Reserved.
           </Typography>
 
-          {[
-            "About Us",
-            "Our Story",
-            "Blog",
-            "Careers",
-            "Terms & Conditions",
-          ].map((item) => (
-            <Link
-              key={item}
-              href="#"
-              underline="none"
-              sx={{
-                display: "block",
-                mb: 2,
-                color: "#fff",
-                fontSize: 15,
-                transition: ".3s",
-
-                "&:hover": {
-                  color: "#F7ECE2",
-                  pl: 1,
-                },
-              }}
-            >
-              {item}
-            </Link>
-          ))}
-        </Grid>
-      </Grid>
-
-      {/* Divider */}
-
-      <Box
-        sx={{
-          mt: 7,
-          mb: 4,
-          borderTop: "1px solid rgba(255,255,255,.25)",
-        }}
-      />
-
-      {/* Bottom Footer */}
-
-      <Box
-        sx={{
-          maxWidth: "1400px",
-          mx: "auto",
-
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-
-          flexDirection: {
-            xs: "column",
-            md: "row",
-          },
-
-          gap: 2,
-        }}
-      >
-        <Typography
-          sx={{
-            color: "#F8F5F1",
-            fontSize: 14,
-          }}
-        >
-          © 2026 GlowCare. All Rights Reserved.
-        </Typography>
-
-        <Typography
-          sx={{
-            color: "#F8F5F1",
-            fontSize: 14,
-            letterSpacing: 1,
-            textAlign: "center",
-          }}
-        >
-          Crafted with care. Backed by science. Made for you.
-        </Typography>
+          <Typography
+            sx={{
+              color: "#F8F5F1",
+              fontSize: 14,
+              letterSpacing: 1,
+              textAlign: "center",
+            }}
+          >
+            Crafted with care. Backed by science. Made for you.
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );

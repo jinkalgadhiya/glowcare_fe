@@ -79,6 +79,9 @@ const UserRoute = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* Prevent "No routes matched" warning for admin routes */}
+      <Route path="/admin/*" element={null} />
     </Routes>
   );
 };

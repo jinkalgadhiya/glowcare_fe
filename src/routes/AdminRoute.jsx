@@ -7,31 +7,49 @@ import AdminProtectedRoute from "../auth/AdminProtectedRoute";
 import Dashboard from "../admin/pages/Dashboard";
 import HomePageSettings from "../admin/pages/HomePageSettings";
 
+// Categories
 import Categories from "../admin/pages/Categories";
 import AddCategory from "../admin/pages/AddCategory";
 import DeleteCategory from "../admin/components/category/DeleteCategory";
 
+// Products
 import Products from "../admin/pages/products";
 import AddProducts from "../admin/pages/AddProducts";
 
+// Orders
 import Orders from "../admin/pages/Orders";
+
+// Returns
+import Returns from "../admin/pages/Return";
+
+// Customers
 import Customers from "../admin/pages/Customers";
 
+// Profile
 import Profile from "../admin/pages/Profile";
+
+// Reviews
 import Reviews from "../admin/pages/Reviews";
 
+// Coupons
 import Coupon from "../admin/pages/Coupon";
 
 const AdminRoute = () => {
   return (
     <Routes>
-      {/* Login */}
+      {/* ===============================
+          ADMIN LOGIN
+      =============================== */}
+
       <Route
         path="/admin/login"
         element={<AdminLogin />}
       />
 
-      {/* Dashboard */}
+      {/* ===============================
+          DASHBOARD
+      =============================== */}
+
       <Route
         path="/admin/dashboard"
         element={
@@ -41,7 +59,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Home Page Settings */}
+      {/* ===============================
+          HOME PAGE SETTINGS
+      =============================== */}
+
       <Route
         path="/admin/home-page"
         element={
@@ -51,7 +72,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Categories */}
+      {/* ===============================
+          CATEGORIES
+      =============================== */}
+
       <Route
         path="/admin/categories"
         element={
@@ -88,7 +112,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Products */}
+      {/* ===============================
+          PRODUCTS
+      =============================== */}
+
       <Route
         path="/admin/products"
         element={
@@ -116,7 +143,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Orders */}
+      {/* ===============================
+          ORDERS
+      =============================== */}
+
       <Route
         path="/admin/orders"
         element={
@@ -126,7 +156,23 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Customers */}
+      {/* ===============================
+          RETURNS
+      =============================== */}
+
+      <Route
+        path="/admin/returns"
+        element={
+          <AdminProtectedRoute>
+            <Returns />
+          </AdminProtectedRoute>
+        }
+      />
+
+      {/* ===============================
+          CUSTOMERS
+      =============================== */}
+
       <Route
         path="/admin/customers"
         element={
@@ -136,7 +182,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Profile */}
+      {/* ===============================
+          PROFILE
+      =============================== */}
+
       <Route
         path="/admin/profile"
         element={
@@ -146,7 +195,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Reviews */}
+      {/* ===============================
+          REVIEWS
+      =============================== */}
+
       <Route
         path="/admin/reviews"
         element={
@@ -156,7 +208,10 @@ const AdminRoute = () => {
         }
       />
 
-      {/* Coupons */}
+      {/* ===============================
+          COUPONS
+      =============================== */}
+
       <Route
         path="/admin/coupons"
         element={

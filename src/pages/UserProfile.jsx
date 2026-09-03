@@ -11,6 +11,8 @@ import MyOrders from "../components/userprofile/MyOrders";
 import Address from "../components/userprofile/Address";
 import Coupons from "../components/userprofile/Coupons";
 import HelpCenter from "../components/userprofile/HelpCenter";
+import TermsConditions from "../components/userprofile/TermsConditions";
+import PrivacyPolicy from "../components/userprofile/PrivacyPolicy";
 
 const UserProfile = () => {
   const location = useLocation();
@@ -31,6 +33,12 @@ const UserProfile = () => {
 
       case "/user/help-center":
         return <HelpCenter />;
+
+      case "/user/terms-conditions":
+        return <TermsConditions />;
+
+      case "/user/privacy-policy":
+        return <PrivacyPolicy />;
 
       case "/user":
         return <Navigate to="/user/profile" replace />;

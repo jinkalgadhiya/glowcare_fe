@@ -225,15 +225,19 @@ const Address = () => {
 
   const getAddressIcon = (type) => {
     if (type === "Work") {
-      return <BusinessOutlinedIcon sx={{ fontSize: 20 }} />;
+      return (
+        <BusinessOutlinedIcon
+          sx={{ fontSize: 20 }}
+        />
+      );
     }
 
-    return <HomeOutlinedIcon sx={{ fontSize: 20 }} />;
+    return (
+      <HomeOutlinedIcon
+        sx={{ fontSize: 20 }}
+      />
+    );
   };
-
-  // ======================================================
-  // RETURN
-  // ======================================================
 
   return (
     <>
@@ -252,88 +256,200 @@ const Address = () => {
         }}
       >
         {/* ==================================================
-            HEADER
+            PREMIUM HEADER
         ================================================== */}
 
         <Box
           sx={{
             px: {
               xs: 3,
-              md: 4,
+              md: 5,
             },
-            py: 3,
-
+            py: {
+              xs: 4,
+              md: 5,
+            },
             background:
-              "linear-gradient(135deg, #F3EBDD 0%, #E9DFCF 100%)",
-
-            borderBottom: "1px solid #DED3C4",
+              "linear-gradient(135deg, #F8F3EC 0%, #EFE7DC 100%)",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
+          {/* DECORATIVE CIRCLE */}
+
+          <Box
             sx={{
+              position: "absolute",
+              width: 180,
+              height: 180,
+              borderRadius: "50%",
+              backgroundColor:
+                "rgba(184,148,120,0.10)",
+              right: -60,
+              top: -70,
+            }}
+          />
+
+          <Box
+            sx={{
+              position: "absolute",
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              backgroundColor:
+                "rgba(184,148,120,0.08)",
+              right: 100,
+              bottom: -60,
+            }}
+          />
+
+          {/* HEADER CONTENT */}
+
+          <Stack
+            direction={{
+              xs: "column",
+              md: "row",
+            }}
+            alignItems={{
+              xs: "flex-start",
+              md: "center",
+            }}
+            spacing={3}
+            sx={{
+              position: "relative",
+              zIndex: 1,
               width: "100%",
             }}
           >
             {/* LEFT SIDE */}
 
-            <Box>
-              <Typography
-                sx={{
-                  fontSize: {
-                    xs: 24,
-                    md: 28,
-                  },
-                  fontWeight: 700,
-                  color: "#1E2F2B",
-                }}
-              >
-                Saved Addresses
-              </Typography>
-
-              <Typography
-                sx={{
-                  mt: 0.5,
-                  fontSize: 14,
-                  color: "#777168",
-                }}
-              >
-                Manage your saved delivery addresses
-              </Typography>
-            </Box>
-
-            {/* RIGHT SIDE */}
-
-            <Button
-              startIcon={<AddOutlinedIcon />}
-              onClick={handleAdd}
-              variant="contained"
-              sx={{
-                height: 44,
-                px: 2.5,
-                ml: "600px",
-                mt: "10px",
-                borderRadius: "13px",
-                textTransform: "none",
-                fontSize: 14,
-                fontWeight: 600,
-                backgroundColor: "#1E2F2B",
-                color: "#FFFFFF",
-                boxShadow: "none",
-                flexShrink: 0,
-
-                "&:hover": {
-                  backgroundColor: "#294039",
-                  boxShadow:
-                    "0 6px 18px rgba(30,47,43,0.15)",
-                },
-              }}
+            <Stack
+              direction="row"
+              spacing={3}
+              alignItems="center"
             >
-              Add Address
-            </Button>
+              {/* ICON */}
+
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 3,
+                  backgroundColor: "#1E2F2B",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexShrink: 0,
+                  boxShadow:
+                    "0 10px 25px rgba(30,47,43,0.15)",
+                }}
+              >
+                <LocationOnOutlinedIcon
+                  sx={{
+                    color: "#fff",
+                    fontSize: 32,
+                  }}
+                />
+              </Box>
+
+              {/* TEXT */}
+
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: "#B89478",
+                    mb: 1,
+                  }}
+                >
+                  Delivery Information
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: 28,
+                      md: 34,
+                    },
+                    fontWeight: 600,
+                    color: "#1E2F2B",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Saved Addresses
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 1,
+                    color: "#777168",
+                    fontSize: 15,
+                    lineHeight: 1.7,
+                    maxWidth: 600,
+                  }}
+                >
+                  Manage your saved delivery
+                  addresses for a faster and
+                  easier checkout experience.
+                </Typography>
+              </Box>
+            </Stack>
           </Stack>
+
+          {/* ADD ADDRESS BUTTON - RIGHT SIDE */}
+
+          <Button
+            startIcon={<AddOutlinedIcon />}
+            onClick={handleAdd}
+            variant="contained"
+            sx={{
+              position: {
+                xs: "relative",
+                md: "absolute",
+              },
+
+              right: {
+                md: 40,
+              },
+
+              top: {
+                md: "50%",
+              },
+
+              transform: {
+                md: "translateY(-50%)",
+              },
+
+              mt: {
+                xs: 3,
+                md: 0,
+              },
+
+              zIndex: 2,
+
+              height: 46,
+              px: 3,
+              borderRadius: "30px",
+              textTransform: "none",
+              fontSize: 14,
+              fontWeight: 600,
+              backgroundColor: "#1E2F2B",
+              color: "#FFFFFF",
+              boxShadow:
+                "0 8px 20px rgba(30,47,43,0.12)",
+
+              "&:hover": {
+                backgroundColor: "#294039",
+                boxShadow:
+                  "0 10px 25px rgba(30,47,43,0.18)",
+              },
+            }}
+          >
+            Add Address
+          </Button>
         </Box>
 
         {/* ==================================================
@@ -358,14 +474,11 @@ const Address = () => {
             <Box
               sx={{
                 minHeight: 430,
-
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-
                 textAlign: "center",
-
                 px: 3,
               }}
             >
@@ -373,16 +486,13 @@ const Address = () => {
                 sx={{
                   width: 92,
                   height: 92,
-
                   borderRadius: "50%",
-
                   backgroundColor: "#F0F4F0",
-                  border: "1px solid #DCE6DE",
-
+                  border:
+                    "1px solid #DCE6DE",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-
                   mb: 3,
                 }}
               >
@@ -407,17 +517,14 @@ const Address = () => {
               <Typography
                 sx={{
                   mt: 1,
-
                   maxWidth: 420,
-
                   fontSize: 14,
                   lineHeight: 1.8,
-
                   color: "#777168",
                 }}
               >
-                Add your delivery address to make checkout faster
-                and easier.
+                Add your delivery address to
+                make checkout faster and easier.
               </Typography>
 
               <Button
@@ -426,15 +533,11 @@ const Address = () => {
                 variant="outlined"
                 sx={{
                   mt: 3,
-
                   height: 44,
                   px: 3,
-
-                  borderRadius: "12px",
-
+                  borderRadius: "30px",
                   textTransform: "none",
                   fontWeight: 600,
-
                   color: "#1E2F2B",
                   borderColor: "#1E2F2B",
 
@@ -448,10 +551,6 @@ const Address = () => {
               </Button>
             </Box>
           ) : (
-            /* ==================================================
-                ADDRESS LIST - FIXED SAME WIDTH CARDS
-            ================================================== */
-
             <Box
               sx={{
                 display: "flex",
@@ -489,15 +588,18 @@ const Address = () => {
 
                         borderRadius: "18px",
 
-                        border: address.isDefault
-                          ? "1px solid #C7D8CC"
-                          : "1px solid #E8E1D8",
+                        border:
+                          address.isDefault
+                            ? "1px solid #C7D8CC"
+                            : "1px solid #E8E1D8",
 
-                        backgroundColor: "#FFFFFF",
+                        backgroundColor:
+                          "#FFFFFF",
 
                         overflow: "hidden",
 
-                        transition: "all .25s ease",
+                        transition:
+                          "all .25s ease",
 
                         "&:hover": {
                           transform:
@@ -532,7 +634,6 @@ const Address = () => {
                         <Box
                           sx={{
                             width: "100%",
-
                             display: "flex",
                             alignItems: "center",
                           }}
@@ -547,14 +648,11 @@ const Address = () => {
                               minWidth: 0,
                             }}
                           >
-                            {/* ICON */}
-
                             <Box
                               sx={{
                                 width: 42,
                                 height: 42,
                                 flexShrink: 0,
-
                                 borderRadius: "12px",
 
                                 backgroundColor:
@@ -564,7 +662,8 @@ const Address = () => {
 
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
+                                justifyContent:
+                                  "center",
 
                                 color: "#1E2F2B",
                               }}
@@ -573,8 +672,6 @@ const Address = () => {
                                 addressType,
                               )}
                             </Box>
-
-                            {/* TYPE */}
 
                             <Box>
                               <Typography
@@ -603,31 +700,23 @@ const Address = () => {
                             </Box>
                           </Box>
 
-                          {/* DEFAULT */}
-
                           {address.isDefault && (
                             <Chip
                               label="Default"
                               size="small"
                               sx={{
                                 marginLeft: "auto",
-
                                 height: 32,
                                 px: 1.2,
-
                                 backgroundColor:
                                   "#E8F1EA",
-
                                 color: "#2F5D45",
-
                                 border:
                                   "1px solid #CDDFD2",
-
-                                borderRadius: "18px",
-
+                                borderRadius:
+                                  "18px",
                                 fontSize: 12,
                                 fontWeight: 600,
-
                                 flexShrink: 0,
                               }}
                             />
@@ -640,15 +729,11 @@ const Address = () => {
                       <Box
                         sx={{
                           p: 2.5,
-
                           flex: 1,
-
                           display: "flex",
                           flexDirection: "column",
                         }}
                       >
-                        {/* NAME */}
-
                         <Typography
                           sx={{
                             fontSize: 17,
@@ -658,8 +743,6 @@ const Address = () => {
                         >
                           {address.fullName}
                         </Typography>
-
-                        {/* PHONE */}
 
                         <Typography
                           sx={{
@@ -674,24 +757,22 @@ const Address = () => {
                         <Divider
                           sx={{
                             my: 2,
-                            borderColor: "#EEE8DF",
+                            borderColor:
+                              "#EEE8DF",
                           }}
                         />
-
-                        {/* STREET */}
 
                         <Typography
                           sx={{
                             fontSize: 14,
                             lineHeight: 1.7,
                             color: "#4F4A44",
-                            wordBreak: "break-word",
+                            wordBreak:
+                              "break-word",
                           }}
                         >
                           {address.addressLine}
                         </Typography>
-
-                        {/* CITY STATE */}
 
                         <Typography
                           sx={{
@@ -701,10 +782,9 @@ const Address = () => {
                             color: "#4F4A44",
                           }}
                         >
-                          {address.city}, {address.state}
+                          {address.city},{" "}
+                          {address.state}
                         </Typography>
-
-                        {/* PINCODE */}
 
                         <Typography
                           sx={{
@@ -728,7 +808,8 @@ const Address = () => {
                           <Divider
                             sx={{
                               mb: 1.5,
-                              borderColor: "#EEE8DF",
+                              borderColor:
+                                "#EEE8DF",
                             }}
                           />
 
@@ -737,24 +818,24 @@ const Address = () => {
                             justifyContent="space-between"
                             alignItems="center"
                           >
-                            {/* DEFAULT ACTION */}
-
                             <Box
                               sx={{
                                 minHeight: 36,
-
                                 display: "flex",
-                                alignItems: "center",
+                                alignItems:
+                                  "center",
                               }}
                             >
                               {address.isDefault ? (
                                 <Typography
                                   sx={{
                                     fontSize: 12,
-                                    color: "#6F6961",
+                                    color:
+                                      "#6F6961",
                                   }}
                                 >
-                                  Default delivery address
+                                  Default delivery
+                                  address
                                 </Typography>
                               ) : (
                                 <Button
@@ -765,22 +846,19 @@ const Address = () => {
                                   }
                                   sx={{
                                     p: 0,
-
                                     minWidth: 0,
-
                                     textTransform:
                                       "none",
-
                                     fontSize: 13,
                                     fontWeight: 600,
-
-                                    color: "#1E2F2B",
+                                    color:
+                                      "#1E2F2B",
 
                                     "&:hover": {
                                       backgroundColor:
                                         "transparent",
-
-                                      color: "#526A61",
+                                      color:
+                                        "#526A61",
                                     },
                                   }}
                                 >
@@ -789,21 +867,21 @@ const Address = () => {
                               )}
                             </Box>
 
-                            {/* EDIT DELETE */}
-
                             <Stack
                               direction="row"
                               spacing={0.5}
                             >
                               <IconButton
                                 onClick={() =>
-                                  handleEdit(address)
+                                  handleEdit(
+                                    address,
+                                  )
                                 }
                                 sx={{
                                   width: 36,
                                   height: 36,
-
-                                  color: "#1E2F2B",
+                                  color:
+                                    "#1E2F2B",
 
                                   "&:hover": {
                                     backgroundColor:
@@ -827,14 +905,14 @@ const Address = () => {
                                 sx={{
                                   width: 36,
                                   height: 36,
-
-                                  color: "#8A5C55",
+                                  color:
+                                    "#8A5C55",
 
                                   "&:hover": {
                                     backgroundColor:
                                       "#F8EEEC",
-
-                                    color: "#7A4038",
+                                    color:
+                                      "#7A4038",
                                   },
                                 }}
                               >
