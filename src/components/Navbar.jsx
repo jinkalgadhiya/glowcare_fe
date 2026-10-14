@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import {
   AppBar,
   Toolbar,
@@ -114,8 +113,6 @@ const Navbar = () => {
   // CART CLICK
   // =====================================================
 
-  // IMPORTANT:
-  // Cart should open for BOTH guest and logged-in users.
   const handleCartClick = () => {
     setCartOpen(true);
   };
@@ -149,11 +146,25 @@ const Navbar = () => {
         backdropFilter: "none",
 
         transition: "all .4s ease",
+
+        // ===============================================
+        // MOBILE
+        // ===============================================
+
+        "@media (max-width: 599px)": {
+          boxShadow:
+            isHome && !scrolled ? "none" : "0 2px 10px rgba(0,0,0,.06)",
+        },
       }}
     >
       <Toolbar
         sx={{
           display: "grid",
+
+          // =============================================
+          // DESKTOP - ORIGINAL
+          // =============================================
+
           gridTemplateColumns: "1fr auto 1fr",
 
           alignItems: "center",
@@ -162,6 +173,26 @@ const Navbar = () => {
 
           px: 4,
           py: 0,
+
+          // =============================================
+          // TABLET
+          // =============================================
+
+          "@media (max-width: 899px)": {
+            minHeight: "66px",
+            px: 2.5,
+          },
+
+          // =============================================
+          // PHONE
+          // =============================================
+
+          "@media (max-width: 599px)": {
+            minHeight: "62px",
+            px: 1.5,
+
+            gridTemplateColumns: "auto 1fr auto",
+          },
         }}
       >
         {/* =================================================
@@ -171,6 +202,11 @@ const Navbar = () => {
         <Box
           sx={{
             position: "relative",
+
+            // Hide desktop navigation on phone
+            "@media (max-width: 599px)": {
+              display: "none",
+            },
           }}
           onMouseLeave={closeMenu}
           onMouseEnter={() => {
@@ -179,8 +215,29 @@ const Navbar = () => {
             }
           }}
         >
-          <Stack direction="row" spacing={6}>
-            {/* SKINCARE */}
+          <Stack
+            direction="row"
+            spacing={0}
+            sx={{
+              // BIG LAPTOP / DESKTOP
+              "@media (min-width: 1200px)": {
+                gap: 6,
+              },
+
+              // SMALL LAPTOP
+              "@media (min-width: 900px) and (max-width: 1199px)": {
+                gap: 2,
+              },
+
+              // TABLET
+              "@media (min-width: 600px) and (max-width: 899px)": {
+                gap: 1.5,
+              },
+            }}
+          >
+            {/* =================================================
+                SKINCARE
+            ================================================= */}
 
             <Box position="relative">
               <Typography
@@ -193,13 +250,22 @@ const Navbar = () => {
                   letterSpacing: "2px",
 
                   cursor: "pointer",
+
+                  whiteSpace: "nowrap",
+
+                  "@media (max-width: 899px)": {
+                    fontSize: "12px",
+                    letterSpacing: "1.5px",
+                  },
                 }}
               >
                 SKINCARE
               </Typography>
             </Box>
 
-            {/* HAIRCARE */}
+            {/* =================================================
+                HAIRCARE
+            ================================================= */}
 
             <Typography
               onMouseEnter={() => openMenu("haircare")}
@@ -211,12 +277,21 @@ const Navbar = () => {
                 letterSpacing: "2px",
 
                 cursor: "pointer",
+
+                whiteSpace: "nowrap",
+
+                "@media (max-width: 899px)": {
+                  fontSize: "12px",
+                  letterSpacing: "1.5px",
+                },
               }}
             >
               HAIRCARE
             </Typography>
 
-            {/* MORE */}
+            {/* =================================================
+                MORE
+            ================================================= */}
 
             <Typography
               onMouseEnter={() => openMenu("more")}
@@ -228,13 +303,22 @@ const Navbar = () => {
                 letterSpacing: "2px",
 
                 cursor: "pointer",
+
+                whiteSpace: "nowrap",
+
+                "@media (max-width: 899px)": {
+                  fontSize: "12px",
+                  letterSpacing: "1.5px",
+                },
               }}
             >
               MORE
             </Typography>
           </Stack>
 
-          {/* MEGA MENU */}
+          {/* =================================================
+              MEGA MENU
+          ================================================= */}
 
           {activeMenu && (
             <Box
@@ -260,6 +344,7 @@ const Navbar = () => {
           src={isDarkNavbar ? DarkLogo : WhiteLogo}
           alt="GlowCare"
           sx={{
+            // ORIGINAL DESKTOP
             width: 140,
 
             justifySelf: "center",
@@ -267,6 +352,16 @@ const Navbar = () => {
             transition: "0.35s ease",
 
             cursor: "pointer",
+
+            // TABLET
+            "@media (max-width: 899px)": {
+              width: 125,
+            },
+
+            // PHONE
+            "@media (max-width: 599px)": {
+              width: 110,
+            },
           }}
         />
 
@@ -277,13 +372,53 @@ const Navbar = () => {
         <Box
           sx={{
             display: "flex",
+
             justifyContent: "flex-end",
+
+            minWidth: 0,
           }}
         >
-          <Stack direction="row" spacing={1}>
-            {/* SEARCH */}
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{
+              // Tablet
+              "@media (max-width: 899px)": {
+                gap: 0.3,
+              },
 
-            <SearchBar scrolled={isDarkNavbar} />
+              // Phone
+              "@media (max-width: 599px)": {
+                gap: 0,
+              },
+            }}
+          >
+            {/* =================================================
+                SEARCH
+            ================================================= */}
+
+            <Box
+              sx={{
+                // Keep desktop SearchBar unchanged
+
+                // Tablet
+                "@media (max-width: 899px)": {
+                  transform: "scale(0.9)",
+                  transformOrigin: "right center",
+                },
+
+                // Phone
+                "@media (max-width: 599px)": {
+                  transform: "scale(0.82)",
+                  transformOrigin: "right center",
+                  width: 38,
+                  overflow: "hidden",
+                },
+              }}
+            >
+              <SearchBar scrolled={isDarkNavbar} />
+            </Box>
 
             {/* =================================================
                 CART
@@ -293,6 +428,16 @@ const Navbar = () => {
               onClick={handleCartClick}
               sx={{
                 color: isDarkNavbar ? "#222" : "#fff",
+
+                // Tablet
+                "@media (max-width: 899px)": {
+                  p: 0.8,
+                },
+
+                // Phone
+                "@media (max-width: 599px)": {
+                  p: 0.7,
+                },
               }}
             >
               <Badge
@@ -310,10 +455,26 @@ const Navbar = () => {
                     fontWeight: 600,
 
                     border: "2px solid #fff",
+
+                    "@media (max-width: 599px)": {
+                      fontSize: "9px",
+                      minWidth: 16,
+                      height: 16,
+                    },
                   },
                 }}
               >
-                <ShoppingCartOutlinedIcon />
+                <ShoppingCartOutlinedIcon
+                  sx={{
+                    "@media (max-width: 899px)": {
+                      fontSize: 22,
+                    },
+
+                    "@media (max-width: 599px)": {
+                      fontSize: 20,
+                    },
+                  }}
+                />
               </Badge>
             </IconButton>
 
@@ -327,9 +488,27 @@ const Navbar = () => {
                 onClick={() => navigate("/wishlist")}
                 sx={{
                   color: isDarkNavbar ? "#222" : "#fff",
+
+                  "@media (max-width: 899px)": {
+                    p: 0.8,
+                  },
+
+                  "@media (max-width: 599px)": {
+                    p: 0.7,
+                  },
                 }}
               >
-                <FavoriteBorderOutlinedIcon />
+                <FavoriteBorderOutlinedIcon
+                  sx={{
+                    "@media (max-width: 899px)": {
+                      fontSize: 22,
+                    },
+
+                    "@media (max-width: 599px)": {
+                      fontSize: 20,
+                    },
+                  }}
+                />
               </IconButton>
             )}
 
@@ -341,10 +520,28 @@ const Navbar = () => {
               <IconButton
                 sx={{
                   color: isDarkNavbar ? "#222" : "#fff",
+
+                  "@media (max-width: 899px)": {
+                    p: 0.8,
+                  },
+
+                  "@media (max-width: 599px)": {
+                    p: 0.7,
+                  },
                 }}
                 onClick={handleProfileClick}
               >
-                <PersonOutlineOutlinedIcon />
+                <PersonOutlineOutlinedIcon
+                  sx={{
+                    "@media (max-width: 899px)": {
+                      fontSize: 22,
+                    },
+
+                    "@media (max-width: 599px)": {
+                      fontSize: 20,
+                    },
+                  }}
+                />
               </IconButton>
             ) : (
               <Typography
@@ -362,8 +559,20 @@ const Navbar = () => {
 
                   px: 1,
 
+                  whiteSpace: "nowrap",
+
                   "&:hover": {
                     opacity: 0.7,
+                  },
+
+                  "@media (max-width: 899px)": {
+                    fontSize: "13px",
+                    px: 0.7,
+                  },
+
+                  "@media (max-width: 599px)": {
+                    fontSize: "12px",
+                    px: 0.5,
                   },
                 }}
               >

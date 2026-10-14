@@ -73,10 +73,10 @@ const FloatingShowcase = () => {
       </Box>
 
       {/* Floating Products */}
-      {floatingShowcase.items?.map((item) => (
+      {floatingShowcase.items?.map((item, index) => (
         <Box
           key={item.id}
-          className="product-card"
+          className={`product-card product-card-${index + 1}`}
           sx={{
             top: item.top || "auto",
             bottom: item.bottom || "auto",
