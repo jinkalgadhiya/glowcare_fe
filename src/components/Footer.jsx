@@ -42,9 +42,16 @@ const Footer = () => {
 
   const linkStyle = {
     display: "block",
-    mb: 2,
+    mb: {
+      xs: 1.5,
+      md: 2,
+    },
     color: "#fff",
-    fontSize: 15,
+    fontSize: {
+      xs: 13,
+      sm: 14,
+      md: 15,
+    },
     transition: "all .3s ease",
     cursor: "pointer",
 
@@ -74,9 +81,21 @@ const Footer = () => {
       sx={{
         backgroundColor: "#B89478",
         color: "#fff",
-        pt: 8,
-        pb: 4,
-        px: { xs: 3, md: 5 },
+        pt: {
+          xs: 6,
+          sm: 7,
+          md: 8,
+        },
+        pb: {
+          xs: 3,
+          md: 4,
+        },
+        px: {
+          xs: 2.5,
+          sm: 4,
+          md: 5,
+        },
+        overflow: "hidden",
       }}
     >
       {/* CENTERED FOOTER CONTENT CONTAINER */}
@@ -85,17 +104,21 @@ const Footer = () => {
         sx={{
           maxWidth: "1250px",
           mx: "auto",
+          width: "100%",
         }}
       >
         <Grid
           container
           spacing={{
-            xs: 5,
+            xs: 4,
+            sm: 5,
             md: 7,
           }}
           justifyContent="center"
         >
-          {/* BRAND */}
+          {/* =====================================================
+              BRAND
+          ====================================================== */}
 
           <Grid
             item
@@ -113,12 +136,16 @@ const Footer = () => {
             <Typography
               sx={{
                 fontSize: {
-                  xs: 42,
+                  xs: 36,
+                  sm: 42,
                   md: 48,
                 },
                 fontWeight: 700,
                 letterSpacing: 1,
-                mb: 3,
+                mb: {
+                  xs: 2,
+                  md: 3,
+                },
               }}
             >
               GlowCare
@@ -127,22 +154,39 @@ const Footer = () => {
             <Typography
               sx={{
                 color: "#F8F5F1",
-                lineHeight: 2,
-                fontSize: 16,
+                lineHeight: {
+                  xs: 1.8,
+                  md: 2,
+                },
+                fontSize: {
+                  xs: 14,
+                  sm: 15,
+                  md: 16,
+                },
                 maxWidth: 330,
-                mb: 5,
+                mb: {
+                  xs: 3,
+                  md: 5,
+                },
               }}
             >
               Discover premium skincare crafted with clean ingredients,
-              dermatologist-tested formulas, and luxurious textures for healthy,
-              glowing skin every day.
+              dermatologist-tested formulas, and luxurious textures for
+              healthy, glowing skin every day.
             </Typography>
 
             <Typography
               sx={{
                 color: "#FFF8F2",
-                letterSpacing: 3,
-                fontSize: 13,
+                letterSpacing: {
+                  xs: 2,
+                  md: 3,
+                },
+                fontSize: {
+                  xs: 11,
+                  sm: 12,
+                  md: 13,
+                },
                 textTransform: "uppercase",
                 mb: 2.5,
               }}
@@ -153,7 +197,10 @@ const Footer = () => {
             <Box
               sx={{
                 display: "flex",
-                gap: 1,
+                gap: {
+                  xs: 0.75,
+                  md: 1,
+                },
               }}
             >
               {[
@@ -165,8 +212,16 @@ const Footer = () => {
                 <IconButton
                   key={index}
                   sx={{
-                    width: 44,
-                    height: 44,
+                    width: {
+                      xs: 40,
+                      sm: 42,
+                      md: 44,
+                    },
+                    height: {
+                      xs: 40,
+                      sm: 42,
+                      md: 44,
+                    },
                     color: "#fff",
                     border: "1px solid rgba(255,255,255,.35)",
                     transition: "all .35s ease",
@@ -178,13 +233,19 @@ const Footer = () => {
                     },
                   }}
                 >
-                  <Icon fontSize="small" />
+                  <Icon
+                    fontSize={
+                      "small"
+                    }
+                  />
                 </IconButton>
               ))}
             </Box>
           </Grid>
 
-          {/* SHOP */}
+          {/* =====================================================
+              SHOP
+          ====================================================== */}
 
           <Grid
             item
@@ -194,14 +255,26 @@ const Footer = () => {
             lg={2}
             sx={{
               textAlign: "left",
-              ml: "100px",
+
+              ml: {
+                xs: 0,
+                sm: 0,
+                md: "100px",
+              },
             }}
           >
             <Typography
               sx={{
-                fontSize: 20,
+                fontSize: {
+                  xs: 17,
+                  sm: 18,
+                  md: 20,
+                },
                 fontWeight: 600,
-                mb: 3,
+                mb: {
+                  xs: 2,
+                  md: 3,
+                },
               }}
             >
               Shop
@@ -219,7 +292,9 @@ const Footer = () => {
             ))}
           </Grid>
 
-          {/* SUPPORT */}
+          {/* =====================================================
+              SUPPORT
+          ====================================================== */}
 
           <Grid
             item
@@ -229,14 +304,26 @@ const Footer = () => {
             lg={2}
             sx={{
               textAlign: "left",
-              ml: "100px",
+
+              ml: {
+                xs: 0,
+                sm: 0,
+                md: "100px",
+              },
             }}
           >
             <Typography
               sx={{
-                fontSize: 20,
+                fontSize: {
+                  xs: 17,
+                  sm: 18,
+                  md: 20,
+                },
                 fontWeight: 600,
-                mb: 3,
+                mb: {
+                  xs: 2,
+                  md: 3,
+                },
               }}
             >
               Support
@@ -263,7 +350,9 @@ const Footer = () => {
             ))}
           </Grid>
 
-          {/* COMPANY */}
+          {/* =====================================================
+              COMPANY
+          ====================================================== */}
 
           <Grid
             item
@@ -273,14 +362,26 @@ const Footer = () => {
             lg={2}
             sx={{
               textAlign: "left",
-              ml: "100px",
+
+              ml: {
+                xs: 0,
+                sm: 0,
+                md: "100px",
+              },
             }}
           >
             <Typography
               sx={{
-                fontSize: 20,
+                fontSize: {
+                  xs: 17,
+                  sm: 18,
+                  md: 20,
+                },
                 fontWeight: 600,
-                mb: 3,
+                mb: {
+                  xs: 2,
+                  md: 3,
+                },
               }}
             >
               Company
@@ -299,17 +400,29 @@ const Footer = () => {
           </Grid>
         </Grid>
 
-        {/* DIVIDER */}
+        {/* =====================================================
+            DIVIDER
+        ====================================================== */}
 
         <Box
           sx={{
-            mt: 7,
-            mb: 4,
-            borderTop: "1px solid rgba(255,255,255,.25)",
+            mt: {
+              xs: 5,
+              sm: 6,
+              md: 7,
+            },
+            mb: {
+              xs: 3,
+              md: 4,
+            },
+            borderTop:
+              "1px solid rgba(255,255,255,.25)",
           }}
         />
 
-        {/* BOTTOM FOOTER */}
+        {/* =====================================================
+            BOTTOM FOOTER
+        ====================================================== */}
 
         <Box
           sx={{
@@ -322,13 +435,25 @@ const Footer = () => {
               md: "row",
             },
 
-            gap: 2,
+            gap: {
+              xs: 1.5,
+              md: 2,
+            },
+
+            textAlign: {
+              xs: "center",
+              md: "left",
+            },
           }}
         >
           <Typography
             sx={{
               color: "#F8F5F1",
-              fontSize: 14,
+              fontSize: {
+                xs: 12,
+                sm: 13,
+                md: 14,
+              },
             }}
           >
             © 2026 GlowCare. All Rights Reserved.
@@ -337,8 +462,15 @@ const Footer = () => {
           <Typography
             sx={{
               color: "#F8F5F1",
-              fontSize: 14,
-              letterSpacing: 1,
+              fontSize: {
+                xs: 12,
+                sm: 13,
+                md: 14,
+              },
+              letterSpacing: {
+                xs: 0.5,
+                md: 1,
+              },
               textAlign: "center",
             }}
           >

@@ -11,8 +11,6 @@ import {
 
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 
 const PaymentMethod = ({
   checkoutData,
@@ -20,6 +18,8 @@ const PaymentMethod = ({
   nextStep,
   backStep,
 }) => {
+  const selectedPayment = checkoutData?.payment || "COD";
+
   const handleChange = (event) => {
     setCheckoutData((prev) => ({
       ...prev,
@@ -27,8 +27,44 @@ const PaymentMethod = ({
     }));
   };
 
+  const handleContinue = () => {
+    if (!checkoutData?.payment) {
+      setCheckoutData((prev) => ({
+        ...prev,
+        payment: "COD",
+      }));
+    }
+
+    nextStep();
+  };
+
+  const getCardStyles = (paymentType) => ({
+    p: 3,
+    mb: 3,
+    borderRadius: 3,
+    cursor: "pointer",
+    border:
+      selectedPayment === paymentType
+        ? "2px solid #1E2F2B"
+        : "1px solid #E5E5E5",
+    background:
+      selectedPayment === paymentType
+        ? "#F6FBF8"
+        : "#fff",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      borderColor: "#1E2F2B",
+      background: "#F6FBF8",
+    },
+  });
+
   return (
-    <Box sx={{width: 530,}}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 530,
+      }}
+    >
       <Typography
         sx={{
           fontSize: 32,
@@ -50,30 +86,24 @@ const PaymentMethod = ({
       </Typography>
 
       <RadioGroup
-        value={checkoutData.payment}
+        name="payment-method"
+        value={selectedPayment}
         onChange={handleChange}
       >
         {/* Cash on Delivery */}
 
         <Paper
           elevation={0}
-          sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 3,
-            cursor: "pointer",
-            border:
-              checkoutData.payment === "cod"
-                ? "2px solid #1E2F2B"
-                : "1px solid #E5E5E5",
-            background:
-              checkoutData.payment === "cod"
-                ? "#F6FBF8"
-                : "#fff",
-          }}
+          sx={getCardStyles("COD")}
+          onClick={() =>
+            setCheckoutData((prev) => ({
+              ...prev,
+              payment: "COD",
+            }))
+          }
         >
           <FormControlLabel
-            value="cod"
+            value="COD"
             control={<Radio />}
             label={
               <Box>
@@ -81,14 +111,11 @@ const PaymentMethod = ({
                   sx={{
                     fontWeight: 600,
                     color: "#1E2F2B",
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
-                  <PaymentsOutlinedIcon
-                    sx={{
-                      mr: 1,
-                      verticalAlign: "middle",
-                    }}
-                  />
+                  <PaymentsOutlinedIcon sx={{ mr: 1 }} />
                   Cash on Delivery
                 </Typography>
 
@@ -105,27 +132,23 @@ const PaymentMethod = ({
           />
         </Paper>
 
-        {/* Credit Card */}
+        {/* Online Payment */}
 
         <Paper
           elevation={0}
           sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 3,
-            cursor: "pointer",
-            border:
-              checkoutData.payment === "card"
-                ? "2px solid #1E2F2B"
-                : "1px solid #E5E5E5",
-            background:
-              checkoutData.payment === "card"
-                ? "#F6FBF8"
-                : "#fff",
+            ...getCardStyles("Online"),
+            mb: 0,
           }}
+          onClick={() =>
+            setCheckoutData((prev) => ({
+              ...prev,
+              payment: "Online",
+            }))
+          }
         >
           <FormControlLabel
-            value="card"
+            value="Online"
             control={<Radio />}
             label={
               <Box>
@@ -133,15 +156,12 @@ const PaymentMethod = ({
                   sx={{
                     fontWeight: 600,
                     color: "#1E2F2B",
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
-                  <CreditCardOutlinedIcon
-                    sx={{
-                      mr: 1,
-                      verticalAlign: "middle",
-                    }}
-                  />
-                  Credit / Debit Card
+                  <CreditCardOutlinedIcon sx={{ mr: 1 }} />
+                  Online Payment
                 </Typography>
 
                 <Typography
@@ -150,110 +170,8 @@ const PaymentMethod = ({
                     mt: 1,
                   }}
                 >
-                  Visa, Mastercard & RuPay cards.
-                </Typography>
-              </Box>
-            }
-          />
-        </Paper>
-
-        {/* UPI */}
-
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 3,
-            cursor: "pointer",
-            border:
-              checkoutData.payment === "upi"
-                ? "2px solid #1E2F2B"
-                : "1px solid #E5E5E5",
-            background:
-              checkoutData.payment === "upi"
-                ? "#F6FBF8"
-                : "#fff",
-          }}
-        >
-          <FormControlLabel
-            value="upi"
-            control={<Radio />}
-            label={
-              <Box>
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    color: "#1E2F2B",
-                  }}
-                >
-                  <AccountBalanceWalletOutlinedIcon
-                    sx={{
-                      mr: 1,
-                      verticalAlign: "middle",
-                    }}
-                  />
-                  UPI
-                </Typography>
-
-                <Typography
-                  sx={{
-                    color: "#777",
-                    mt: 1,
-                  }}
-                >
-                  Google Pay, PhonePe, Paytm & BHIM.
-                </Typography>
-              </Box>
-            }
-          />
-        </Paper>
-
-        {/* Net Banking */}
-
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            cursor: "pointer",
-            border:
-              checkoutData.payment === "netbanking"
-                ? "2px solid #1E2F2B"
-                : "1px solid #E5E5E5",
-            background:
-              checkoutData.payment === "netbanking"
-                ? "#F6FBF8"
-                : "#fff",
-          }}
-        >
-          <FormControlLabel
-            value="netbanking"
-            control={<Radio />}
-            label={
-              <Box>
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    color: "#1E2F2B",
-                  }}
-                >
-                  <AccountBalanceOutlinedIcon
-                    sx={{
-                      mr: 1,
-                      verticalAlign: "middle",
-                    }}
-                  />
-                  Net Banking
-                </Typography>
-
-                <Typography
-                  sx={{
-                    color: "#777",
-                    mt: 1,
-                  }}
-                >
-                  All major Indian banks supported.
+                  Pay securely using Credit Card, Debit Card,
+                  UPI, or Net Banking.
                 </Typography>
               </Box>
             }
@@ -265,6 +183,7 @@ const PaymentMethod = ({
         sx={{
           display: "flex",
           justifyContent: "space-between",
+          gap: 2,
           mt: 5,
         }}
       >
@@ -278,6 +197,10 @@ const PaymentMethod = ({
             textTransform: "none",
             borderColor: "#1E2F2B",
             color: "#1E2F2B",
+            "&:hover": {
+              borderColor: "#16251F",
+              background: "#F6FBF8",
+            },
           }}
         >
           ← Back
@@ -285,7 +208,7 @@ const PaymentMethod = ({
 
         <Button
           variant="contained"
-          onClick={nextStep}
+          onClick={handleContinue}
           sx={{
             px: 5,
             height: 52,
