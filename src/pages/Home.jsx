@@ -10,12 +10,14 @@ import FloatingShowcase from "../components/FloatingShowcase";
 import Newsletter from "../components/Newsletter";
 import Footer from "../components/Footer";
 import BestSeller from "../components/BestSeller";
+import SkinAdvisorSection from "../components/SkinAdvisorSection";
 
 const Home = () => {
   return (
     <>
       <Navbar />
       <HeroSection />
+      <SkinAdvisorSection />
       <BestSeller />
       <ShopByCategory />
       <FeaturedProduct />

@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const API_URL = import.meta.env.DEV
+  ? import.meta.env.VITE_LOCAL_API_URL
+  : import.meta.env.VITE_LIVE_API_URL;
+
 const api = axios.create({
-  baseURL: "https://glowcare-be.onrender.com",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -10,6 +14,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+
+    console.log("TOKEN SENT TO BACKEND:", token);
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

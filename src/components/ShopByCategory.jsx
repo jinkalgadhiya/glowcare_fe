@@ -19,16 +19,12 @@ const ShopByCategory = () => {
         const savedSettings = await getHomePageSettings();
 
         if (savedSettings) {
-          const mergedSettings =
-            mergeHomePageSettings(savedSettings);
+          const mergedSettings = mergeHomePageSettings(savedSettings);
 
           setCategorySettings(mergedSettings.categories);
         }
       } catch (error) {
-        console.error(
-          "Error loading category settings:",
-          error,
-        );
+        console.error("Error loading category settings:", error);
       }
     };
 
@@ -39,12 +35,35 @@ const ShopByCategory = () => {
     <Box
       sx={{
         width: "100%",
-        backgroundColor: "#fff",
+        backgroundColor: "#FCFAF7",
+
+        // ORIGINAL DESKTOP
         py: 10,
         px: { xs: 3, md: 8 },
+
+        // =============================================
+        // MINI LAPTOP
+        // =============================================
+
+        "@media (min-width: 900px) and (max-width: 1199px)": {
+          py: 9,
+          px: 6,
+        },
+
+        // =============================================
+        // PHONE
+        // =============================================
+
+        "@media (max-width: 599px)": {
+          py: 7,
+          px: 2,
+        },
       }}
     >
-      {/* Heading */}
+      {/* =================================================
+          HEADING
+      ================================================= */}
+
       <Box
         sx={{
           display: "flex",
@@ -52,7 +71,25 @@ const ShopByCategory = () => {
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
+
+          // ORIGINAL
           mb: 8,
+
+          // =============================================
+          // TABLET
+          // =============================================
+
+          "@media (max-width: 899px)": {
+            mb: 6,
+          },
+
+          // =============================================
+          // PHONE
+          // =============================================
+
+          "@media (max-width: 599px)": {
+            mb: 5,
+          },
         }}
       >
         <Typography
@@ -62,6 +99,12 @@ const ShopByCategory = () => {
             color: "#9a9a9a",
             textTransform: "uppercase",
             mb: 1,
+
+            "@media (max-width: 599px)": {
+              fontSize: "10px",
+              letterSpacing: "3px",
+              mb: 0.8,
+            },
           }}
         >
           {categorySettings.eyebrow}
@@ -72,14 +115,63 @@ const ShopByCategory = () => {
           sx={{
             fontWeight: 500,
             color: "#1e2f2b",
+
+            // =========================================
+            // MINI LAPTOP
+            // =========================================
+
+            "@media (min-width: 900px) and (max-width: 1199px)": {
+              fontSize: "2.8rem",
+            },
+
+            // =========================================
+            // TABLET
+            // =========================================
+
+            "@media (max-width: 899px)": {
+              fontSize: "2.5rem",
+            },
+
+            // =========================================
+            // PHONE
+            // =========================================
+
+            "@media (max-width: 599px)": {
+              fontSize: "2rem",
+              lineHeight: 1.2,
+            },
           }}
         >
           {categorySettings.heading}
         </Typography>
       </Box>
 
-      {/* Categories */}
-      <Grid container spacing={4} justifyContent="center">
+      {/* =================================================
+          CATEGORIES
+      ================================================= */}
+
+      <Grid
+        container
+        spacing={4}
+        justifyContent="center"
+        sx={{
+          // =============================================
+          // TABLET
+          // =============================================
+
+          "@media (max-width: 899px)": {
+            spacing: 3,
+          },
+
+          // =============================================
+          // PHONE
+          // =============================================
+
+          "@media (max-width: 599px)": {
+            spacing: 3,
+          },
+        }}
+      >
         {categorySettings.items?.map((category) => (
           <Grid
             key={category.id}
@@ -99,16 +191,59 @@ const ShopByCategory = () => {
                 sx={{
                   textAlign: "center",
                   cursor: "pointer",
+
+                  // =======================================
+                  // PHONE
+                  // =======================================
+
+                  "@media (max-width: 599px)": {
+                    width: "100%",
+                  },
                 }}
               >
-                {/* Image */}
+                {/* =================================================
+                    IMAGE
+                ================================================= */}
+
                 <Box
                   sx={{
+                    // ORIGINAL DESKTOP
                     width: 220,
                     height: 300,
+
                     borderRadius: "120px",
+
                     overflow: "hidden",
+
                     mx: "auto",
+
+                    // =============================================
+                    // MINI LAPTOP
+                    // =============================================
+
+                    "@media (min-width: 900px) and (max-width: 1199px)": {
+                      width: 200,
+                      height: 280,
+                    },
+
+                    // =============================================
+                    // TABLET
+                    // =============================================
+
+                    "@media (min-width: 600px) and (max-width: 899px)": {
+                      width: 200,
+                      height: 280,
+                    },
+
+                    // =============================================
+                    // PHONE
+                    // =============================================
+
+                    "@media (max-width: 599px)": {
+                      width: 190,
+                      height: 260,
+                      borderRadius: "100px",
+                    },
                   }}
                 >
                   <Box
@@ -118,7 +253,9 @@ const ShopByCategory = () => {
                     sx={{
                       width: "100%",
                       height: "100%",
+
                       objectFit: "cover",
+
                       transition: "0.5s",
 
                       "&:hover": {
@@ -128,21 +265,47 @@ const ShopByCategory = () => {
                   />
                 </Box>
 
-                {/* Category Title */}
+                {/* =================================================
+                    CATEGORY TITLE
+                ================================================= */}
+
                 <Typography
                   sx={{
+                    // ORIGINAL
                     mt: 3,
                     fontSize: "20px",
                     fontWeight: 600,
                     color: "#1e2f2b",
+
+                    // =============================================
+                    // TABLET
+                    // =============================================
+
+                    "@media (max-width: 899px)": {
+                      mt: 2.5,
+                      fontSize: "19px",
+                    },
+
+                    // =============================================
+                    // PHONE
+                    // =============================================
+
+                    "@media (max-width: 599px)": {
+                      mt: 2,
+                      fontSize: "18px",
+                    },
                   }}
                 >
                   {category.title}
                 </Typography>
 
-                {/* Explore */}
+                {/* =================================================
+                    EXPLORE
+                ================================================= */}
+
                 <Typography
                   sx={{
+                    // ORIGINAL
                     mt: 1,
                     fontSize: "13px",
                     letterSpacing: "2px",
@@ -151,6 +314,16 @@ const ShopByCategory = () => {
 
                     "&:hover": {
                       color: "#1e2f2b",
+                    },
+
+                    // =============================================
+                    // PHONE
+                    // =============================================
+
+                    "@media (max-width: 599px)": {
+                      mt: 0.8,
+                      fontSize: "11px",
+                      letterSpacing: "1.5px",
                     },
                   }}
                 >

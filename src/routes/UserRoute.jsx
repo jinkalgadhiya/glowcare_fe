@@ -13,6 +13,9 @@ import ProductDetails from "../pages/shop/ProductDetails";
 
 import UserProfile from "../pages/UserProfile";
 
+// Skin Analysis
+import SkinAnalysis from "../pages/SkinAnalysis";
+import SkinAnalysisResult from "../components/skinAnalysis/SkinAnalysisResult";
 import ProtectedRoute from "../auth/UserProtectedRoute";
 
 const UserRoute = () => {
@@ -28,26 +31,23 @@ const UserRoute = () => {
 
       <Route path="/cart" element={<Cart />} />
 
+      {/* ================= SKIN ANALYSIS ================= */}
+
+      <Route path="/skin-analysis" element={<SkinAnalysis />} />
+
+      <Route path="/skin-analysis/result" element={<SkinAnalysisResult />} />
+
       {/* ================= SHOP ================= */}
 
       {/* Global Search */}
-      <Route
-        path="/shop"
-        element={<ShopPage />}
-      />
+      <Route path="/shop" element={<ShopPage />} />
 
       {/* Category Shop */}
-      <Route
-        path="/shop/:category"
-        element={<ShopPage />}
-      />
+      <Route path="/shop/:category" element={<ShopPage />} />
 
       {/* ================= PRODUCT ================= */}
 
-      <Route
-        path="/product/:id"
-        element={<ProductDetails />}
-      />
+      <Route path="/product/:id" element={<ProductDetails />} />
 
       {/* ================= PROTECTED ================= */}
 
@@ -79,6 +79,8 @@ const UserRoute = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* ================= ADMIN ================= */}
 
       {/* Prevent "No routes matched" warning for admin routes */}
       <Route path="/admin/*" element={null} />

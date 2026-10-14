@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Rating } from "@mui/material";
+
+import {
+  Box,
+  Typography,
+  Button,
+  Rating,
+  IconButton,
+} from "@mui/material";
+
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import IconButton from "@mui/material/IconButton";
+
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -36,15 +44,14 @@ const ProductCard = ({
   const navigate = useNavigate();
 
   const wishlistItems = useSelector(
-    (state) => state.wishlist.items,
+    (state) => state.wishlist.items
   );
 
   // =====================================================
   // PRODUCT REVIEWS
   // =====================================================
 
-  const [productReviews, setProductReviews] =
-    useState([]);
+  const [productReviews, setProductReviews] = useState([]);
 
   const firstVariant = product?.variants?.[0];
 
@@ -56,26 +63,26 @@ const ProductCard = ({
   const originalPrice =
     firstVariant?.price || 0;
 
-  /* ===============================
-     CATEGORY
-  =============================== */
+  // =====================================================
+  // CATEGORY
+  // =====================================================
 
   const categoryName =
     product?.category?.subCategory ||
     product?.category?.mainCategory ||
     "";
 
-  /* ===============================
-     LOAD REAL PRODUCT REVIEWS
-  =============================== */
+  // =====================================================
+  // LOAD REAL PRODUCT REVIEWS
+  // =====================================================
 
   useEffect(() => {
     const loadProductReviews = async () => {
       try {
         const reviews = await getMyReviews();
 
-        const currentProductReviews =
-          reviews.filter((review) => {
+        const currentProductReviews = reviews.filter(
+          (review) => {
             const reviewProductId =
               review.productId?._id ||
               review.productId ||
@@ -86,15 +93,14 @@ const ProductCard = ({
               String(reviewProductId) ===
               String(product?._id)
             );
-          });
-
-        setProductReviews(
-          currentProductReviews,
+          }
         );
+
+        setProductReviews(currentProductReviews);
       } catch (error) {
         console.error(
           "Failed to load product reviews:",
-          error,
+          error
         );
 
         setProductReviews([]);
@@ -106,42 +112,40 @@ const ProductCard = ({
     }
   }, [product?._id]);
 
-  /* ===============================
-     REAL REVIEW RATING
-  =============================== */
+  // =====================================================
+  // REAL REVIEW RATING
+  // =====================================================
 
-  const reviewCount =
-    productReviews.length;
+  const reviewCount = productReviews.length;
 
   const averageRating =
     reviewCount > 0
       ? productReviews.reduce(
           (total, review) =>
-            total +
-            (Number(review.rating) || 0),
-          0,
+            total + (Number(review.rating) || 0),
+          0
         ) / reviewCount
       : 0;
 
-  /* ===============================
-     WISHLIST
-  =============================== */
+  // =====================================================
+  // WISHLIST
+  // =====================================================
 
   const isWishlisted = wishlistItems.some(
-    (item) => item.id === product?._id,
+    (item) => item.id === product?._id
   );
 
-  /* ===============================
-     OPEN PRODUCT
-  =============================== */
+  // =====================================================
+  // OPEN PRODUCT
+  // =====================================================
 
   const handleOpenProduct = () => {
     navigate(`/product/${product._id}`);
   };
 
-  /* ===============================
-     WISHLIST
-  =============================== */
+  // =====================================================
+  // WISHLIST
+  // =====================================================
 
   const handleWishlist = async (e) => {
     e.stopPropagation();
@@ -160,16 +164,16 @@ const ProductCard = ({
           name: product.productName,
 
           category: categoryName,
-        }),
+        })
       );
 
       await addToWishlistDB(product._id);
     }
   };
 
-  /* ===============================
-     ADD TO CART
-  =============================== */
+  // =====================================================
+  // ADD TO CART
+  // =====================================================
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -197,22 +201,21 @@ const ProductCard = ({
         originalPrice: originalPrice,
 
         quantity: 1,
-      }),
+      })
     );
   };
 
-  /* ===============================
-     DISCOUNT
-  =============================== */
+  // =====================================================
+  // DISCOUNT
+  // =====================================================
 
   const discount =
     firstVariant?.discountPrice &&
     originalPrice > 0
       ? Math.round(
-          ((originalPrice -
-            currentPrice) /
+          ((originalPrice - currentPrice) /
             originalPrice) *
-            100,
+            100
         )
       : 0;
 
@@ -221,44 +224,133 @@ const ProductCard = ({
       onClick={handleOpenProduct}
       sx={{
         display: "flex",
+
         flexDirection: "column",
+
+        // =================================================
+        // DESKTOP - ORIGINAL
+        // DO NOT CHANGE
+        // =================================================
+
         width: 320,
+
         height: "auto",
+
         borderRadius: 2,
+
         overflow: "hidden",
+
         bgcolor: "#fff",
-        boxShadow: "0 4px 15px rgba(0,0,0,.08)",
+
+        boxShadow:
+          "0 4px 15px rgba(0,0,0,.08)",
+
         transition: ".35s",
 
         "&:hover": {
           transform: "translateY(-8px)",
+
           boxShadow:
             "0 18px 40px rgba(0,0,0,.12)",
         },
+
+        // =================================================
+        // SMALL LAPTOP
+        // =================================================
+
+        "@media (min-width: 900px) and (max-width: 1199px)":
+          {
+            width: "100%",
+            maxWidth: 320,
+            margin: "0 auto",
+          },
+
+        // =================================================
+        // TABLET
+        // =================================================
+
+        "@media (min-width: 600px) and (max-width: 899px)":
+          {
+            width: "100%",
+            maxWidth: "100%",
+            margin: 0,
+          },
+
+        // =================================================
+        // MOBILE
+        // =================================================
+
+        "@media (max-width: 599px)": {
+          width: "100%",
+          maxWidth: "100%",
+          margin: 0,
+
+          borderRadius: 2,
+        },
       }}
     >
-      {/* ===============================
+      {/* =================================================
           IMAGE SECTION
-      =============================== */}
+      ================================================= */}
 
       <Box
         sx={{
           position: "relative",
+
           backgroundColor: "#F6F6F3",
+
           borderRadius: 2,
+
           overflow: "hidden",
+
+          // =================================================
+          // DESKTOP - ORIGINAL
+          // DO NOT CHANGE
+          // =================================================
+
           height: 400,
+
           display: "flex",
+
           justifyContent: "center",
+
           alignItems: "center",
 
           "&:hover img": {
             transform:
               "translateY(-8px) scale(1.05)",
           },
+
+          // =================================================
+          // SMALL LAPTOP
+          // =================================================
+
+          "@media (min-width: 900px) and (max-width: 1199px)":
+            {
+              height: 360,
+            },
+
+          // =================================================
+          // TABLET
+          // =================================================
+
+          "@media (min-width: 600px) and (max-width: 899px)":
+            {
+              height: "clamp(280px, 42vw, 340px)",
+            },
+
+          // =================================================
+          // MOBILE
+          // =================================================
+
+          "@media (max-width: 599px)": {
+            height: "clamp(280px, 90vw, 360px)",
+          },
         }}
       >
-        {/* Badge */}
+        {/* =================================================
+            BADGE
+        ================================================= */}
 
         {showBadge &&
           product.badge &&
@@ -266,24 +358,53 @@ const ProductCard = ({
             <Box
               sx={{
                 position: "absolute",
-                top: 16,
-                right: 16,
+
+                top: {
+                  xs: 10,
+                  sm: 12,
+                  md: 16,
+                },
+
+                right: {
+                  xs: 10,
+                  sm: 12,
+                  md: 16,
+                },
+
                 zIndex: 10,
 
                 backgroundColor: "#1E2F2B",
+
                 color: "#fff",
 
-                px: 2,
-                py: 0.6,
+                px: {
+                  xs: 1.2,
+                  md: 2,
+                },
+
+                py: {
+                  xs: 0.4,
+                  md: 0.6,
+                },
 
                 borderRadius: "30px",
               }}
             >
               <Typography
                 sx={{
-                  fontSize: 11,
+                  fontSize: {
+                    xs: 9,
+                    sm: 10,
+                    md: 11,
+                  },
+
                   fontWeight: 600,
-                  letterSpacing: 1,
+
+                  letterSpacing: {
+                    xs: 0.7,
+                    md: 1,
+                  },
+
                   textTransform: "uppercase",
                 }}
               >
@@ -292,19 +413,20 @@ const ProductCard = ({
             </Box>
           )}
 
-        {/* Wishlist */}
+        {/* =================================================
+            WISHLIST
+        ================================================= */}
 
         {showWishlist && (
           <IconButton
             onClick={handleWishlist}
             sx={{
               position: "absolute",
-              top: 340,
-              left: 20,
 
               zIndex: 10,
 
               width: 46,
+
               height: 46,
 
               bgcolor: "#fff",
@@ -316,7 +438,58 @@ const ProductCard = ({
 
               "&:hover": {
                 bgcolor: "#fff",
+
                 transform: "scale(1.08)",
+              },
+
+              // =================================================
+              // DESKTOP - ORIGINAL
+              // DO NOT CHANGE
+              // =================================================
+
+              top: 340,
+
+              left: 20,
+
+              // =================================================
+              // SMALL LAPTOP
+              // =================================================
+
+              "@media (min-width: 900px) and (max-width: 1199px)":
+                {
+                  top: "auto",
+                  bottom: 16,
+                  left: 18,
+
+                  width: 44,
+                  height: 44,
+                },
+
+              // =================================================
+              // TABLET
+              // =================================================
+
+              "@media (min-width: 600px) and (max-width: 899px)":
+                {
+                  top: "auto",
+                  bottom: 16,
+                  left: 16,
+
+                  width: 44,
+                  height: 44,
+                },
+
+              // =================================================
+              // MOBILE
+              // =================================================
+
+              "@media (max-width: 599px)": {
+                top: "auto",
+                bottom: 14,
+                left: 12,
+
+                width: 42,
+                height: 42,
               },
             }}
           >
@@ -324,21 +497,31 @@ const ProductCard = ({
               <FavoriteRoundedIcon
                 sx={{
                   color: "#E53935",
-                  fontSize: 24,
+
+                  fontSize: {
+                    xs: 21,
+                    md: 24,
+                  },
                 }}
               />
             ) : (
               <FavoriteBorderRoundedIcon
                 sx={{
                   color: "#666",
-                  fontSize: 24,
+
+                  fontSize: {
+                    xs: 21,
+                    md: 24,
+                  },
                 }}
               />
             )}
           </IconButton>
         )}
 
-        {/* Product Image */}
+        {/* =================================================
+            PRODUCT IMAGE
+        ================================================= */}
 
         <Box
           component="img"
@@ -346,77 +529,193 @@ const ProductCard = ({
           alt={product.productName}
           sx={{
             width: "95%",
+
             height: "100%",
+
             objectFit: "cover",
+
             position: "relative",
+
             zIndex: 1,
 
             transition: ".4s",
+
+            // =================================================
+            // TABLET
+            // Keep image inside available card width
+            // =================================================
+
+            "@media (min-width: 600px) and (max-width: 899px)":
+              {
+                width: "100%",
+              },
+
+            // =================================================
+            // MOBILE
+            // =================================================
+
+            "@media (max-width: 599px)": {
+              width: "100%",
+            },
           }}
         />
       </Box>
 
-      {/* ===============================
+      {/* =================================================
           PRODUCT INFO
-      =============================== */}
+      ================================================= */}
 
       <Box
         sx={{
-          p: 2,
+          p: {
+            xs: 1.5,
+            sm: 2,
+          },
+
           display: "flex",
+
           flexDirection: "column",
+
           flexGrow: 1,
+
+          // =================================================
+          // TABLET
+          // =================================================
+
+          "@media (min-width: 600px) and (max-width: 899px)":
+            {
+              p: 2,
+            },
         }}
       >
-        {/* Category */}
+        {/* =================================================
+            CATEGORY
+        ================================================= */}
 
         <Typography
           sx={{
-            fontSize: 13,
+            fontSize: {
+              xs: 11,
+              sm: 12,
+              md: 13,
+            },
+
             color: "#B89478",
-            letterSpacing: 1,
+
+            letterSpacing: {
+              xs: 0.7,
+              md: 1,
+            },
+
             textTransform: "uppercase",
-            mb: 1,
+
+            mb: {
+              xs: 0.7,
+              md: 1,
+            },
           }}
         >
           {categoryName}
         </Typography>
 
-        {/* Product Name */}
+        {/* =================================================
+            PRODUCT NAME
+        ================================================= */}
 
         <Typography
           sx={{
-            fontSize: 20,
+            fontSize: {
+              xs: 17,
+              sm: 18,
+              md: 20,
+            },
+
             fontWeight: 600,
+
             color: "#1E2F2B",
+
             lineHeight: 1.4,
-            height: 56,
+
+            height: {
+              xs: 48,
+              md: 56,
+            },
+
             overflow: "hidden",
 
             display: "-webkit-box",
+
             WebkitLineClamp: 2,
+
             WebkitBoxOrient: "vertical",
 
-            mb: 1,
+            mb: {
+              xs: 0.8,
+              md: 1,
+            },
+
+            // =================================================
+            // TABLET
+            // =================================================
+
+            "@media (min-width: 600px) and (max-width: 899px)":
+              {
+                fontSize: 18,
+                height: 52,
+              },
           }}
         >
           {product.productName}
         </Typography>
 
-        {/* Description */}
+        {/* =================================================
+            DESCRIPTION
+        ================================================= */}
 
         {showDescription && (
           <Typography
             sx={{
-              fontSize: 14,
+              fontSize: {
+                xs: 13,
+                sm: 13,
+                md: 14,
+              },
+
               color: "#6F6F6F",
-              lineHeight: 1.7,
-              height: 72,
+
+              lineHeight: {
+                xs: 1.6,
+                md: 1.7,
+              },
+
+              height: {
+                xs: 62,
+                md: 72,
+              },
+
               overflow: "hidden",
+
               display: "-webkit-box",
+
               WebkitLineClamp: 3,
+
               WebkitBoxOrient: "vertical",
-              mb: 2,
+
+              mb: {
+                xs: 1.5,
+                md: 2,
+              },
+
+              // =================================================
+              // TABLET
+              // =================================================
+
+              "@media (min-width: 600px) and (max-width: 899px)":
+                {
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  height: 62,
+                },
             }}
           >
             {product.description ||
@@ -424,15 +723,25 @@ const ProductCard = ({
           </Typography>
         )}
 
-        {/* Rating */}
+        {/* =================================================
+            RATING
+        ================================================= */}
 
         {showRating && (
           <Box
             sx={{
               display: "flex",
+
               alignItems: "center",
-              gap: 1,
+
+              gap: {
+                xs: 0.5,
+                md: 1,
+              },
+
               mb: 1,
+
+              flexWrap: "wrap",
             }}
           >
             <Rating
@@ -444,7 +753,12 @@ const ProductCard = ({
 
             <Typography
               sx={{
-                fontSize: 14,
+                fontSize: {
+                  xs: 12,
+                  sm: 13,
+                  md: 14,
+                },
+
                 color: "#666",
               }}
             >
@@ -456,20 +770,36 @@ const ProductCard = ({
           </Box>
         )}
 
-        {/* Price */}
+        {/* =================================================
+            PRICE
+        ================================================= */}
 
         <Box
           sx={{
             display: "flex",
+
             alignItems: "center",
-            gap: 2,
+
+            gap: {
+              xs: 1,
+              md: 2,
+            },
+
             mb: 1,
+
+            flexWrap: "wrap",
           }}
         >
           <Typography
             sx={{
-              fontSize: 24,
+              fontSize: {
+                xs: 20,
+                sm: 22,
+                md: 24,
+              },
+
               fontWeight: 700,
+
               color: "#1E2F2B",
             }}
           >
@@ -479,10 +809,16 @@ const ProductCard = ({
           {firstVariant?.discountPrice && (
             <Typography
               sx={{
-                fontSize: 16,
+                fontSize: {
+                  xs: 14,
+                  md: 16,
+                },
+
                 color: "#999",
+
                 textDecoration:
                   "line-through",
+
                 textDecorationColor:
                   "#D32F2F",
               }}
@@ -495,8 +831,13 @@ const ProductCard = ({
             <Typography
               sx={{
                 color: "#2E7D32",
+
                 fontWeight: 600,
-                fontSize: 13,
+
+                fontSize: {
+                  xs: 11,
+                  md: 13,
+                },
               }}
             >
               {discount}% OFF
@@ -504,7 +845,9 @@ const ProductCard = ({
           )}
         </Box>
 
-        {/* Add To Cart */}
+        {/* =================================================
+            ADD TO CART
+        ================================================= */}
 
         {showCart && (
           <Button
@@ -513,22 +856,36 @@ const ProductCard = ({
             fullWidth
             sx={{
               mt: "auto",
-              height: 48,
+
+              height: {
+                xs: 44,
+                sm: 46,
+                md: 48,
+              },
 
               borderRadius: 0,
+
               textTransform: "none",
 
               borderColor: "#1E2F2B",
+
               color: "#1E2F2B",
+
               fontWeight: 600,
+
+              fontSize: {
+                xs: 13,
+                md: 14,
+              },
 
               transition: ".3s",
 
               "&:hover": {
                 bgcolor: "#1E2F2B",
+
                 color: "#fff",
-                borderColor:
-                  "#1E2F2B",
+
+                borderColor: "#1E2F2B",
               },
             }}
           >

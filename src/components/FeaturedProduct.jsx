@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Box,
   Grid,
@@ -10,10 +11,7 @@ import {
 
 import { getProducts } from "../database/productService";
 
-import {
-  getCartItems,
-  saveCartItem,
-} from "../database/cartService";
+import { getCartItems, saveCartItem } from "../database/cartService";
 
 import {
   getWishlist,
@@ -28,10 +26,7 @@ import RemoveOutlinedIcon from "@mui/icons-material/RemoveOutlined";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  addToCart,
-  loadCart,
-} from "../redux/cart/cartSlice";
+import { addToCart, loadCart } from "../redux/cart/cartSlice";
 
 import {
   addToWishlist,
@@ -40,8 +35,7 @@ import {
 } from "../redux/wishlist/wishlistSlice";
 
 const FeaturedProduct = () => {
-  const [showFullDescription, setShowFullDescription] =
-    useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const [products, setProducts] = useState([]);
 
@@ -49,8 +43,7 @@ const FeaturedProduct = () => {
 
   const [cartLoading, setCartLoading] = useState(false);
 
-  const [wishlistLoading, setWishlistLoading] =
-    useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -58,9 +51,7 @@ const FeaturedProduct = () => {
   // REDUX
   // ======================================================
 
-  const wishlistItems = useSelector(
-    (state) => state.wishlist?.items || [],
-  );
+  const wishlistItems = useSelector((state) => state.wishlist?.items || []);
 
   // ======================================================
   // LOAD PRODUCTS
@@ -71,14 +62,9 @@ const FeaturedProduct = () => {
       try {
         const data = await getProducts();
 
-        setProducts(
-          Array.isArray(data) ? data : [],
-        );
+        setProducts(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error(
-          "Error loading featured products:",
-          error,
-        );
+        console.error("Error loading featured products:", error);
       }
     };
 
@@ -134,16 +120,12 @@ const FeaturedProduct = () => {
   // ======================================================
 
   const featuredProducts = products.filter(
-    (product) =>
-      product.status === "Active" &&
-      product.featured === true,
+    (product) => product.status === "Active" && product.featured === true,
   );
 
   const featuredProduct =
     featuredProducts.length > 0
-      ? featuredProducts[
-          featuredProducts.length - 1
-        ]
+      ? featuredProducts[featuredProducts.length - 1]
       : null;
 
   if (!featuredProduct) {
@@ -155,16 +137,13 @@ const FeaturedProduct = () => {
   // ======================================================
 
   const productId =
-    featuredProduct._id ||
-    featuredProduct.id ||
-    featuredProduct.productId;
+    featuredProduct._id || featuredProduct.id || featuredProduct.productId;
 
   // ======================================================
   // VARIANT
   // ======================================================
 
-  const firstVariant =
-    featuredProduct?.variants?.[0];
+  const firstVariant = featuredProduct?.variants?.[0];
 
   if (!firstVariant) {
     return null;
@@ -181,21 +160,16 @@ const FeaturedProduct = () => {
   // ======================================================
 
   const sellingPrice =
-    Number(firstVariant.discountPrice) ||
-    Number(firstVariant.price) ||
-    0;
+    Number(firstVariant.discountPrice) || Number(firstVariant.price) || 0;
 
-  const originalPrice =
-    Number(firstVariant.price) || 0;
+  const originalPrice = Number(firstVariant.price) || 0;
 
   // ======================================================
   // WISHLIST CHECK
   // ======================================================
 
   const isWishlisted = wishlistItems.some(
-    (item) =>
-      String(item.id || item.productId) ===
-      String(productId),
+    (item) => String(item.id || item.productId) === String(productId),
   );
 
   // ======================================================
@@ -204,17 +178,12 @@ const FeaturedProduct = () => {
 
   const handleAddToCart = async () => {
     if (!productId || !variantId) {
-      console.error(
-        "Missing product/variant ID:",
-        {
-          productId,
-          variantId,
-        },
-      );
+      console.error("Missing product/variant ID:", {
+        productId,
+        variantId,
+      });
 
-      alert(
-        "Unable to add this product to cart.",
-      );
+      alert("Unable to add this product to cart.");
 
       return;
     }
@@ -226,22 +195,18 @@ const FeaturedProduct = () => {
         productId,
         variantId,
 
-        name:
-          featuredProduct.productName || "",
+        name: featuredProduct.productName || "",
 
-        image:
-          featuredProduct.image || "",
+        image: featuredProduct.image || "",
 
         category:
           featuredProduct.category?.subCategory ||
           featuredProduct.category?.mainCategory ||
           "",
 
-        description:
-          featuredProduct.description || "",
+        description: featuredProduct.description || "",
 
-        size:
-          firstVariant.size || "",
+        size: firstVariant.size || "",
 
         price: sellingPrice,
 
@@ -262,9 +227,7 @@ const FeaturedProduct = () => {
 
       await saveCartItem(cartItem);
 
-      console.log(
-        "Product successfully added to cart",
-      );
+      console.log("Product successfully added to cart");
 
       setQuantity(1);
     } catch (error) {
@@ -273,10 +236,7 @@ const FeaturedProduct = () => {
         error.response?.data || error.message,
       );
 
-      alert(
-        error.response?.data?.message ||
-          "Failed to add product to cart.",
-      );
+      alert(error.response?.data?.message || "Failed to add product to cart.");
     } finally {
       setCartLoading(false);
     }
@@ -288,10 +248,7 @@ const FeaturedProduct = () => {
 
   const handleWishlist = async () => {
     if (!productId) {
-      console.error(
-        "Missing product ID:",
-        featuredProduct,
-      );
+      console.error("Missing product ID:", featuredProduct);
 
       alert("Unable to update wishlist.");
 
@@ -308,13 +265,9 @@ const FeaturedProduct = () => {
       if (isWishlisted) {
         await removeFromWishlistDB(productId);
 
-        dispatch(
-          removeFromWishlist(productId),
-        );
+        dispatch(removeFromWishlist(productId));
 
-        console.log(
-          "Product removed from wishlist",
-        );
+        console.log("Product removed from wishlist");
 
         return;
       }
@@ -323,10 +276,7 @@ const FeaturedProduct = () => {
       // ADD TO BACKEND
       // ==================================================
 
-      await addToWishlistDB(
-        productId,
-        variantId,
-      );
+      await addToWishlistDB(productId, variantId);
 
       // ==================================================
       // ADD TO REDUX
@@ -338,25 +288,20 @@ const FeaturedProduct = () => {
 
           productId,
 
-          name:
-            featuredProduct.productName || "",
+          name: featuredProduct.productName || "",
 
-          image:
-            featuredProduct.image || "",
+          image: featuredProduct.image || "",
 
           category:
             featuredProduct.category?.subCategory ||
             featuredProduct.category?.mainCategory ||
             "",
 
-          description:
-            featuredProduct.description || "",
+          description: featuredProduct.description || "",
 
-          badge:
-            featuredProduct.badge || "None",
+          badge: featuredProduct.badge || "None",
 
-          variants:
-            featuredProduct.variants || [],
+          variants: featuredProduct.variants || [],
 
           price: sellingPrice,
 
@@ -364,20 +309,14 @@ const FeaturedProduct = () => {
         }),
       );
 
-      console.log(
-        "Product added to wishlist",
-      );
+      console.log("Product added to wishlist");
     } catch (error) {
       console.error(
         "Wishlist operation failed:",
-        error.response?.data ||
-          error.message,
+        error.response?.data || error.message,
       );
 
-      alert(
-        error.response?.data?.message ||
-          "Failed to update wishlist.",
-      );
+      alert(error.response?.data?.message || "Failed to update wishlist.");
     } finally {
       setWishlistLoading(false);
     }
@@ -388,19 +327,14 @@ const FeaturedProduct = () => {
   // ======================================================
 
   const handleDecrease = () => {
-    setQuantity((prev) =>
-      Math.max(1, prev - 1),
-    );
+    setQuantity((prev) => Math.max(1, prev - 1));
   };
 
   const handleIncrease = () => {
-    const stock =
-      Number(firstVariant.stock) || 0;
+    const stock = Number(firstVariant.stock) || 0;
 
     if (stock > 0) {
-      setQuantity((prev) =>
-        Math.min(stock, prev + 1),
-      );
+      setQuantity((prev) => Math.min(stock, prev + 1));
     }
   };
 
@@ -412,20 +346,55 @@ const FeaturedProduct = () => {
     <Box
       sx={{
         width: "100%",
-        backgroundColor: "#FCFAF7",
+        backgroundColor: "#fff",
+
+        // =================================================
+        // ORIGINAL DESKTOP — DO NOT CHANGE
+        // =================================================
+
         py: 10,
+
         px: {
           xs: 3,
           md: 8,
         },
+
+        // =================================================
+        // MINI LAPTOP
+        // =================================================
+
+        "@media (min-width: 900px) and (max-width: 1199px)": {
+          py: 9,
+          px: 5,
+        },
+
+        // =================================================
+        // PHONE
+        // =================================================
+
+        "@media (max-width: 599px)": {
+          py: 7,
+          px: 2,
+        },
       }}
     >
-      {/* HEADING */}
+      {/* =================================================
+          HEADING
+      ================================================= */}
 
       <Box
         sx={{
           textAlign: "center",
+
           mb: 8,
+
+          "@media (max-width: 899px)": {
+            mb: 6,
+          },
+
+          "@media (max-width: 599px)": {
+            mb: 5,
+          },
         }}
       >
         <Typography
@@ -434,6 +403,11 @@ const FeaturedProduct = () => {
             letterSpacing: "4px",
             textTransform: "uppercase",
             color: "#9B9B9B",
+
+            "@media (max-width: 599px)": {
+              fontSize: "10px",
+              letterSpacing: "3px",
+            },
           }}
         >
           FEATURED PRODUCT
@@ -443,9 +417,20 @@ const FeaturedProduct = () => {
           sx={{
             fontWeight: 500,
             color: "#1E2F2B",
+
             fontSize: {
               xs: "42px",
               md: "50px",
+            },
+
+            "@media (min-width: 900px) and (max-width: 1199px)": {
+              fontSize: "46px",
+            },
+
+            "@media (max-width: 599px)": {
+              fontSize: "32px",
+              lineHeight: 1.15,
+              mt: 0.5,
             },
           }}
         >
@@ -453,132 +438,335 @@ const FeaturedProduct = () => {
         </Typography>
       </Box>
 
-      {/* PRODUCT */}
+      {/* =================================================
+          PRODUCT
+      ================================================= */}
 
       <Grid
         container
-        spacing={6}
+        spacing={{
+          xs: 3,
+          sm: 4,
+          md: 6,
+        }}
         alignItems="center"
+        justifyContent="center"
+        sx={{
+          // =================================================
+          // MINI LAPTOP — FORCE 2 COLUMNS
+          // =================================================
+          "@media (min-width: 900px) and (max-width: 1199px)": {
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            columnGap: 32,
+            rowGap: 0,
+            width: "100%",
+            margin: 0,
+          },
+        }}
       >
-        {/* LEFT SIDE */}
-
-        <Grid item xs={12} md={6}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Box
-              sx={{
-                width: "700px",
-                maxWidth: "720px",
-                height: "620px",
-                backgroundColor: "#F3F4EE",
-                border: "1px solid #E7E3DC",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-                overflow: "hidden",
-                mt: "40px",
-              }}
-            >
-              <Box
-                component="img"
-                src={featuredProduct.image}
-                alt={
-                  featuredProduct.productName ||
-                  "Featured Product"
-                }
-                sx={{
-                  width: "650px",
-                  maxWidth: "90%",
-                  objectFit: "contain",
-                  position: "relative",
-                  zIndex: 2,
-                  transition: ".4s",
-
-                  "&:hover": {
-                    transform: "scale(1.04)",
-                  },
-                }}
-              />
-
-              {/* BADGE */}
-
-              {featuredProduct.badge &&
-                featuredProduct.badge !== "None" && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 20,
-                      right: 20,
-
-                      backgroundColor:
-                        featuredProduct.badge ===
-                        "Best Seller"
-                          ? "#1E2F2B"
-                          : featuredProduct.badge ===
-                              "New Launch"
-                            ? "#2E7D32"
-                            : featuredProduct.badge ===
-                                "Trending"
-                              ? "#E67E22"
-                              : featuredProduct.badge ===
-                                  "Limited Stock"
-                                ? "#D97706"
-                                : featuredProduct.badge ===
-                                    "Out of Stock"
-                                  ? "#C62828"
-                                  : featuredProduct.badge ===
-                                      "Sold Out"
-                                    ? "#616161"
-                                    : "#1E2F2B",
-
-                      color: "#fff",
-                      px: 2,
-                      py: 0.7,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: 1,
-                      borderRadius: "4px",
-                      textTransform: "uppercase",
-                      zIndex: 3,
-                    }}
-                  >
-                    {featuredProduct.badge}
-                  </Box>
-                )}
-            </Box>
-          </Box>
-        </Grid>
-
-        {/* RIGHT SIDE */}
+        {/* =================================================
+            LEFT SIDE
+        ================================================= */}
 
         <Grid
           item
           xs={12}
           md={6}
           sx={{
-            display: "flex",
-            alignItems: "center",
-          }}
+  "@media (min-width: 900px) and (max-width: 1199px)": {
+    width: "100%",
+    maxWidth: "100%",
+    flexBasis: "auto",
+    flexGrow: 0,
+    padding: "0 !important",
+  },
+
+  "@media (min-width: 600px) and (max-width: 899px)": {
+    width: "100%",
+    maxWidth: "100%",
+    display: "flex",
+    justifyContent: "center",
+  },
+
+  "@media (max-width: 599px)": {
+    width: "100%",
+    maxWidth: "100%",
+  },
+}}
         >
           <Box
             sx={{
+              display: "flex",
+              justifyContent: "center",
+
+              "@media (max-width: 899px)": {
+                width: "100%",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                // =================================================
+                // ORIGINAL DESKTOP — UNCHANGED
+                // =================================================
+
+                width: "700px",
+                maxWidth: "720px",
+                height: "620px",
+
+                backgroundColor: "#F3F4EE",
+
+                border: "1px solid #E7E3DC",
+
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+
+                position: "relative",
+
+                overflow: "hidden",
+
+                mt: "40px",
+
+                // =================================================
+                // MINI LAPTOP
+                // =================================================
+
+                "@media (min-width: 900px) and (max-width: 1199px)": {
+                  width: "100%",
+                  maxWidth: "100%",
+                  height: "500px",
+                  mt: "20px",
+                },
+
+                // =================================================
+                // TABLET
+                // =================================================
+
+                "@media (min-width: 600px) and (max-width: 899px)": {
+                  width: "100%",
+                  maxWidth: "600px",
+                  height: "500px",
+                  mt: 0,
+                  mx: "auto",
+                },
+
+                // =================================================
+                // PHONE
+                // =================================================
+
+                "@media (max-width: 599px)": {
+                  width: "100%",
+                  height: "360px",
+                  mt: 0,
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src={featuredProduct.image}
+                alt={featuredProduct.productName || "Featured Product"}
+                sx={{
+                  // =================================================
+                  // ORIGINAL DESKTOP — UNCHANGED
+                  // =================================================
+
+                  width: "650px",
+                  maxWidth: "90%",
+
+                  objectFit: "contain",
+
+                  position: "relative",
+
+                  zIndex: 2,
+
+                  transition: ".4s",
+
+                  "&:hover": {
+                    transform: "scale(1.04)",
+                  },
+
+                  // =================================================
+                  // MINI LAPTOP
+                  // =================================================
+
+                  "@media (min-width: 900px) and (max-width: 1199px)": {
+                    width: "100%",
+                    maxWidth: "88%",
+                  },
+
+                  // =================================================
+                  // TABLET
+                  // =================================================
+
+                  "@media (min-width: 600px) and (max-width: 899px)": {
+                    width: "500px",
+                    maxWidth: "85%",
+                  },
+
+                  // =================================================
+                  // PHONE
+                  // =================================================
+
+                  "@media (max-width: 599px)": {
+                    width: "310px",
+                    maxWidth: "82%",
+                  },
+                }}
+              />
+
+              {/* =================================================
+                  BADGE
+              ================================================= */}
+
+              {featuredProduct.badge && featuredProduct.badge !== "None" && (
+                <Box
+                  sx={{
+                    position: "absolute",
+
+                    top: 20,
+                    right: 20,
+
+                    backgroundColor:
+                      featuredProduct.badge === "Best Seller"
+                        ? "#1E2F2B"
+                        : featuredProduct.badge === "New Launch"
+                          ? "#2E7D32"
+                          : featuredProduct.badge === "Trending"
+                            ? "#E67E22"
+                            : featuredProduct.badge === "Limited Stock"
+                              ? "#D97706"
+                              : featuredProduct.badge === "Out of Stock"
+                                ? "#C62828"
+                                : featuredProduct.badge === "Sold Out"
+                                  ? "#616161"
+                                  : "#1E2F2B",
+
+                    color: "#fff",
+
+                    px: 2,
+                    py: 0.7,
+
+                    fontSize: 11,
+
+                    fontWeight: 600,
+
+                    letterSpacing: 1,
+
+                    borderRadius: "4px",
+
+                    textTransform: "uppercase",
+
+                    zIndex: 3,
+
+                    "@media (max-width: 599px)": {
+                      top: 12,
+                      right: 12,
+                      px: 1.3,
+                      py: 0.5,
+                      fontSize: 8,
+                      letterSpacing: 0.7,
+                    },
+                  }}
+                >
+                  {featuredProduct.badge}
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Grid>
+
+        {/* =================================================
+            RIGHT SIDE
+        ================================================= */}
+
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+  display: "flex",
+  alignItems: "center",
+
+  "@media (min-width: 900px) and (max-width: 1199px)": {
+    width: "100%",
+    maxWidth: "100%",
+    flexBasis: "auto",
+    flexGrow: 0,
+    padding: "0 !important",
+    justifyContent: "flex-start",
+  },
+
+  "@media (min-width: 600px) and (max-width: 899px)": {
+    width: "100%",
+    maxWidth: "100%",
+    justifyContent: "center",
+    textAlign: "center",
+  },
+
+  "@media (max-width: 599px)": {
+    width: "100%",
+    maxWidth: "100%",
+  },
+}}
+        >
+          <Box
+            sx={{
+              // =================================================
+              // ORIGINAL DESKTOP — UNCHANGED
+              // =================================================
+
               width: "550px",
+
               pl: {
                 xs: 0,
                 md: 3,
               },
+
               pr: {
                 xs: 0,
                 md: 1,
               },
+
+              // =================================================
+              // MINI LAPTOP
+              // =================================================
+
+              "@media (min-width: 900px) and (max-width: 1199px)": {
+                width: "100%",
+                maxWidth: "100%",
+                pl: 1,
+                pr: 1,
+              },
+
+              // =================================================
+              // TABLET — CENTER
+              // =================================================
+
+              "@media (min-width: 600px) and (max-width: 899px)": {
+                width: "100%",
+                maxWidth: "600px",
+                mx: "auto",
+                pl: 0,
+                pr: 0,
+                textAlign: "center",
+              },
+
+              // =================================================
+              // PHONE
+              // =================================================
+
+              "@media (max-width: 599px)": {
+                width: "100%",
+                pl: 0,
+                pr: 0,
+              },
             }}
           >
-            {/* PRODUCT NAME */}
+            {/* =================================================
+                PRODUCT NAME
+            ================================================= */}
 
             <Typography
               sx={{
@@ -586,16 +774,36 @@ const FeaturedProduct = () => {
                   xs: 30,
                   md: 34,
                 },
+
                 fontWeight: 500,
+
                 color: "#1E2F2B",
+
                 lineHeight: 1.2,
+
                 mb: 0.8,
+
+                "@media (min-width: 900px) and (max-width: 1199px)": {
+                  fontSize: 32,
+                },
+
+                "@media (max-width: 899px)": {
+                  textAlign: "center",
+                },
+
+                "@media (max-width: 599px)": {
+                  fontSize: 27,
+                  lineHeight: 1.25,
+                  textAlign: "left",
+                },
               }}
             >
               {featuredProduct.productName}
             </Typography>
 
-            {/* CATEGORY */}
+            {/* =================================================
+                CATEGORY
+            ================================================= */}
 
             <Box
               sx={{
@@ -604,18 +812,30 @@ const FeaturedProduct = () => {
                 gap: 2,
                 mb: 2,
                 flexWrap: "wrap",
+
+                // TABLET CENTER
+                "@media (min-width: 600px) and (max-width: 899px)": {
+                  justifyContent: "center",
+                },
+
+                "@media (max-width: 599px)": {
+                  gap: 1.2,
+                  mb: 1.7,
+                },
               }}
             >
               <Typography
                 sx={{
                   fontSize: 15,
                   color: "#666",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 13,
+                  },
                 }}
               >
-                {featuredProduct.category
-                  ?.subCategory ||
-                  featuredProduct.category
-                    ?.mainCategory ||
+                {featuredProduct.category?.subCategory ||
+                  featuredProduct.category?.mainCategory ||
                   "Category"}
               </Typography>
 
@@ -623,18 +843,23 @@ const FeaturedProduct = () => {
                 sx={{
                   fontSize: 15,
                   color: "#666",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 13,
+                  },
                 }}
               >
-                Size:{" "}
-                <strong>
-                  {firstVariant.size || "-"}
-                </strong>
+                Size: <strong>{firstVariant.size || "-"}</strong>
               </Typography>
 
               <Typography
                 sx={{
                   color: "#F6A200",
                   fontSize: 16,
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 14,
+                  },
                 }}
               >
                 ★★★★★
@@ -644,14 +869,19 @@ const FeaturedProduct = () => {
                 sx={{
                   fontSize: 15,
                   color: "#666",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 13,
+                  },
                 }}
               >
-                {featuredProduct.rating ||
-                  "4.8"}
+                {featuredProduct.rating || "4.8"}
               </Typography>
             </Box>
 
-            {/* PRICE */}
+            {/* =================================================
+                PRICE
+            ================================================= */}
 
             <Box
               sx={{
@@ -659,6 +889,15 @@ const FeaturedProduct = () => {
                 alignItems: "center",
                 gap: 2,
                 mb: 0.5,
+
+                // TABLET CENTER
+                "@media (min-width: 600px) and (max-width: 899px)": {
+                  justifyContent: "center",
+                },
+
+                "@media (max-width: 599px)": {
+                  gap: 1.5,
+                },
               }}
             >
               <Typography
@@ -667,8 +906,14 @@ const FeaturedProduct = () => {
                     xs: 34,
                     md: 40,
                   },
+
                   fontWeight: 600,
+
                   color: "#1E2F2B",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 32,
+                  },
                 }}
               >
                 ₹{sellingPrice}
@@ -681,14 +926,20 @@ const FeaturedProduct = () => {
                       xs: 18,
                       md: 20,
                     },
+
                     fontWeight: 500,
+
                     color: "#9A9A9A",
-                    textDecoration:
-                      "line-through",
-                    textDecorationColor:
-                      "#c45252",
-                    textDecorationThickness:
-                      "2px",
+
+                    textDecoration: "line-through",
+
+                    textDecorationColor: "#c45252",
+
+                    textDecorationThickness: "2px",
+
+                    "@media (max-width: 599px)": {
+                      fontSize: 17,
+                    },
                   }}
                 >
                   ₹{originalPrice}
@@ -701,36 +952,63 @@ const FeaturedProduct = () => {
                 fontSize: 13,
                 color: "#888",
                 mb: 2,
+
+                "@media (max-width: 599px)": {
+                  fontSize: 12,
+                  mb: 1.7,
+                },
               }}
             >
               Inclusive of all taxes
             </Typography>
 
-            {/* PURCHASED */}
+            {/* =================================================
+                PURCHASED
+            ================================================= */}
 
             <Box
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
+
                 background: "#F5F4F1",
+
                 px: 2,
                 py: 1,
+
                 borderRadius: 1,
+
                 mb: 3,
+
+                // TABLET CENTER
+                "@media (min-width: 600px) and (max-width: 899px)": {
+                  mx: "auto",
+                },
+
+                "@media (max-width: 599px)": {
+                  px: 1.5,
+                  py: 0.8,
+                  mb: 2.5,
+                },
               }}
             >
               <Typography
                 sx={{
                   fontSize: 13,
                   color: "#4A6950",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 11,
+                  },
                 }}
               >
-                ❤ 89 people purchased this
-                product
+                ❤ 89 people purchased this product
               </Typography>
             </Box>
 
-            {/* DESCRIPTION */}
+            {/* =================================================
+                DESCRIPTION
+            ================================================= */}
 
             <Typography
               sx={{
@@ -738,6 +1016,10 @@ const FeaturedProduct = () => {
                 fontWeight: 600,
                 color: "#1E2F2B",
                 mb: 1,
+
+                "@media (max-width: 599px)": {
+                  fontSize: 15,
+                },
               }}
             >
               Description
@@ -751,26 +1033,26 @@ const FeaturedProduct = () => {
                   lineHeight: 1.8,
                   overflow: "hidden",
                   display: "-webkit-box",
-                  WebkitLineClamp:
-                    showFullDescription
-                      ? "unset"
-                      : 3,
-                  WebkitBoxOrient:
-                    "vertical",
+                  WebkitLineClamp: showFullDescription ? "unset" : 3,
+                  WebkitBoxOrient: "vertical",
+
+                  "@media (max-width: 899px)": {
+                    textAlign: "center",
+                  },
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 13,
+                    lineHeight: 1.7,
+                    textAlign: "left",
+                  },
                 }}
               >
-                {featuredProduct.description ||
-                  "No description available."}
+                {featuredProduct.description || "No description available."}
               </Typography>
 
-              {featuredProduct.description
-                ?.length > 120 && (
+              {featuredProduct.description?.length > 120 && (
                 <Typography
-                  onClick={() =>
-                    setShowFullDescription(
-                      !showFullDescription,
-                    )
-                  }
+                  onClick={() => setShowFullDescription(!showFullDescription)}
                   sx={{
                     mt: 1,
                     display: "inline-block",
@@ -780,21 +1062,24 @@ const FeaturedProduct = () => {
                     fontSize: 14,
 
                     "&:hover": {
-                      textDecoration:
-                        "underline",
+                      textDecoration: "underline",
+                    },
+
+                    "@media (max-width: 599px)": {
+                      fontSize: 13,
                     },
                   }}
                 >
-                  {showFullDescription
-                    ? "Read Less"
-                    : "Read More"}
+                  {showFullDescription ? "Read Less" : "Read More"}
                 </Typography>
               )}
             </Box>
 
             <Divider sx={{ mb: 2 }} />
 
-            {/* KEY INGREDIENTS */}
+            {/* =================================================
+                KEY INGREDIENTS
+            ================================================= */}
 
             <Typography
               sx={{
@@ -802,6 +1087,10 @@ const FeaturedProduct = () => {
                 fontWeight: 600,
                 color: "#1E2F2B",
                 mb: 1,
+
+                "@media (max-width: 599px)": {
+                  fontSize: 15,
+                },
               }}
             >
               Key Ingredients
@@ -813,21 +1102,42 @@ const FeaturedProduct = () => {
                 color: "#666",
                 lineHeight: 1.7,
                 mb: 3,
+
+                "@media (max-width: 899px)": {
+                  textAlign: "center",
+                },
+
+                "@media (max-width: 599px)": {
+                  fontSize: 13,
+                  lineHeight: 1.65,
+                  mb: 2.5,
+                },
               }}
             >
-              {featuredProduct.keyIngredients ||
-                "No key ingredients available"}
+              {featuredProduct.keyIngredients || "No key ingredients available"}
             </Typography>
 
-            {/* QUANTITY */}
+            {/* =================================================
+                QUANTITY
+            ================================================= */}
 
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent:
-                  "space-between",
+                justifyContent: "space-between",
                 mb: 3,
+
+                // TABLET CENTER
+                "@media (min-width: 600px) and (max-width: 899px)": {
+                  justifyContent: "center",
+                  gap: 4,
+                  flexWrap: "wrap",
+                },
+
+                "@media (max-width: 599px)": {
+                  mb: 2.5,
+                },
               }}
             >
               <Box
@@ -841,14 +1151,30 @@ const FeaturedProduct = () => {
                 <IconButton
                   onClick={handleDecrease}
                   disabled={quantity <= 1}
+                  sx={{
+                    "@media (max-width: 599px)": {
+                      p: 0.8,
+                    },
+                  }}
                 >
-                  <RemoveOutlinedIcon />
+                  <RemoveOutlinedIcon
+                    sx={{
+                      "@media (max-width: 599px)": {
+                        fontSize: 19,
+                      },
+                    }}
+                  />
                 </IconButton>
 
                 <Typography
                   sx={{
                     width: 35,
                     textAlign: "center",
+
+                    "@media (max-width: 599px)": {
+                      width: 30,
+                      fontSize: 14,
+                    },
                   }}
                 >
                   {quantity}
@@ -856,13 +1182,20 @@ const FeaturedProduct = () => {
 
                 <IconButton
                   onClick={handleIncrease}
-                  disabled={
-                    Number(
-                      firstVariant.stock,
-                    ) <= 0
-                  }
+                  disabled={Number(firstVariant.stock) <= 0}
+                  sx={{
+                    "@media (max-width: 599px)": {
+                      p: 0.8,
+                    },
+                  }}
                 >
-                  <AddOutlinedIcon />
+                  <AddOutlinedIcon
+                    sx={{
+                      "@media (max-width: 599px)": {
+                        fontSize: 19,
+                      },
+                    }}
+                  />
                 </IconButton>
               </Box>
 
@@ -870,16 +1203,19 @@ const FeaturedProduct = () => {
                 sx={{
                   fontSize: 14,
                   color: "#666",
+
+                  "@media (max-width: 599px)": {
+                    fontSize: 12,
+                  },
                 }}
               >
-                Stock:{" "}
-                <strong>
-                  {firstVariant.stock || 0}
-                </strong>
+                Stock: <strong>{firstVariant.stock || 0}</strong>
               </Typography>
             </Box>
 
-            {/* ADD TO CART */}
+            {/* =================================================
+                ADD TO CART
+            ================================================= */}
 
             <Button
               onClick={handleAddToCart}
@@ -888,25 +1224,36 @@ const FeaturedProduct = () => {
               variant="contained"
               sx={{
                 height: 52,
+
                 background: "#1E2F2B",
+
                 textTransform: "none",
+
                 fontSize: 15,
+
                 boxShadow: "none",
+
                 borderRadius: 0,
+
                 mb: 1.5,
 
                 "&:hover": {
                   background: "#16251F",
                   boxShadow: "none",
                 },
+
+                "@media (max-width: 599px)": {
+                  height: 48,
+                  fontSize: 14,
+                },
               }}
             >
-              {cartLoading
-                ? "Adding..."
-                : "Add To Cart"}
+              {cartLoading ? "Adding..." : "Add To Cart"}
             </Button>
 
-            {/* WISHLIST */}
+            {/* =================================================
+                WISHLIST
+            ================================================= */}
 
             <Button
               onClick={handleWishlist}
@@ -922,15 +1269,25 @@ const FeaturedProduct = () => {
               }
               sx={{
                 height: 52,
+
                 borderRadius: 0,
+
                 borderColor: "#1E2F2B",
+
                 color: "#1E2F2B",
+
                 textTransform: "none",
+
                 mb: 3,
 
                 "&:hover": {
                   borderColor: "#1E2F2B",
                   backgroundColor: "#F8F6F2",
+                },
+
+                "@media (max-width: 599px)": {
+                  height: 48,
+                  fontSize: 13,
                 },
               }}
             >

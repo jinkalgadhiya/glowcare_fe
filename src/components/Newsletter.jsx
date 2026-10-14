@@ -45,69 +45,139 @@ const Newsletter = () => {
       sx={{
         width: "100%",
         backgroundColor: "#fff",
-        py: { xs: 8, md: 12 },
-        px: { xs: 3, md: 8 },
+        py: {
+          xs: 7,
+          sm: 8,
+          md: 12,
+        },
+        px: {
+          xs: 2,
+          sm: 4,
+          md: 8,
+        },
+        overflow: "hidden",
       }}
     >
-      <Grid container spacing={8} alignItems="center">
-        {/* Left Side */}
+      <Grid
+        container
+        spacing={{
+          xs: 5,
+          sm: 6,
+          md: 8,
+        }}
+        alignItems="center"
+      >
+        {/* =====================================================
+            LEFT SIDE
+        ====================================================== */}
 
         <Grid
           item
           xs={12}
           md={6}
           sx={{
-            ml: "100px",
+            ml: {
+              xs: 0,
+              sm: 0,
+              md: "100px",
+            },
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
           }}
         >
+          {/* Eyebrow */}
+
           <Typography
             sx={{
-              fontSize: 12,
-              letterSpacing: 4,
+              fontSize: {
+                xs: 10,
+                sm: 11,
+                md: 12,
+              },
+              letterSpacing: {
+                xs: 2.5,
+                sm: 3,
+                md: 4,
+              },
               color: "#B89478",
               textTransform: "uppercase",
-              mb: 2,
+              mb: {
+                xs: 1.5,
+                md: 2,
+              },
             }}
           >
             {newsletter.eyebrow}
           </Typography>
 
+          {/* Title */}
+
           <Typography
             sx={{
               fontSize: {
-                xs: 40,
+                xs: 34,
+                sm: 42,
                 md: 58,
               },
               fontWeight: 500,
               color: "#1E2F2B",
-              lineHeight: 1.1,
-              mb: 3,
+              lineHeight: {
+                xs: 1.15,
+                md: 1.1,
+              },
+              mb: {
+                xs: 2,
+                sm: 2.5,
+                md: 3,
+              },
               whiteSpace: "pre-line",
             }}
           >
             {newsletter.title}
           </Typography>
 
+          {/* Description */}
+
           <Typography
             sx={{
               color: "#6D6D6D",
-              fontSize: 16,
-              lineHeight: 1.9,
+              fontSize: {
+                xs: 14,
+                sm: 15,
+                md: 16,
+              },
+              lineHeight: {
+                xs: 1.7,
+                md: 1.9,
+              },
               maxWidth: 520,
-              mb: 5,
+              mb: {
+                xs: 3,
+                sm: 4,
+                md: 5,
+              },
             }}
           >
             {newsletter.description}
           </Typography>
 
+          {/* Newsletter Form */}
+
           <Box
             sx={{
               display: "flex",
-              gap: 2,
-              flexWrap: {
-                xs: "wrap",
-                sm: "nowrap",
+              gap: {
+                xs: 1.5,
+                sm: 2,
               },
+              flexDirection: {
+                xs: "column",
+                sm: "row",
+              },
+              width: "100%",
+              maxWidth: 650,
             }}
           >
             <TextField
@@ -116,7 +186,11 @@ const Newsletter = () => {
               variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  height: 58,
+                  height: {
+                    xs: 52,
+                    sm: 56,
+                    md: 58,
+                  },
                   borderRadius: "50px",
                   background: "#fff",
 
@@ -132,18 +206,38 @@ const Newsletter = () => {
                     borderColor: "#B89478",
                   },
                 },
+
+                "& .MuiInputBase-input": {
+                  fontSize: {
+                    xs: 14,
+                    sm: 15,
+                    md: 16,
+                  },
+                },
               }}
             />
 
             <Button
               variant="contained"
               sx={{
-                minWidth: 170,
-                height: 58,
+                minWidth: {
+                  xs: "100%",
+                  sm: 150,
+                  md: 170,
+                },
+                height: {
+                  xs: 52,
+                  sm: 56,
+                  md: 58,
+                },
                 borderRadius: "50px",
                 backgroundColor: "#1E2F2B",
                 textTransform: "none",
-                fontSize: 16,
+                fontSize: {
+                  xs: 14,
+                  sm: 15,
+                  md: 16,
+                },
                 boxShadow: "none",
 
                 "&:hover": {
@@ -156,18 +250,30 @@ const Newsletter = () => {
             </Button>
           </Box>
 
+          {/* Note */}
+
           <Typography
             sx={{
-              mt: 3,
+              mt: {
+                xs: 2,
+                md: 3,
+              },
               color: "#7C7C7C",
-              fontSize: 14,
+              fontSize: {
+                xs: 12,
+                sm: 13,
+                md: 14,
+              },
+              lineHeight: 1.6,
             }}
           >
             {newsletter.note}
           </Typography>
         </Grid>
 
-        {/* Right Side */}
+        {/* =====================================================
+            RIGHT SIDE
+        ====================================================== */}
 
         <Grid
           item
@@ -177,50 +283,120 @@ const Newsletter = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            ml: "70px",
+
+            ml: {
+              xs: 0,
+              sm: 0,
+              md: "70px",
+            },
+
+            mt: {
+              xs: 1,
+              sm: 2,
+              md: 0,
+            },
           }}
         >
           <Box
             sx={{
               position: "relative",
-              width: { xs: 320, md: 500 },
-              height: { xs: 320, md: 500 },
+
+              width: {
+                xs: 290,
+                sm: 380,
+                md: 500,
+              },
+
+              height: {
+                xs: 290,
+                sm: 380,
+                md: 500,
+              },
+
+              maxWidth: "100%",
+
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <Box
-              sx={{
-                position: "absolute",
-                width: { xs: 260, md: 420 },
-                height: { xs: 260, md: 420 },
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(248,245,241,0) 75%)",
-                filter: "blur(20px)",
-              }}
-            />
+            {/* Main Glow */}
 
             <Box
               sx={{
                 position: "absolute",
-                width: { xs: 230, md: 360 },
-                height: { xs: 230, md: 360 },
+
+                width: {
+                  xs: 230,
+                  sm: 310,
+                  md: 420,
+                },
+
+                height: {
+                  xs: 230,
+                  sm: 310,
+                  md: 420,
+                },
+
+                borderRadius: "50%",
+
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(248,245,241,0) 75%)",
+
+                filter: {
+                  xs: "blur(14px)",
+                  md: "blur(20px)",
+                },
+              }}
+            />
+
+            {/* Inner Circle */}
+
+            <Box
+              sx={{
+                position: "absolute",
+
+                width: {
+                  xs: 205,
+                  sm: 275,
+                  md: 360,
+                },
+
+                height: {
+                  xs: 205,
+                  sm: 275,
+                  md: 360,
+                },
+
                 border: "1px solid rgba(184,148,120,.25)",
                 borderRadius: "50%",
               }}
             />
 
+            {/* Outer Circle */}
+
             <Box
               sx={{
                 position: "absolute",
-                width: { xs: 290, md: 450 },
-                height: { xs: 290, md: 450 },
+
+                width: {
+                  xs: 255,
+                  sm: 335,
+                  md: 450,
+                },
+
+                height: {
+                  xs: 255,
+                  sm: 335,
+                  md: 450,
+                },
+
                 border: "1px solid rgba(184,148,120,.12)",
                 borderRadius: "50%",
               }}
             />
+
+            {/* Product Image */}
 
             <Box
               component="img"
@@ -228,9 +404,12 @@ const Newsletter = () => {
               alt="Newsletter"
               sx={{
                 width: {
-                  xs: 220,
+                  xs: 185,
+                  sm: 245,
                   md: 320,
                 },
+
+                maxWidth: "80%",
 
                 position: "relative",
                 zIndex: 2,
@@ -263,39 +442,78 @@ const Newsletter = () => {
               }}
             />
 
+            {/* Decorative Dot 1 */}
+
             <Box
               sx={{
                 position: "absolute",
                 top: "18%",
                 left: "15%",
-                width: 10,
-                height: 10,
+
+                width: {
+                  xs: 7,
+                  sm: 9,
+                  md: 10,
+                },
+
+                height: {
+                  xs: 7,
+                  sm: 9,
+                  md: 10,
+                },
+
                 borderRadius: "50%",
                 background: "#D7B48D",
                 opacity: 0.7,
               }}
             />
 
+            {/* Decorative Dot 2 */}
+
             <Box
               sx={{
                 position: "absolute",
                 bottom: "22%",
                 right: "12%",
-                width: 8,
-                height: 8,
+
+                width: {
+                  xs: 6,
+                  sm: 7,
+                  md: 8,
+                },
+
+                height: {
+                  xs: 6,
+                  sm: 7,
+                  md: 8,
+                },
+
                 borderRadius: "50%",
                 background: "#D7B48D",
                 opacity: 0.5,
               }}
             />
 
+            {/* Decorative Dot 3 */}
+
             <Box
               sx={{
                 position: "absolute",
                 top: "28%",
                 right: "18%",
-                width: 14,
-                height: 14,
+
+                width: {
+                  xs: 10,
+                  sm: 12,
+                  md: 14,
+                },
+
+                height: {
+                  xs: 10,
+                  sm: 12,
+                  md: 14,
+                },
+
                 borderRadius: "50%",
                 background: "#EFE4D5",
               }}
